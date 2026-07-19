@@ -1,0 +1,261 @@
+import { useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { ArrowLeft, Bookmark, BookText, CheckCircle2, Check } from "lucide-react";
+import { bookById } from "../../lib/data";
+import { BookCover, Button, Card, Modal, Stars } from "../../components/ui";
+import { useToast } from "../../components/Toast";
+
+export default function BookDetail() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const { notify } = useToast();
+  const book = bookById(id ?? "");
+  const [showEbookModal, setShowEbookModal] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [wishlisted, setWishlisted] = useState(false);
+
+  if (!book) return <p>Buku tidak ditemukan.</p>;
+  const related = book.relatedId ? bookById(book.relatedId) : undefined;
+
+  return (
+    <div>
+      <Link
+        to="/app"
+        className="inline-flex items-center gap-2 font-semibold text-primary hover:underline"
+      >
+        <ArrowLeft size={18} /> Kembali
+      </Link>
+
+      <div className="mt-6 grid grid-cols-1 gap-10 lg:grid-cols-[340px_1fr]">
+        <div>
+          <BookCover
+            initials={book.initials}
+            color={book.color}
+            className="h-[440px] w-full rounded-2xl"
+            textClass="text-7xl"
+          />
+          <button
+            onClick={() => navigate(`/app/buku/${book.id}/reservasi`)}
+            disabled={book.stockAvailable === 0}
+            className="mt-5 w-full cursor-pointer rounded-xl bg-primary py-4 font-display text-[17px] font-bold text-white hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            Reservasi Buku Fisik
+          </button>
+
+          {book.ebookTotal > 0 ? (
+            <button
+              onClick={() => book.ebookAvailable > 0 && setShowEbookModal(true)}
+              disabled={book.ebookAvailable === 0}
+              className="mt-3 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-accent bg-accent-light/40 py-4 font-display text-[17px] font-bold text-accent hover:bg-accent-light disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <BookText size={19} />
+              {book.ebookAvailable > 0
+                ? `Pinjam E-book · ${book.ebookAvailable}/${book.ebookTotal} copy`
+                : "E-book · Antrean"}
+            </button>
+          ) : (
+            <div className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-line py-4 text-[15px] text-muted-fg">
+              <BookText size={18} /> E-book tidak tersedia (hanya edisi cetak)
+            </div>
+          )}
+
+          <button
+            onClick={() => {
+              setWishlisted((w) => !w);
+              notify(
+                wishlisted
+                  ? `"${book.title}" dihapus dari wishlist.`
+                  : `"${book.title}" disimpan ke wishlist.`,
+              );
+            }}
+            className={`mt-3 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border py-4 font-display text-[16px] font-semibold ${
+              wishlisted
+                ? "border-primary bg-primary-light text-primary"
+                : "border-line hover:bg-muted"
+            }`}
+          >
+            <Bookmark size={18} fill={wishlisted ? "currentColor" : "none"} />
+            {wishlisted ? "Tersimpan di Wishlist" : "Simpan ke Wishlist"}
+          </button>
+        </div>
+
+        <div>
+          <span className="rounded-full bg-primary-light px-4 py-1.5 text-sm font-semibold text-primary">
+            {book.category}
+          </span>
+          <h1 className="mt-4 font-display text-[40px] font-bold leading-tight">
+            {book.title}
+          </h1>
+          <p className="mt-2 text-xl text-muted-fg">{book.author}</p>
+
+          <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-2">
+            <span className="flex items-center gap-2">
+              <Stars value={book.rating} />
+              <span className="font-display text-lg font-bold">{book.rating.toFixed(1)}</span>
+            </span>
+            <span className="text-line">|</span>
+            <span className="text-lg text-muted-fg">Tahun {book.year}</span>
+            <span className="text-line">|</span>
+            {book.stockAvailable > 0 ? (
+              <span className="flex items-center gap-2 text-lg font-semibold text-success">
+                <CheckCircle2 size={20} />
+                {book.stockAvailable} dari {book.stockTotal} eksemplar tersedia
+              </span>
+            ) : (
+              <span className="text-lg font-semibold text-destructive">
+                Semua eksemplar sedang dipinjam
+              </span>
+            )}
+          </div>
+
+          <Card className="mt-7 p-7">
+            <h2 className="font-display text-xl font-bold">Deskripsi</h2>
+            <p className="mt-3 text-lg leading-relaxed text-muted-fg">
+              {book.description}
+            </p>
+          </Card>
+
+          <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
+            {[
+              ["Kategori", book.category],
+              ["Tahun Terbit", String(book.year)],
+              ["Stok Fisik", `${book.stockTotal} eksemplar`],
+              ["Copy E-book", book.ebookTotal > 0 ? `${book.ebookTotal} copy` : "Tidak tersedia"],
+            ].map(([label, value]) => (
+              <Card key={label} className="p-5">
+                <div className="text-[15px] text-muted-fg">{label}</div>
+                <div className="mt-1.5 font-display text-[17px] font-bold">{value}</div>
+              </Card>
+            ))}
+          </div>
+
+          {book.ebookTotal > 0 && book.ebookAvailable > 0 && (
+            <div className="mt-6 flex items-center gap-4 rounded-xl bg-accent-light/60 px-6 py-5">
+              <BookText size={22} className="shrink-0 text-accent" />
+              <div>
+                <div className="font-display text-[17px] font-bold text-accent">
+                  {book.ebookAvailable} dari {book.ebookTotal} copy e-book tersedia
+                </div>
+                <div className="mt-0.5 text-[15px] text-muted-fg">
+                  Pinjam copy digital · otomatis kembali dalam 14 hari
+                </div>
+              </div>
+            </div>
+          )}
+
+          {related && (
+            <div className="mt-8">
+              <h2 className="font-display text-xl font-bold">Buku Terkait</h2>
+              <Link to={`/app/buku/${related.id}`} className="mt-4 inline-block w-[132px]">
+                <Card className="overflow-hidden transition-shadow hover:shadow-md">
+                  <BookCover
+                    initials={related.initials}
+                    color={related.color}
+                    className="h-[120px] w-full rounded-b-none"
+                    textClass="text-3xl"
+                  />
+                  <div className="p-3 font-display text-sm font-bold leading-snug">
+                    {related.title}
+                  </div>
+                </Card>
+              </Link>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {showEbookModal && (
+        <Modal title="Pinjam Copy E-book" onClose={() => setShowEbookModal(false)}>
+          <div className="flex items-center gap-4 rounded-xl bg-bg p-5">
+            <BookCover
+              initials={book.initials}
+              color={book.color}
+              className="h-[72px] w-[60px] rounded-lg"
+              textClass="text-lg"
+            />
+            <div>
+              <div className="font-display text-lg font-bold">{book.title}</div>
+              <div className="text-[15px] text-muted-fg">{book.author}</div>
+              <span className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-accent-light px-3 py-1 text-sm font-semibold text-accent">
+                <BookText size={13} />
+                {book.ebookAvailable} dari {book.ebookTotal} copy tersedia
+              </span>
+            </div>
+          </div>
+
+          <div className="mt-5 overflow-hidden rounded-xl border border-line">
+            {[
+              ["Peminjam", "Ahmad Fauzi (11200000001)"],
+              ["Durasi pinjam", "14 hari (otomatis dikembalikan)"],
+              ["Akses berakhir", "14 Juli 2026"],
+              ["Format akses", "Baca di browser, tanpa unduh"],
+            ].map(([label, value], i) => (
+              <div
+                key={label}
+                className={`flex items-center justify-between px-5 py-4 ${i % 2 === 1 ? "bg-bg/60" : ""} ${i > 0 ? "border-t border-line" : ""}`}
+              >
+                <span className="text-[15px] text-muted-fg">{label}</span>
+                <span className="font-display text-[15px] font-bold">{value}</span>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-5 flex items-start gap-3 rounded-xl bg-accent-light/60 px-5 py-4">
+            <BookText size={19} className="mt-0.5 shrink-0 text-accent" />
+            <p className="text-[15px] leading-relaxed text-accent">
+              Copy e-book otomatis dikembalikan setelah 14 hari. Baca kapan saja di
+              browser tanpa perlu datang ke perpustakaan.
+            </p>
+          </div>
+
+          <div className="mt-7 grid grid-cols-2 gap-4">
+            <Button variant="outline" className="py-3.5" onClick={() => setShowEbookModal(false)}>
+              Batal
+            </Button>
+            <Button
+              variant="accent"
+              className="py-3.5"
+              onClick={() => {
+                setShowEbookModal(false);
+                setShowSuccess(true);
+              }}
+            >
+              Pinjam Copy E-book
+            </Button>
+          </div>
+        </Modal>
+      )}
+
+      {showSuccess && (
+        <Modal title="Peminjaman Berhasil!" onClose={() => setShowSuccess(false)}>
+          <div className="flex flex-col items-center py-2 text-center">
+            <div className="flex h-24 w-24 items-center justify-center rounded-full bg-accent-light">
+              <Check size={44} className="text-accent" strokeWidth={2.5} />
+            </div>
+            <h4 className="mt-7 font-display text-2xl font-bold">
+              Copy E-book Berhasil Dipinjam!
+            </h4>
+            <p className="mt-3 text-lg text-muted-fg">
+              Anda dapat membaca <strong className="text-fg">{book.title}</strong>
+            </p>
+            <p className="mt-1.5 text-[15px] text-muted-fg">
+              Akses berakhir otomatis: <strong className="text-fg">14 Juli 2026</strong>
+            </p>
+          </div>
+          <div className="mt-6 grid grid-cols-2 gap-4">
+            <Button variant="outline" className="py-3.5" onClick={() => setShowSuccess(false)}>
+              Nanti Saja
+            </Button>
+            <Button
+              variant="accent"
+              className="py-3.5"
+              onClick={() => navigate(`/app/baca/${book.id}`)}
+            >
+              Baca Sekarang
+            </Button>
+          </div>
+        </Modal>
+      )}
+    </div>
+  );
+}

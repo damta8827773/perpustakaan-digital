@@ -1,0 +1,14 @@
+# Skema subgraph katalog. Bahasa: GraphQL SDL.
+type Book @key(fields: "id") {
+  id: ID!
+  title: String!
+  author: String!
+  category: String!
+  stockAvailable: Int!
+  ebookCopies: Int!
+}
+
+type Query {
+  book(id: ID!): Book
+  searchBooks(q: String!, category: String): [Book!]!
+}

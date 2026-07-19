@@ -1,0 +1,45 @@
+@import "@fontsource-variable/plus-jakarta-sans";
+@import "@fontsource-variable/inter";
+@import "@fontsource-variable/jetbrains-mono";
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #1a73c8;
+  --color-primary-dark: #135a9e;
+  --color-primary-light: #e8f1fb;
+  --color-accent: #7c3aed;
+  --color-accent-dark: #6428cf;
+  --color-accent-light: #ede9ff;
+  --color-success: #16a34a;
+  --color-success-light: #dcfce7;
+  --color-warning: #ea580c;
+  --color-warning-light: #fff0e6;
+  --color-destructive: #dc2626;
+  --color-destructive-light: #fee2e2;
+  --color-fg: #0d1b2a;
+  --color-muted-fg: #64748b;
+  --color-muted: #eef2f7;
+  --color-bg: #f0f4f9;
+  --color-card: #ffffff;
+  --color-line: rgba(13, 27, 42, 0.08);
+
+  --font-display: "Plus Jakarta Sans Variable", "Plus Jakarta Sans", sans-serif;
+  --font-sans: "Inter Variable", "Inter", sans-serif;
+  --font-mono: "JetBrains Mono Variable", "JetBrains Mono", monospace;
+
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 14px;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-bg);
+  color: var(--color-fg);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+}

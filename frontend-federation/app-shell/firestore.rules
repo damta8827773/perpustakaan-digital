@@ -1,0 +1,40 @@
+rules_version = '2';
+
+// Aturan keamanan Firestore: default tolak semua, akses berbasis role
+// yang diturunkan dari domain email akun.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn()
+        && request.auth.token.email.matches('.*@admin[.]perpusdigital[.]web[.]id');
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    match /books/{bookId} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /loans/{loanId} {
+      allow read: if isAdmin() || isOwner(resource.data.uid);
+      allow create: if isSignedIn()
+        && request.resource.data.uid == request.auth.uid;
+      allow update, delete: if isAdmin();
+    }
+
+    match /members/{memberId} {
+      allow read, write: if isAdmin();
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

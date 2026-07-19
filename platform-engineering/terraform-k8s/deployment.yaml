@@ -1,0 +1,20 @@
+# Deployment app-shell di Kubernetes + Istio. Bahasa: YAML.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-shell
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: app-shell
+  template:
+    metadata:
+      labels:
+        app: app-shell
+    spec:
+      containers:
+        - name: app-shell
+          image: perpus/app-shell:latest
+          ports:
+            - containerPort: 80
