@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, BookText } from "lucide-react";
-import { BOOKS, PHYSICAL_LOANS, STUDENT, bookById } from "../../lib/data";
+import { BOOKS, STUDENT, bookById } from "../../lib/data";
 import { BookCover, Card, Progress } from "../../components/ui";
 import { useToast } from "../../components/Toast";
+import { useLibrary, getActiveLoans } from "../../lib/libraryStore";
 
 const CATEGORIES = ["Semua", "Agama", "Sains", "Hukum", "Teknik", "Ekonomi", "Bahasa", "Psikologi", "Pendidikan"];
 
@@ -61,6 +62,8 @@ export function BookCard({ book }: { book: (typeof BOOKS)[number] }) {
 export default function Home() {
   const [category, setCategory] = useState("Semua");
   const { notify } = useToast();
+  useLibrary(); // berlangganan perubahan agar pinjaman baru langsung tampil
+  const loans = getActiveLoans();
   const books =
     category === "Semua" ? BOOKS : BOOKS.filter((b) => b.category === category);
 
@@ -77,7 +80,7 @@ export default function Home() {
       <div className="mt-7 rounded-xl bg-primary-light/60 p-6">
         <div className="flex items-center justify-between">
           <h2 className="font-display text-lg font-bold text-primary">
-            Pinjaman Aktif ({PHYSICAL_LOANS.length})
+            Pinjaman Aktif ({loans.length})
           </h2>
           <Link
             to="/app/pinjaman"
@@ -87,7 +90,7 @@ export default function Home() {
           </Link>
         </div>
         <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
-          {PHYSICAL_LOANS.map((loan) => {
+          {loans.map((loan) => {
             const book = bookById(loan.bookId)!;
             const color = LOAN_COLORS[loan.status];
             return (

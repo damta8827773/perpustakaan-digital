@@ -4,17 +4,19 @@ import { ArrowLeft, Bookmark, BookText, CheckCircle2, Check } from "lucide-react
 import { bookById } from "../../lib/data";
 import { BookCover, Button, Card, Modal, Stars } from "../../components/ui";
 import { useToast } from "../../components/Toast";
+import { useLibrary, toggleWishlist } from "../../lib/libraryStore";
 
 export default function BookDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { notify } = useToast();
+  const lib = useLibrary();
   const book = bookById(id ?? "");
   const [showEbookModal, setShowEbookModal] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [wishlisted, setWishlisted] = useState(false);
 
   if (!book) return <p>Buku tidak ditemukan.</p>;
+  const wishlisted = lib.wishlist.includes(book.id);
   const related = book.relatedId ? bookById(book.relatedId) : undefined;
 
   return (
@@ -61,11 +63,11 @@ export default function BookDetail() {
 
           <button
             onClick={() => {
-              setWishlisted((w) => !w);
+              const active = toggleWishlist(book.id);
               notify(
-                wishlisted
-                  ? `"${book.title}" dihapus dari wishlist.`
-                  : `"${book.title}" disimpan ke wishlist.`,
+                active
+                  ? `"${book.title}" disimpan ke wishlist.`
+                  : `"${book.title}" dihapus dari wishlist.`,
               );
             }}
             className={`mt-3 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border py-4 font-display text-[16px] font-semibold ${

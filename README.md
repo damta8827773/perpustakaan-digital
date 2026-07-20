@@ -1,4 +1,4 @@
-<h1 align="center">📚 Perpustakaan Digital — UIN Syarif Hidayatullah Jakarta</h1>
+<h1 align="center">📚 Perpustakaan Digital - UIN Syarif Hidayatullah Jakarta</h1>
 
 <p align="center">
   <b>Sistem perpustakaan digital modern dengan antarmuka Mahasiswa dan Admin yang terpisah.</b><br/>
@@ -117,7 +117,7 @@ bahasa sebagai gambaran arsitektur target.
 ```text
 perpustakaan-digital/
 ├── frontend-federation/
-│   ├── app-shell/                 # ⭐ Aplikasi utama (React + Vite) — DIJALANKAN
+│   ├── app-shell/                 # ⭐ Aplikasi utama (React + Vite) - DIJALANKAN
 │   ├── mfe-public-portal/         # Modul micro-frontend mahasiswa
 │   ├── mfe-admin-command-center/  # Modul micro-frontend admin
 │   └── wasm-drm-renderer/         # Kerangka pembaca e-book (C/C++ ke WebAssembly)
@@ -251,13 +251,13 @@ Tombol **Masuk dengan SSO UIN** mengarahkan pengguna ke portal resmi
 
 Praktik keamanan yang diterapkan pada aplikasi:
 
-- **Rahasia berbasis lingkungan** — seluruh kredensial dibaca dari `.env.local`
+- **Rahasia berbasis lingkungan** - seluruh kredensial dibaca dari `.env.local`
   yang tidak pernah di-commit.
-- **Validasi input** — pemeriksaan format NIM, username, dan panjang kata sandi.
-- **Pembatasan percobaan login** — penguncian sementara setelah beberapa kali gagal.
-- **Logout otomatis** — sesi berakhir ketika pengguna tidak aktif.
-- **Persistensi sesi terbatas** — sesi hanya bertahan selama tab peramban terbuka.
-- **Pemisahan peran** — penjaga rute memisahkan area mahasiswa dan admin.
+- **Validasi input** - pemeriksaan format NIM, username, dan panjang kata sandi.
+- **Pembatasan percobaan login** - penguncian sementara setelah beberapa kali gagal.
+- **Logout otomatis** - sesi berakhir ketika pengguna tidak aktif.
+- **Persistensi sesi terbatas** - sesi hanya bertahan selama tab peramban terbuka.
+- **Pemisahan peran** - penjaga rute memisahkan area mahasiswa dan admin.
 
 Rincian selengkapnya tersedia pada berkas [`SECURITY.md`](SECURITY.md).
 

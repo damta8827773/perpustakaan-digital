@@ -7,19 +7,21 @@ import { Card } from "../../components/ui";
 import { CountUp } from "../../components/CountUp";
 import { useToast } from "../../components/Toast";
 import { useAuth } from "../../lib/auth";
-
-const MENU = [
-  { icon: Heart, title: "Wishlist Saya", sub: `${STUDENT.wishlist} buku tersimpan` },
-  { icon: Clock, title: "Riwayat Baca", sub: `${STUDENT.readHistory} buku telah dibaca` },
-  { icon: Lock, title: "Ubah Password", sub: "" },
-  { icon: Globe, title: "Bahasa", sub: "Indonesia" },
-  { icon: HelpCircle, title: "Bantuan", sub: "" },
-];
+import { useLibrary } from "../../lib/libraryStore";
 
 export default function Profil() {
   const { logout } = useAuth();
   const navigate = useNavigate();
   const { notify } = useToast();
+  const lib = useLibrary();
+
+  const MENU = [
+    { icon: Heart, title: "Wishlist Saya", sub: `${lib.wishlist.length} buku tersimpan` },
+    { icon: Clock, title: "Riwayat Baca", sub: `${STUDENT.readHistory} buku telah dibaca` },
+    { icon: Lock, title: "Ubah Password", sub: "" },
+    { icon: Globe, title: "Bahasa", sub: "Indonesia" },
+    { icon: HelpCircle, title: "Bantuan", sub: "" },
+  ];
 
   return (
     <div>

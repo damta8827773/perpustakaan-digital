@@ -1,7 +1,9 @@
+import { useEffect, useRef } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { PartyPopper, CheckCircle2 } from "lucide-react";
 import { bookById, STUDENT } from "../../lib/data";
 import { BookCover, Card } from "../../components/ui";
+import { addLoan } from "../../lib/libraryStore";
 
 export default function Berhasil() {
   const { id } = useParams();
@@ -9,11 +11,21 @@ export default function Berhasil() {
     state?: { duration: number; start: string; end: string };
   };
   const book = bookById(id ?? "");
-  if (!book) return <p>Buku tidak ditemukan.</p>;
+  const recorded = useRef(false);
 
   const duration = state?.duration ?? 14;
   const start = state?.start ?? "1 Juli 2026";
   const end = state?.end ?? "15 Juli 2026";
+
+  // Catat pinjaman baru ke store agar muncul di "Pinjaman Saya" dan beranda.
+  useEffect(() => {
+    if (book && !recorded.current) {
+      recorded.current = true;
+      addLoan(book.id, end);
+    }
+  }, [book, end]);
+
+  if (!book) return <p>Buku tidak ditemukan.</p>;
 
   return (
     <div className="mx-auto max-w-[820px] pt-6 text-center">

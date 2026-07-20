@@ -2,9 +2,11 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { BookOpen, BookText, Star } from "lucide-react";
 import {
-  PHYSICAL_LOANS, EBOOK_LOANS, HISTORY_PHYSICAL, HISTORY_EBOOK, bookById,
+  EBOOK_LOANS, HISTORY_PHYSICAL, HISTORY_EBOOK, bookById,
 } from "../../lib/data";
 import { Badge, BookCover, Button, Card, Modal, Progress } from "../../components/ui";
+import { useToast } from "../../components/Toast";
+import { useLibrary, getActiveLoans, setRating } from "../../lib/libraryStore";
 
 type Tab = "fisik" | "ebook" | "riwayat";
 
@@ -14,7 +16,14 @@ const LOAN_META = {
   terlambat: { color: "#dc2626", badge: "destructive" as const, label: "Terlambat +7 hari" },
 };
 
-function RatingModal({ title, onClose }: { title: string; onClose: () => void }) {
+function RatingModal({
+  bookId, title, onSubmit, onClose,
+}: {
+  bookId: string;
+  title: string;
+  onSubmit: (value: number) => void;
+  onClose: () => void;
+}) {
   const [stars, setStars] = useState(0);
   const [review, setReview] = useState("");
   return (
@@ -50,7 +59,14 @@ function RatingModal({ title, onClose }: { title: string; onClose: () => void })
         <Button variant="outline" className="py-3.5" onClick={onClose}>
           Batal
         </Button>
-        <Button className="py-3.5" disabled={stars === 0} onClick={onClose}>
+        <Button
+          className="py-3.5"
+          disabled={stars === 0}
+          onClick={() => {
+            setRating(bookId, stars);
+            onSubmit(stars);
+          }}
+        >
           Kirim Rating
         </Button>
       </div>
@@ -60,11 +76,14 @@ function RatingModal({ title, onClose }: { title: string; onClose: () => void })
 
 export default function Pinjaman() {
   const [tab, setTab] = useState<Tab>("fisik");
-  const [ratingFor, setRatingFor] = useState<string | null>(null);
+  const [ratingFor, setRatingFor] = useState<{ bookId: string; title: string } | null>(null);
   const navigate = useNavigate();
+  const { notify } = useToast();
+  const lib = useLibrary();
+  const physicalLoans = getActiveLoans();
 
   const tabs: { key: Tab; label: string }[] = [
-    { key: "fisik", label: `Buku Fisik (${PHYSICAL_LOANS.length})` },
+    { key: "fisik", label: `Buku Fisik (${physicalLoans.length})` },
     { key: "ebook", label: `E-book (${EBOOK_LOANS.length})` },
     { key: "riwayat", label: `Riwayat (${HISTORY_PHYSICAL.length + HISTORY_EBOOK.length})` },
   ];
@@ -91,7 +110,7 @@ export default function Pinjaman() {
 
       {tab === "fisik" && (
         <div className="mt-7 space-y-5">
-          {PHYSICAL_LOANS.map((loan) => {
+          {physicalLoans.map((loan) => {
             const book = bookById(loan.bookId)!;
             const meta = LOAN_META[loan.status];
             return (
@@ -238,12 +257,19 @@ export default function Pinjaman() {
                           )}
                         </td>
                         <td className="px-6 py-4">
-                          <button
-                            onClick={() => setRatingFor(book.title)}
-                            className="cursor-pointer rounded-lg bg-primary-light px-4 py-2 text-sm font-semibold text-primary hover:bg-[#d8e8f8]"
-                          >
-                            + Beri Rating
-                          </button>
+                          {lib.ratings[book.id] ? (
+                            <span className="flex items-center gap-1 text-sm font-semibold text-warning">
+                              <Star size={15} fill="#f59e0b" stroke="#f59e0b" />
+                              {lib.ratings[book.id]}.0
+                            </span>
+                          ) : (
+                            <button
+                              onClick={() => setRatingFor({ bookId: book.id, title: book.title })}
+                              className="cursor-pointer rounded-lg bg-primary-light px-4 py-2 text-sm font-semibold text-primary hover:bg-[#d8e8f8]"
+                            >
+                              + Beri Rating
+                            </button>
+                          )}
                         </td>
                       </tr>
                     );
@@ -305,9 +331,14 @@ export default function Pinjaman() {
                           )}
                         </td>
                         <td className="px-6 py-4">
-                          {h.status === "selesai" ? (
+                          {lib.ratings[book.id] ? (
+                            <span className="flex items-center gap-1 text-sm font-semibold text-warning">
+                              <Star size={15} fill="#f59e0b" stroke="#f59e0b" />
+                              {lib.ratings[book.id]}.0
+                            </span>
+                          ) : h.status === "selesai" ? (
                             <button
-                              onClick={() => setRatingFor(book.title)}
+                              onClick={() => setRatingFor({ bookId: book.id, title: book.title })}
                               className="cursor-pointer rounded-lg bg-accent-light px-4 py-2 text-sm font-semibold text-accent hover:bg-[#ddd3fb]"
                             >
                               + Beri Rating
@@ -326,7 +357,17 @@ export default function Pinjaman() {
         </div>
       )}
 
-      {ratingFor && <RatingModal title={ratingFor} onClose={() => setRatingFor(null)} />}
+      {ratingFor && (
+        <RatingModal
+          bookId={ratingFor.bookId}
+          title={ratingFor.title}
+          onSubmit={(value) => {
+            notify(`Rating ${value} bintang untuk "${ratingFor.title}" tersimpan.`);
+            setRatingFor(null);
+          }}
+          onClose={() => setRatingFor(null)}
+        />
+      )}
     </div>
   );
 }
