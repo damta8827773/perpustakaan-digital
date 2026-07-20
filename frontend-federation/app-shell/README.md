@@ -26,9 +26,8 @@ npm run dev
 
 Mengaktifkan login sungguhan:
 
-1. Firebase Console, proyek projectdamta: Authentication, Sign-in method,
-   aktifkan Email/Password. (Saat ini masih nonaktif; API mengembalikan
-   OPERATION_NOT_ALLOWED.)
+1. Firebase Console, pilih proyek Firebase Anda: Authentication, Sign-in
+   method, aktifkan Email/Password.
 2. Tab Users, buat dua akun:
    - `11200000001@mahasiswa.perpusdigital.web.id` (login dengan NIM
      `11200000001`)
