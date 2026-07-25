@@ -1,5 +1,8 @@
 import { useState, type FormEvent } from "react";
-import { Search, Plus, Pencil, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import {
+  Search, Plus, Pencil, Trash2, BookOpen, ChevronLeft, ChevronRight,
+} from "lucide-react";
 import { BOOKS, type Book, type Kategori } from "../../lib/data";
 import { Badge, Button, Card, Modal } from "../../components/ui";
 
@@ -91,6 +94,7 @@ function BookFormModal({
 }
 
 export default function Koleksi() {
+  const navigate = useNavigate();
   const [books, setBooks] = useState<Book[]>(BOOKS);
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<(typeof FILTERS)[number]>("Semua");
@@ -176,6 +180,16 @@ export default function Koleksi() {
                 <td className="px-5 py-4">{statusBadge(b)}</td>
                 <td className="px-5 py-4">
                   <div className="flex gap-1.5">
+                    {b.ebookTotal > 0 && (
+                      <button
+                        onClick={() => navigate(`/admin/baca/${b.id}`)}
+                        className="cursor-pointer rounded-lg p-2 text-accent hover:bg-accent-light"
+                        aria-label={`Baca online ${b.title}`}
+                        title="Baca e-book online"
+                      >
+                        <BookOpen size={16} />
+                      </button>
+                    )}
                     <button
                       onClick={() => setModal({ mode: "edit", book: b })}
                       className="cursor-pointer rounded-lg p-2 text-primary hover:bg-primary-light"

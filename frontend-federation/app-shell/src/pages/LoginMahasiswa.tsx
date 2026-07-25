@@ -70,7 +70,7 @@ export default function LoginMahasiswa() {
 
           <button
             type="button"
-            onClick={() => startSso()}
+            onClick={() => startSso(navigate)}
             className="mt-9 flex w-full cursor-pointer items-center justify-center gap-3 rounded-xl bg-primary py-4 font-display text-[17px] font-bold text-white hover:bg-primary-dark"
           >
             <BookOpen size={20} /> Masuk dengan SSO UIN

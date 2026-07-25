@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { AuthProvider, useAuth } from "./lib/auth";
 import Landing from "./pages/Landing";
 import LoginMahasiswa from "./pages/LoginMahasiswa";
-import SsoCallback from "./pages/SsoCallback";
+import SsoLogin from "./pages/SsoLogin";
 import AdminLogin from "./pages/AdminLogin";
 import UserShell from "./components/UserShell";
 import AdminShell from "./components/AdminShell";
@@ -22,6 +22,7 @@ import Koleksi from "./pages/admin/Koleksi";
 import PeminjamanAdmin from "./pages/admin/Peminjaman";
 import Anggota from "./pages/admin/Anggota";
 import Laporan from "./pages/admin/Laporan";
+import AdminReader from "./pages/admin/AdminReader";
 
 // Mode demo (VITE_DEMO=1): lewati login agar UI bisa dipratinjau
 // sebelum provider Email/Password diaktifkan di Firebase Console.
@@ -55,7 +56,8 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<LoginMahasiswa />} />
-          <Route path="/sso/callback" element={<SsoCallback />} />
+          <Route path="/sso" element={<SsoLogin />} />
+          <Route path="/sso/callback" element={<SsoLogin />} />
           <Route path="/admin/login" element={<AdminLogin />} />
 
           <Route
@@ -77,6 +79,15 @@ export default function App() {
             <Route path="baca/:id" element={<Reader />} />
             <Route path="profil" element={<Profil />} />
           </Route>
+
+          <Route
+            path="/admin/baca/:id"
+            element={
+              <Guard need="admin">
+                <AdminReader />
+              </Guard>
+            }
+          />
 
           <Route
             path="/admin"
