@@ -1,9 +1,9 @@
 import { useCallback } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { BookOpen, Home, Search, BookMarked, Book, User, LogOut, ChevronDown } from "lucide-react";
-import { STUDENT } from "../lib/data";
 import { useAuth } from "../lib/auth";
 import { useIdleLogout } from "../lib/security";
+import { useCurrentStudent, initialsOf, clearCurrentStudent } from "../lib/sessionStore";
 import { NotificationBell, DropdownMenu } from "./HeaderMenus";
 
 const NAV = [
@@ -17,10 +17,13 @@ const NAV = [
 export default function UserShell() {
   const { logout } = useAuth();
   const navigate = useNavigate();
-  const onIdle = useCallback(() => {
+  const student = useCurrentStudent();
+  const doLogout = useCallback(() => {
+    clearCurrentStudent();
     void logout().then(() => navigate("/login"));
   }, [logout, navigate]);
-  useIdleLogout(onIdle);
+  useIdleLogout(doLogout);
+  const [firstName, ...restName] = student.name.split(" ");
 
   return (
     <div className="min-h-screen bg-bg">
@@ -62,12 +65,12 @@ export default function UserShell() {
               trigger={() => (
                 <div className="flex items-center gap-2.5">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-sm font-bold text-white">
-                    AF
+                    {initialsOf(student.name)}
                   </div>
-                  <div className="text-left text-sm font-semibold leading-tight">
-                    {STUDENT.name.split(" ")[0]}
+                  <div className="max-w-[110px] truncate text-left text-sm font-semibold leading-tight">
+                    {firstName}
                     <br />
-                    {STUDENT.name.split(" ")[1]}
+                    {restName.join(" ")}
                   </div>
                   <ChevronDown size={16} className="text-muted-fg" />
                 </div>
@@ -76,8 +79,8 @@ export default function UserShell() {
               {(close) => (
                 <>
                   <div className="border-b border-line px-4 py-3">
-                    <div className="font-display font-bold">{STUDENT.name}</div>
-                    <div className="text-sm text-muted-fg">{STUDENT.nim}</div>
+                    <div className="font-display font-bold">{student.name}</div>
+                    <div className="text-sm text-muted-fg">{student.nim}</div>
                   </div>
                   <button
                     onClick={() => {
@@ -91,7 +94,7 @@ export default function UserShell() {
                   <button
                     onClick={() => {
                       close();
-                      void logout().then(() => navigate("/login"));
+                      doLogout();
                     }}
                     className="flex w-full cursor-pointer items-center gap-3 px-4 py-2.5 text-left text-[15px] font-semibold text-destructive hover:bg-destructive-light/50"
                   >

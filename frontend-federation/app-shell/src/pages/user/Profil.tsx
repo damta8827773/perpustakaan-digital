@@ -8,12 +8,14 @@ import { CountUp } from "../../components/CountUp";
 import { useToast } from "../../components/Toast";
 import { useAuth } from "../../lib/auth";
 import { useLibrary } from "../../lib/libraryStore";
+import { useCurrentStudent, initialsOf, clearCurrentStudent } from "../../lib/sessionStore";
 
 export default function Profil() {
   const { logout } = useAuth();
   const navigate = useNavigate();
   const { notify } = useToast();
   const lib = useLibrary();
+  const student = useCurrentStudent();
 
   const MENU = [
     { icon: Heart, title: "Wishlist Saya", sub: `${lib.wishlist.length} buku tersimpan` },
@@ -31,12 +33,12 @@ export default function Profil() {
         <div>
           <Card className="flex flex-col items-center p-9 text-center">
             <div className="flex h-[120px] w-[120px] items-center justify-center rounded-full bg-primary font-display text-4xl font-bold text-white">
-              AF
+              {initialsOf(student.name)}
             </div>
-            <h2 className="mt-6 font-display text-[26px] font-bold">{STUDENT.name}</h2>
-            <p className="mt-1 text-lg text-muted-fg">{STUDENT.nim}</p>
+            <h2 className="mt-6 font-display text-[26px] font-bold">{student.name}</h2>
+            <p className="mt-1 text-lg text-muted-fg">{student.nim}</p>
             <span className="mt-4 rounded-full bg-primary-light px-5 py-2 text-sm font-semibold text-primary">
-              {STUDENT.faculty} · {STUDENT.program}
+              {student.faculty} · {student.program}
             </span>
           </Card>
 
@@ -83,6 +85,7 @@ export default function Profil() {
           <Card>
             <button
               onClick={async () => {
+                clearCurrentStudent();
                 await logout();
                 navigate("/");
               }}

@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, BookText } from "lucide-react";
-import { BOOKS, STUDENT, bookById } from "../../lib/data";
+import { BOOKS, bookById } from "../../lib/data";
 import { BookCover, Card, Progress } from "../../components/ui";
 import { useToast } from "../../components/Toast";
 import { useLibrary, getActiveLoans } from "../../lib/libraryStore";
+import { useCurrentStudent } from "../../lib/sessionStore";
 
 const CATEGORIES = ["Semua", "Agama", "Sains", "Hukum", "Teknik", "Ekonomi", "Bahasa", "Psikologi", "Pendidikan"];
 
@@ -62,6 +63,7 @@ export function BookCard({ book }: { book: (typeof BOOKS)[number] }) {
 export default function Home() {
   const [category, setCategory] = useState("Semua");
   const { notify } = useToast();
+  const student = useCurrentStudent();
   useLibrary(); // berlangganan perubahan agar pinjaman baru langsung tampil
   const loans = getActiveLoans();
   const books =
@@ -70,7 +72,7 @@ export default function Home() {
   return (
     <div>
       <h1 className="font-display text-[32px] font-bold">
-        Halo, {STUDENT.name}! 👋
+        Halo, {student.name}! 👋
       </h1>
       <p className="mt-1.5 text-muted-fg">
         {BOOKS.filter((b) => b.stockAvailable > 0).length} buku tersedia untuk

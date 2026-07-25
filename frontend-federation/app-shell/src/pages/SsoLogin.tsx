@@ -5,6 +5,7 @@ import {
 } from "lucide-react";
 import { profileFromNim, DEMO_NIM, SSO_MODE, UIN_SSO_PORTAL } from "../lib/sso";
 import { registerSsoMember } from "../lib/membersStore";
+import { setCurrentStudent } from "../lib/sessionStore";
 import { isValidNim } from "../lib/security";
 
 const STEPS = [
@@ -15,6 +16,7 @@ const STEPS = [
 
 export default function SsoLogin() {
   const navigate = useNavigate();
+  const [name, setName] = useState("");
   const [nim, setNim] = useState(DEMO_NIM);
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -23,6 +25,10 @@ export default function SsoLogin() {
 
   function submit(e: FormEvent) {
     e.preventDefault();
+    if (name.trim().length < 3) {
+      setError("Isi nama lengkap sesuai akun SSO UIN Anda.");
+      return;
+    }
     if (!isValidNim(nim)) {
       setError("NIM harus berupa 8-14 digit angka.");
       return;
@@ -30,12 +36,21 @@ export default function SsoLogin() {
     setError("");
     setProcessing(true);
 
-    // Simulasi handshake SSO lalu OTOMATIS kembali ke sistem ini.
-    const profile = profileFromNim(nim);
+    // Identitas diambil dari data yang Anda isi (mewakili profil SSO UIN),
+    // lalu sistem OTOMATIS kembali dan masuk dengan nama tersebut.
+    const derived = profileFromNim(nim);
+    const profile = { ...derived, name: name.trim() };
     window.setTimeout(() => setStep(1), 600);
     window.setTimeout(() => setStep(2), 1200);
     window.setTimeout(() => {
-      // Identitas mahasiswa otomatis terinput ke Data Anggota panel admin.
+      // Jadikan identitas aktif di seluruh sistem.
+      setCurrentStudent({
+        name: profile.name,
+        nim: profile.nim,
+        faculty: profile.faculty,
+        program: profile.program,
+      });
+      // Otomatis terinput ke Data Anggota panel admin.
       registerSsoMember({
         nim: profile.nim,
         name: profile.name,
@@ -98,7 +113,17 @@ export default function SsoLogin() {
         </div>
 
         <form onSubmit={submit} className="mt-8">
-          <label className="block font-display text-[15px] font-semibold">NIM</label>
+          <label className="block font-display text-[15px] font-semibold">
+            Nama Lengkap
+          </label>
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Nama sesuai akun SSO UIN"
+            className="mt-2 w-full rounded-xl border border-line bg-card px-4 py-3.5 text-[15px] outline-none focus:border-primary"
+          />
+
+          <label className="mt-5 block font-display text-[15px] font-semibold">NIM</label>
           <input
             value={nim}
             onChange={(e) => setNim(e.target.value)}
