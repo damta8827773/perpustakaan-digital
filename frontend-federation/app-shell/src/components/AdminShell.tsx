@@ -5,6 +5,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../lib/auth";
 import { useIdleLogout } from "../lib/security";
+import { clearAdminSession, currentAdminEmail } from "../lib/admin";
 import { NotificationBell, DropdownMenu } from "./HeaderMenus";
 
 const NAV = [
@@ -28,10 +29,11 @@ export default function AdminShell() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const title = TITLES[pathname] ?? "Dashboard";
-  const onIdle = useCallback(() => {
-    void logout().then(() => navigate("/admin/login"));
+  const doLogout = useCallback(() => {
+    clearAdminSession();
+    void logout().finally(() => navigate("/admin/login", { replace: true }));
   }, [logout, navigate]);
-  useIdleLogout(onIdle);
+  useIdleLogout(doLogout);
 
   return (
     <div className="flex min-h-screen bg-bg">
@@ -68,10 +70,7 @@ export default function AdminShell() {
 
         <div className="mt-auto border-t border-line px-4 py-5">
           <button
-            onClick={async () => {
-              await logout();
-              navigate("/");
-            }}
+            onClick={doLogout}
             className="flex w-full cursor-pointer items-center gap-3 rounded-lg px-4 py-3 text-[15px] font-semibold text-destructive hover:bg-destructive-light"
           >
             <LogOut size={19} />
@@ -98,15 +97,23 @@ export default function AdminShell() {
               )}
             >
               {(close) => (
-                <button
-                  onClick={() => {
-                    close();
-                    void logout().then(() => navigate("/admin/login"));
-                  }}
-                  className="flex w-full cursor-pointer items-center gap-3 px-4 py-2.5 text-left text-[15px] font-semibold text-destructive hover:bg-destructive-light/50"
-                >
-                  <LogOut size={17} /> Keluar
-                </button>
+                <>
+                  <div className="border-b border-line px-4 py-3">
+                    <div className="font-display font-bold">Administrator</div>
+                    <div className="truncate text-sm lowercase text-muted-fg">
+                      {currentAdminEmail() ?? ""}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      close();
+                      doLogout();
+                    }}
+                    className="flex w-full cursor-pointer items-center gap-3 px-4 py-2.5 text-left text-[15px] font-semibold text-destructive hover:bg-destructive-light/50"
+                  >
+                    <LogOut size={17} /> Keluar
+                  </button>
+                </>
               )}
             </DropdownMenu>
           </div>

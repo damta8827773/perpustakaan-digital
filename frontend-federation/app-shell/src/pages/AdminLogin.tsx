@@ -1,12 +1,11 @@
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { BookOpen, ArrowLeft } from "lucide-react";
-import { useAuth, loginErrorMessage } from "../lib/auth";
+import { BookOpen, ArrowLeft, ShieldCheck } from "lucide-react";
+import { loginAdmin } from "../lib/admin";
 
 export default function AdminLogin() {
-  const { loginAdmin } = useAuth();
   const navigate = useNavigate();
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -16,10 +15,10 @@ export default function AdminLogin() {
     setError("");
     setBusy(true);
     try {
-      await loginAdmin(username, password);
-      navigate("/admin");
+      await loginAdmin(email, password);
+      navigate("/admin", { replace: true });
     } catch (err) {
-      setError(loginErrorMessage(err));
+      setError((err as Error).message || "Gagal masuk.");
     } finally {
       setBusy(false);
     }
@@ -46,12 +45,13 @@ export default function AdminLogin() {
           </div>
 
           <label className="mt-10 block font-display text-[17px] font-semibold">
-            Username
+            Email Admin
           </label>
           <input
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            placeholder="Masukkan username admin"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="email admin"
             className="mt-2.5 w-full rounded-xl border border-line bg-card px-5 py-4 text-[15px] outline-none placeholder:text-muted-fg/70 focus:border-primary"
           />
 
@@ -87,9 +87,13 @@ export default function AdminLogin() {
             <ArrowLeft size={16} /> Kembali ke pilihan peran
           </Link>
 
-          <p className="mt-5 text-center text-[15px] text-muted-fg">
-            Hubungi administrator untuk akses
-          </p>
+          <div className="mt-6 flex items-start gap-2.5 rounded-xl bg-muted px-4 py-3 text-sm text-muted-fg">
+            <ShieldCheck size={16} className="mt-0.5 shrink-0 text-success" />
+            <span>
+              Akses panel admin dibatasi untuk email tertentu. Hubungi
+              administrator sistem jika Anda memerlukan akses.
+            </span>
+          </div>
         </div>
       </form>
     </div>

@@ -1,6 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import type { ReactNode } from "react";
 import { AuthProvider, useAuth } from "./lib/auth";
+import { isAdminAuthed } from "./lib/admin";
 import Landing from "./pages/Landing";
 import LoginMahasiswa from "./pages/LoginMahasiswa";
 import Daftar from "./pages/Daftar";
@@ -33,6 +34,14 @@ function Guard({
   need, children,
 }: { need: "student" | "admin"; children: ReactNode }) {
   const { user, role, loading } = useAuth();
+
+  // Panel admin SELALU dibatasi ke email dalam allowlist, termasuk mode demo.
+  if (need === "admin") {
+    if (!isAdminAuthed()) return <Navigate to="/admin/login" replace />;
+    return <>{children}</>;
+  }
+
+  // Area mahasiswa: mode demo dilewati untuk kemudahan pratinjau.
   if (DEMO) return <>{children}</>;
   if (loading) {
     return (
@@ -42,7 +51,7 @@ function Guard({
     );
   }
   if (!user) {
-    return <Navigate to={need === "admin" ? "/admin/login" : "/login"} replace />;
+    return <Navigate to="/login" replace />;
   }
   if (role !== need) {
     return <Navigate to={role === "admin" ? "/admin" : "/app"} replace />;
