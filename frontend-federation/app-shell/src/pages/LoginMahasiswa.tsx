@@ -3,11 +3,26 @@ import { Link, useNavigate } from "react-router-dom";
 import { BookOpen, ArrowLeft } from "lucide-react";
 import { useAuth, loginErrorMessage } from "../lib/auth";
 import { CountUp } from "../components/CountUp";
+import { Button, Modal } from "../components/ui";
 import { startSso } from "../lib/sso";
-import { loginWithEmail } from "../lib/accounts";
+import {
+  loginWithEmailOnly, loginWithGoogle, sendResetPassword,
+} from "../lib/accounts";
 import { setCurrentStudent } from "../lib/sessionStore";
+import { registerSsoMember } from "../lib/membersStore";
 
 type Method = "email" | "nim";
+
+function GoogleIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden>
+      <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
+      <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
+      <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
+      <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
+    </svg>
+  );
+}
 
 export default function LoginMahasiswa() {
   const { loginStudent } = useAuth();
@@ -18,6 +33,12 @@ export default function LoginMahasiswa() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [showForgot, setShowForgot] = useState(false);
+
+  function enter(profileApplied: boolean) {
+    void profileApplied;
+    navigate("/app");
+  }
 
   async function submit(e: FormEvent) {
     e.preventDefault();
@@ -25,14 +46,36 @@ export default function LoginMahasiswa() {
     setBusy(true);
     try {
       if (method === "email") {
-        const profile = await loginWithEmail(email, password);
+        const profile = await loginWithEmailOnly(email);
         setCurrentStudent(profile);
       } else {
         await loginStudent(nim, password);
       }
-      navigate("/app");
+      enter(true);
     } catch (err) {
       setError((err as Error).message || loginErrorMessage(err));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function google() {
+    setError("");
+    setBusy(true);
+    try {
+      const profile = await loginWithGoogle();
+      setCurrentStudent(profile);
+      registerSsoMember({
+        nim: profile.nim,
+        name: profile.name,
+        faculty: profile.faculty,
+        program: profile.program,
+        status: "aktif",
+        activeLoans: 0,
+      });
+      navigate("/app");
+    } catch (err) {
+      setError((err as Error).message || "Gagal masuk dengan Google.");
     } finally {
       setBusy(false);
     }
@@ -90,6 +133,15 @@ export default function LoginMahasiswa() {
             <BookOpen size={20} /> Masuk dengan SSO UIN
           </button>
 
+          <button
+            type="button"
+            onClick={google}
+            disabled={busy}
+            className="mt-3 flex w-full cursor-pointer items-center justify-center gap-3 rounded-xl border border-line bg-card py-4 font-display text-[16px] font-semibold hover:bg-muted disabled:opacity-60"
+          >
+            <GoogleIcon /> Masuk dengan Google
+          </button>
+
           <div className="my-7 flex items-center gap-4 text-muted-fg">
             <div className="h-px flex-1 bg-line" />
             atau masuk manual
@@ -121,6 +173,9 @@ export default function LoginMahasiswa() {
                 placeholder="nama@email.com"
                 className={field}
               />
+              <p className="mt-2 text-sm text-muted-fg">
+                Cukup email yang sudah terdaftar, tanpa kata sandi.
+              </p>
             </>
           ) : (
             <>
@@ -131,17 +186,25 @@ export default function LoginMahasiswa() {
                 placeholder="Nomor Induk Mahasiswa"
                 className={field}
               />
+              <label className="mt-5 block font-display text-[17px] font-semibold">
+                Kata Sandi
+              </label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className={field}
+              />
+              <button
+                type="button"
+                onClick={() => { setShowForgot(true); setError(""); }}
+                className="mt-3 cursor-pointer text-sm font-semibold text-primary hover:underline"
+              >
+                Lupa sandi?
+              </button>
             </>
           )}
-
-          <label className="mt-6 block font-display text-[17px] font-semibold">Kata Sandi</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="••••••••"
-            className={field}
-          />
 
           {error && (
             <p className="mt-4 rounded-lg bg-destructive-light px-4 py-3 text-sm text-destructive">
@@ -152,7 +215,7 @@ export default function LoginMahasiswa() {
           <button
             type="submit"
             disabled={busy}
-            className="mt-7 w-full cursor-pointer rounded-xl border border-primary py-4 font-display text-[17px] font-bold text-primary transition-colors hover:bg-primary-light disabled:opacity-60"
+            className="mt-6 w-full cursor-pointer rounded-xl border border-primary py-4 font-display text-[17px] font-bold text-primary transition-colors hover:bg-primary-light disabled:opacity-60"
           >
             {busy ? "Memproses..." : "Masuk"}
           </button>
@@ -172,6 +235,71 @@ export default function LoginMahasiswa() {
           </Link>
         </form>
       </div>
+
+      {showForgot && <ForgotPasswordModal onClose={() => setShowForgot(false)} />}
     </div>
+  );
+}
+
+function ForgotPasswordModal({ onClose }: { onClose: () => void }) {
+  const [email, setEmail] = useState("");
+  const [error, setError] = useState("");
+  const [sent, setSent] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  async function submit(e: FormEvent) {
+    e.preventDefault();
+    setError("");
+    setBusy(true);
+    try {
+      await sendResetPassword(email);
+      setSent(true);
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <Modal title="Lupa Kata Sandi" onClose={onClose}>
+      {sent ? (
+        <div className="py-2 text-center">
+          <p className="text-[15px] text-muted-fg">
+            Tautan atur ulang kata sandi telah dikirim ke
+          </p>
+          <p className="mt-1 font-display text-lg font-bold">{email}</p>
+          <p className="mt-3 text-sm text-muted-fg">
+            Silakan periksa kotak masuk email Anda.
+          </p>
+          <Button className="mt-6 w-full py-3.5" onClick={onClose}>Tutup</Button>
+        </div>
+      ) : (
+        <form onSubmit={submit}>
+          <p className="text-[15px] text-muted-fg">
+            Masukkan email terdaftar. Kami akan mengirim tautan untuk mengatur
+            ulang kata sandi Anda.
+          </p>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="nama@email.com"
+            className="mt-4 w-full rounded-xl border border-line px-4 py-3.5 text-[15px] outline-none focus:border-primary"
+          />
+          {error && (
+            <p className="mt-4 rounded-lg bg-destructive-light px-4 py-3 text-sm text-destructive">
+              {error}
+            </p>
+          )}
+          <div className="mt-6 grid grid-cols-2 gap-4">
+            <Button variant="outline" className="py-3.5" onClick={onClose}>Batal</Button>
+            <Button type="submit" className="py-3.5" disabled={busy}>
+              {busy ? "Mengirim..." : "Kirim Tautan"}
+            </Button>
+          </div>
+        </form>
+      )}
+    </Modal>
   );
 }

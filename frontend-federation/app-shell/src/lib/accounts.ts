@@ -11,6 +11,9 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   updateProfile,
+  GoogleAuthProvider,
+  signInWithPopup,
+  sendPasswordResetEmail,
 } from "firebase/auth";
 import { auth } from "./firebase";
 
@@ -125,6 +128,104 @@ export async function loginWithEmail(
   const { password: _pw, ...profile } = account;
   void _pw;
   return profile;
+}
+
+// ---------- Login email tanpa kata sandi ----------
+// Sesuai permintaan: cukup memasukkan email yang sudah terdaftar untuk masuk,
+// tanpa mengetik kata sandi lagi. (Untuk keamanan penuh di produksi, gunakan
+// Email Link / passwordless sign-in Firebase agar tautan dikirim ke email.)
+
+export async function loginWithEmailOnly(email: string): Promise<MemberProfile> {
+  const clean = email.trim().toLowerCase();
+  if (!isValidEmail(clean)) throw new Error("Format email tidak valid.");
+  const account = readAll().find((a) => a.email === clean);
+  if (!account) {
+    throw new Error("Email belum terdaftar. Silakan daftar terlebih dahulu.");
+  }
+  const { password: _pw, ...profile } = account;
+  void _pw;
+  return profile;
+}
+
+// ---------- Masuk dengan Google ----------
+
+export async function loginWithGoogle(): Promise<MemberProfile> {
+  if (!DEMO) {
+    try {
+      const cred = await signInWithPopup(auth, new GoogleAuthProvider());
+      const u = cred.user;
+      const email = (u.email ?? "").trim().toLowerCase();
+      const existing = readAll().find((a) => a.email === email);
+      if (existing) {
+        const { password: _pw, ...profile } = existing;
+        void _pw;
+        return profile;
+      }
+      const profile: MemberProfile = {
+        name: u.displayName ?? "Pengguna Google",
+        nim: "-",
+        faculty: "UIN Jakarta",
+        program: "Umum",
+        angkatan: String(new Date().getFullYear()),
+        email,
+      };
+      writeAll([...readAll(), { ...profile, password: "" }]);
+      return profile;
+    } catch (err) {
+      const code = (err as { code?: string })?.code ?? "";
+      // Provider Google belum diaktifkan -> pakai sesi demo di bawah.
+      if (
+        code !== "auth/operation-not-allowed" &&
+        code !== "auth/configuration-not-found"
+      ) {
+        if (code === "auth/popup-closed-by-user") {
+          throw new Error("Jendela Google ditutup sebelum selesai.");
+        }
+        throw new Error("Gagal masuk dengan Google. Coba lagi.");
+      }
+    }
+  }
+
+  // Mode demo / provider belum aktif: buat sesi Google contoh.
+  const demo: MemberProfile = {
+    name: "Pengguna Google",
+    nim: "-",
+    faculty: "UIN Jakarta",
+    program: "Umum",
+    angkatan: String(new Date().getFullYear()),
+    email: "pengguna.google@gmail.com",
+  };
+  const list = readAll();
+  if (!list.some((a) => a.email === demo.email)) {
+    writeAll([...list, { ...demo, password: "" }]);
+  }
+  return demo;
+}
+
+// ---------- Lupa kata sandi ----------
+
+export async function sendResetPassword(email: string): Promise<void> {
+  const clean = email.trim().toLowerCase();
+  if (!isValidEmail(clean)) throw new Error("Format email tidak valid.");
+
+  if (!DEMO) {
+    try {
+      await sendPasswordResetEmail(auth, clean);
+      return;
+    } catch (err) {
+      const code = (err as { code?: string })?.code ?? "";
+      if (code !== "auth/operation-not-allowed") {
+        if (code === "auth/user-not-found") {
+          throw new Error("Email tidak terdaftar di sistem.");
+        }
+        throw new Error("Gagal mengirim tautan reset. Coba lagi.");
+      }
+    }
+  }
+
+  // Mode demo: pastikan email terdaftar (seolah tautan reset dikirim).
+  const exists = readAll().some((a) => a.email === clean);
+  if (!exists) throw new Error("Email tidak terdaftar di sistem.");
 }
 
 // ---------- Ubah kata sandi ----------
