@@ -5,10 +5,24 @@
 import { useSyncExternalStore } from "react";
 import { PHYSICAL_LOANS, type PhysicalLoan } from "./data";
 
+export interface Review {
+  bookId: string;
+  rating: number;
+  comment: string;
+  name: string;
+  program: string;
+  faculty: string;
+  angkatan: string;
+  date: string;   // contoh: "20 Juli 2026"
+  time: string;   // contoh: "14:30"
+  ts: number;     // untuk pengurutan
+}
+
 interface LibraryState {
   wishlist: string[];               // daftar id buku
   loans: PhysicalLoan[];            // pinjaman fisik hasil reservasi pengguna
-  ratings: Record<string, number>;  // id buku -> nilai bintang
+  ratings: Record<string, number>;  // id buku -> nilai bintang milik pengguna
+  reviews: Review[];                // ulasan lengkap dengan data penulis
 }
 
 const KEY = "perpus.library.state";
@@ -18,11 +32,11 @@ const listeners = new Set<Listener>();
 function read(): LibraryState {
   try {
     const raw = localStorage.getItem(KEY);
-    if (raw) return { wishlist: [], loans: [], ratings: {}, ...JSON.parse(raw) };
+    if (raw) return { wishlist: [], loans: [], ratings: {}, reviews: [], ...JSON.parse(raw) };
   } catch {
     /* abaikan */
   }
-  return { wishlist: [], loans: [], ratings: {} };
+  return { wishlist: [], loans: [], ratings: {}, reviews: [] };
 }
 
 let cache: LibraryState = read();
@@ -99,12 +113,46 @@ export function getActiveLoans(): PhysicalLoan[] {
   return [...extra, ...PHYSICAL_LOANS];
 }
 
-// ---------- Rating ----------
+// ---------- Rating & Ulasan ----------
 
 export function getRating(bookId: string): number | undefined {
   return cache.ratings[bookId];
 }
 
-export function setRating(bookId: string, value: number): void {
-  persist({ ...cache, ratings: { ...cache.ratings, [bookId]: value } });
+export interface ReviewerInfo {
+  name: string;
+  program: string;
+  faculty: string;
+  angkatan: string;
+}
+
+/** Menyimpan rating sekaligus ulasan lengkap dengan data penulis + waktu. */
+export function submitReview(
+  bookId: string,
+  rating: number,
+  comment: string,
+  reviewer: ReviewerInfo,
+): void {
+  const now = new Date();
+  const review: Review = {
+    bookId,
+    rating,
+    comment: comment.trim(),
+    name: reviewer.name,
+    program: reviewer.program,
+    faculty: reviewer.faculty,
+    angkatan: reviewer.angkatan,
+    date: now.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }),
+    time: now.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }),
+    ts: now.getTime(),
+  };
+  persist({
+    ...cache,
+    ratings: { ...cache.ratings, [bookId]: rating },
+    reviews: [review, ...cache.reviews],
+  });
+}
+
+export function reviewsFor(bookId: string): Review[] {
+  return cache.reviews.filter((r) => r.bookId === bookId).sort((a, b) => b.ts - a.ts);
 }

@@ -3,10 +3,8 @@ import { Link, useParams } from "react-router-dom";
 import {
   ArrowLeft, ChevronLeft, ChevronRight, Minus, Plus, Moon, Sun,
 } from "lucide-react";
-import { bookById, READER_CONTENT } from "../../lib/data";
+import { bookById, ebookContent } from "../../lib/data";
 import { BookCover } from "../../components/ui";
-
-const TOTAL_PAGES = 180;
 
 // Pratinjau baca e-book online untuk admin, diakses dari Koleksi Buku.
 export default function AdminReader() {
@@ -23,6 +21,8 @@ export default function AdminReader() {
       </div>
     );
   }
+  const content = ebookContent(book.id);
+  const TOTAL_PAGES = content.pages;
 
   return (
     <div className={`min-h-screen ${dark ? "bg-[#0b1220] text-[#dbe4f0]" : "bg-card"}`}>
@@ -79,13 +79,16 @@ export default function AdminReader() {
           Pratinjau Admin
         </span>
         <h1 className="mt-4 font-display text-[32px] font-bold">
-          {book.title}: {READER_CONTENT.chapter}
+          {book.title}: {content.chapter}
         </h1>
+        <p className={`mt-2 text-[15px] ${dark ? "text-white/60" : "text-muted-fg"}`}>
+          {book.author} &middot; {content.publisher} &middot; {book.year}
+        </p>
         <div
           className="mt-8 space-y-6 leading-[1.9]"
           style={{ fontSize, fontFamily: "Georgia, 'Times New Roman', serif" }}
         >
-          {READER_CONTENT.paragraphs.map((p, i) => (
+          {content.paragraphs.map((p, i) => (
             <p key={i}>{p}</p>
           ))}
         </div>

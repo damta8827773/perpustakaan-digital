@@ -4,7 +4,8 @@ import { ArrowLeft, Bookmark, BookText, CheckCircle2, Check } from "lucide-react
 import { bookById } from "../../lib/data";
 import { BookCover, Button, Card, Modal, Stars } from "../../components/ui";
 import { useToast } from "../../components/Toast";
-import { useLibrary, toggleWishlist } from "../../lib/libraryStore";
+import { useLibrary, toggleWishlist, reviewsFor } from "../../lib/libraryStore";
+import { ReviewModal } from "../../components/ReviewModal";
 
 export default function BookDetail() {
   const { id } = useParams();
@@ -14,9 +15,11 @@ export default function BookDetail() {
   const book = bookById(id ?? "");
   const [showEbookModal, setShowEbookModal] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showReview, setShowReview] = useState(false);
 
   if (!book) return <p>Buku tidak ditemukan.</p>;
   const wishlisted = lib.wishlist.includes(book.id);
+  const reviews = reviewsFor(book.id);
   const related = book.relatedId ? bookById(book.relatedId) : undefined;
 
   return (
@@ -145,6 +148,57 @@ export default function BookDetail() {
             </div>
           )}
 
+          <div className="mt-8">
+            <div className="flex items-center justify-between">
+              <h2 className="font-display text-xl font-bold">
+                Ulasan Pembaca
+                <span className="ml-2 text-base font-normal text-muted-fg">
+                  ({reviews.length})
+                </span>
+              </h2>
+              <button
+                onClick={() => setShowReview(true)}
+                className="cursor-pointer rounded-lg bg-primary-light px-4 py-2 text-sm font-semibold text-primary hover:bg-[#d8e8f8]"
+              >
+                + Tulis Ulasan
+              </button>
+            </div>
+            {reviews.length === 0 ? (
+              <p className="mt-3 text-muted-fg">
+                Belum ada ulasan. Jadilah yang pertama memberi ulasan setelah membaca.
+              </p>
+            ) : (
+              <div className="mt-4 space-y-4">
+                {reviews.map((rv) => (
+                  <Card key={rv.ts} className="p-5">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold uppercase text-white">
+                          {rv.name.slice(0, 2)}
+                        </div>
+                        <div>
+                          <div className="font-display font-bold uppercase">{rv.name}</div>
+                          <div className="text-sm text-muted-fg">
+                            {rv.program} · {rv.faculty} · Angkatan {rv.angkatan}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <Stars value={rv.rating} size={15} />
+                        <div className="mt-1 text-xs text-muted-fg">
+                          {rv.date} · {rv.time}
+                        </div>
+                      </div>
+                    </div>
+                    {rv.comment && (
+                      <p className="mt-3 leading-relaxed text-fg">{rv.comment}</p>
+                    )}
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
+
           {related && (
             <div className="mt-8">
               <h2 className="font-display text-xl font-bold">Buku Terkait</h2>
@@ -257,6 +311,18 @@ export default function BookDetail() {
             </Button>
           </div>
         </Modal>
+      )}
+
+      {showReview && (
+        <ReviewModal
+          bookId={book.id}
+          title={book.title}
+          onClose={() => setShowReview(false)}
+          onDone={(stars) => {
+            setShowReview(false);
+            notify(`Ulasan ${stars} bintang untuk "${book.title}" terkirim.`);
+          }}
+        />
       )}
     </div>
   );

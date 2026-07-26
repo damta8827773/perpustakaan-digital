@@ -49,6 +49,8 @@ export default function SsoLogin() {
         nim: profile.nim,
         faculty: profile.faculty,
         program: profile.program,
+        angkatan: profile.nim.slice(0, 4) || "2024",
+        email: "",
       });
       // Otomatis terinput ke Data Anggota panel admin.
       registerSsoMember({

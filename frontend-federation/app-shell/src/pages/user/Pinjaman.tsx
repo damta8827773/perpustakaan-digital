@@ -6,7 +6,8 @@ import {
 } from "../../lib/data";
 import { Badge, BookCover, Button, Card, Modal, Progress } from "../../components/ui";
 import { useToast } from "../../components/Toast";
-import { useLibrary, getActiveLoans, setRating } from "../../lib/libraryStore";
+import { useLibrary, getActiveLoans, submitReview } from "../../lib/libraryStore";
+import { useCurrentStudent } from "../../lib/sessionStore";
 
 type Tab = "fisik" | "ebook" | "riwayat";
 
@@ -17,11 +18,10 @@ const LOAN_META = {
 };
 
 function RatingModal({
-  bookId, title, onSubmit, onClose,
+  title, onSubmit, onClose,
 }: {
-  bookId: string;
   title: string;
-  onSubmit: (value: number) => void;
+  onSubmit: (value: number, comment: string) => void;
   onClose: () => void;
 }) {
   const [stars, setStars] = useState(0);
@@ -62,10 +62,7 @@ function RatingModal({
         <Button
           className="py-3.5"
           disabled={stars === 0}
-          onClick={() => {
-            setRating(bookId, stars);
-            onSubmit(stars);
-          }}
+          onClick={() => onSubmit(stars, review)}
         >
           Kirim Rating
         </Button>
@@ -80,6 +77,7 @@ export default function Pinjaman() {
   const navigate = useNavigate();
   const { notify } = useToast();
   const lib = useLibrary();
+  const student = useCurrentStudent();
   const physicalLoans = getActiveLoans();
 
   const tabs: { key: Tab; label: string }[] = [
@@ -359,10 +357,15 @@ export default function Pinjaman() {
 
       {ratingFor && (
         <RatingModal
-          bookId={ratingFor.bookId}
           title={ratingFor.title}
-          onSubmit={(value) => {
-            notify(`Rating ${value} bintang untuk "${ratingFor.title}" tersimpan.`);
+          onSubmit={(value, comment) => {
+            submitReview(ratingFor.bookId, value, comment, {
+              name: student.name,
+              program: student.program,
+              faculty: student.faculty,
+              angkatan: student.angkatan,
+            });
+            notify(`Ulasan ${value} bintang untuk "${ratingFor.title}" terkirim.`);
             setRatingFor(null);
           }}
           onClose={() => setRatingFor(null)}

@@ -9,6 +9,8 @@ export interface SessionStudent {
   nim: string;
   faculty: string;
   program: string;
+  angkatan: string;
+  email: string;
 }
 
 const DEFAULT: SessionStudent = {
@@ -16,6 +18,8 @@ const DEFAULT: SessionStudent = {
   nim: STUDENT.nim,
   faculty: STUDENT.faculty,
   program: STUDENT.program,
+  angkatan: STUDENT.angkatan,
+  email: STUDENT.email,
 };
 
 const KEY = "perpus.session.student";

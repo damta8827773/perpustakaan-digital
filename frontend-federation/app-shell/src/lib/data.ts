@@ -170,39 +170,26 @@ export interface HistoryEbook {
   status: "selesai" | "kadaluarsa";
 }
 
+// Identitas default (dipakai bila belum ada sesi login). Statistik dimulai
+// dari 0 dan dihitung dari aktivitas nyata pengguna, bukan angka contoh.
 export const STUDENT = {
-  name: "Ahmad Fauzi",
-  nim: "11200000001",
-  faculty: "SAINTEK",
-  program: "Sistem Informasi",
-  totalLoans: 24,
-  activeLoans: 3,
-  favorites: 12,
-  wishlist: 12,
-  readHistory: 24,
+  name: "Mahasiswa UIN",
+  nim: "0000000000",
+  faculty: "UIN Jakarta",
+  program: "Umum",
+  angkatan: "2024",
+  email: "",
 };
 
-export const PHYSICAL_LOANS: PhysicalLoan[] = [
-  { bookId: "tafsir-al-misbah", borrowDate: "10 Jun 2026", dueDate: "24 Jun 2026", daysLeft: 7, status: "aktif", progress: 0.5 },
-  { bookId: "algoritma-pemrograman", borrowDate: "05 Jun 2026", dueDate: "19 Jun 2026", daysLeft: 2, status: "hampir", progress: 0.86 },
-  { bookId: "metode-penelitian", borrowDate: "01 Jun 2026", dueDate: "10 Jun 2026", daysLeft: -7, status: "terlambat", progress: 1 },
-];
+// Data pinjaman & riwayat sengaja KOSONG. Isinya hanya bertambah ketika
+// pengguna benar-benar meminjam buku di dalam sistem (lihat libraryStore).
+export const PHYSICAL_LOANS: PhysicalLoan[] = [];
 
-export const EBOOK_LOANS: EbookLoan[] = [
-  { bookId: "statistika-terapan", copyNumber: 3, borrowDate: "15 Jun 2026", dueDate: "29 Jun 2026", daysLeft: 12, progress: 0.14 },
-];
+export const EBOOK_LOANS: EbookLoan[] = [];
 
-export const HISTORY_PHYSICAL: HistoryPhysical[] = [
-  { bookId: "psikologi-perkembangan", borrowDate: "15 Mei 2026", returnDate: "01 Jun 2026", status: "dikembalikan" },
-  { bookId: "ekonomi-mikro", borrowDate: "01 Mei 2026", returnDate: "20 Mei 2026", status: "terlambat", lateDays: 3 },
-  { bookId: "bahasa-arab", borrowDate: "10 Apr 2026", returnDate: "25 Apr 2026", status: "dikembalikan" },
-];
+export const HISTORY_PHYSICAL: HistoryPhysical[] = [];
 
-export const HISTORY_EBOOK: HistoryEbook[] = [
-  { bookId: "metode-penelitian", copyNumber: 2, copyTotal: 3, borrowDate: "01 Jun 2026", endDate: "15 Jun 2026", status: "selesai" },
-  { bookId: "algoritma-pemrograman", copyNumber: 1, copyTotal: 5, borrowDate: "10 Mei 2026", endDate: "24 Mei 2026", status: "selesai" },
-  { bookId: "jaringan-komputer", copyNumber: 3, copyTotal: 3, borrowDate: "15 Apr 2026", endDate: "29 Apr 2026", status: "kadaluarsa" },
-];
+export const HISTORY_EBOOK: HistoryEbook[] = [];
 
 // ---------- Data admin ----------
 
@@ -303,10 +290,73 @@ export const REPORT = {
   ],
 };
 
-export const READER_CONTENT = {
-  chapter: "Bab Pembuka",
-  page: "Halaman 42 dari 180",
+// Metadata dan isi e-book yang nyata, per judul buku (penerbit, jumlah
+// halaman, bab pembuka, dan paragraf yang relevan dengan topik buku).
+export interface EbookContent {
+  publisher: string;
+  pages: number;
+  chapter: string;
+  paragraphs: string[];
+}
+
+export const EBOOK_CONTENT: Record<string, EbookContent> = {
+  "metode-penelitian": {
+    publisher: "Alfabeta",
+    pages: 380,
+    chapter: "Bab 1 - Hakikat Penelitian Kualitatif",
+    paragraphs: [
+      `Penelitian kualitatif adalah metode penelitian yang berlandaskan pada filsafat postpositivisme, digunakan untuk meneliti kondisi objek yang alamiah, di mana peneliti adalah instrumen kunci. Teknik pengumpulan data dilakukan secara triangulasi (gabungan), analisis data bersifat induktif, dan hasil penelitian lebih menekankan makna daripada generalisasi.`,
+      `Berbeda dengan pendekatan kuantitatif yang bertolak dari teori menuju data, penelitian kualitatif bertolak dari data lapangan untuk membangun teori. Peneliti terjun langsung ke lapangan, mengamati, mewawancarai, dan mencatat perilaku serta kejadian sebagaimana adanya. Karena itu, kualitas hasil sangat bergantung pada ketekunan, kepekaan, dan kredibilitas peneliti dalam menafsirkan fenomena sosial yang kompleks.`,
+    ],
+  },
+  "algoritma-pemrograman": {
+    publisher: "Informatika Bandung",
+    pages: 452,
+    chapter: "Bab 1 - Konsep Dasar Algoritma",
+    paragraphs: [
+      `Algoritma adalah urutan langkah-langkah logis penyelesaian masalah yang disusun secara sistematis dan runtut. Sebuah algoritma yang baik harus memiliki masukan (input), keluaran (output), bersifat pasti (definiteness), berhingga (finiteness), dan efektif. Notasi algoritma dapat ditulis dalam bentuk kalimat deskriptif, diagram alir (flowchart), maupun pseudocode.`,
+      `Dalam pemrograman terstruktur dikenal tiga struktur dasar: runtunan (sequence), pemilihan (selection), dan pengulangan (repetition). Ketiga struktur inilah yang menjadi fondasi bagi seluruh program, sekompleks apa pun. Menguasai logika penyusunan algoritma jauh lebih penting daripada sekadar menghafal sintaks bahasa pemrograman tertentu, sebab algoritma bersifat universal dan dapat diterjemahkan ke bahasa apa pun.`,
+    ],
+  },
+  "psikologi-perkembangan": {
+    publisher: "Erlangga",
+    pages: 424,
+    chapter: "Bab 1 - Pola Perkembangan Manusia",
+    paragraphs: [
+      `Perkembangan adalah serangkaian perubahan progresif yang terjadi sebagai akibat dari proses kematangan dan pengalaman. Perkembangan bukan sekadar penambahan tinggi atau berat badan, melainkan proses yang teratur dan berkesinambungan menuju kedewasaan, mencakup aspek fisik, kognitif, emosi, dan sosial.`,
+      `Setiap fase kehidupan, mulai dari masa prenatal, bayi, kanak-kanak, remaja, dewasa, hingga usia lanjut, memiliki tugas perkembangan tersendiri. Keberhasilan menuntaskan tugas pada satu fase akan memudahkan penyelesaian tugas pada fase berikutnya, sedangkan kegagalan dapat menimbulkan hambatan yang berpengaruh pada tahap selanjutnya.`,
+    ],
+  },
+  "statistika-terapan": {
+    publisher: "Tarsito",
+    pages: 508,
+    chapter: "Bab 1 - Statistika dan Peranannya",
+    paragraphs: [
+      `Statistika adalah ilmu yang mempelajari cara mengumpulkan, menyusun, menyajikan, menganalisis, dan menafsirkan data agar dapat diambil kesimpulan yang tepat. Statistika dibagi menjadi dua: statistika deskriptif yang menggambarkan data, dan statistika inferensial yang menarik kesimpulan tentang populasi berdasarkan sampel.`,
+      `Data dapat dibedakan menurut skala pengukurannya menjadi nominal, ordinal, interval, dan rasio. Pemahaman terhadap jenis data sangat penting karena menentukan teknik analisis yang boleh digunakan. Penyajian data yang baik melalui tabel distribusi frekuensi maupun grafik akan sangat membantu pembaca memahami pola dan kecenderungan yang terkandung dalam data.`,
+    ],
+  },
+  "jaringan-komputer": {
+    publisher: "Salemba Teknika",
+    pages: 396,
+    chapter: "Bab 1 - Model Referensi OSI",
+    paragraphs: [
+      `Jaringan komputer adalah kumpulan komputer dan perangkat lain yang saling terhubung untuk berbagi sumber daya dan bertukar data. Agar komunikasi antarperangkat dari vendor berbeda dapat berjalan, dibuatlah model referensi OSI (Open Systems Interconnection) yang membagi proses komunikasi menjadi tujuh lapisan.`,
+      `Ketujuh lapisan tersebut adalah Physical, Data Link, Network, Transport, Session, Presentation, dan Application. Masing-masing lapisan memiliki tugas spesifik dan hanya berkomunikasi dengan lapisan di atas dan di bawahnya. Pemodelan berlapis ini memudahkan pemecahan masalah, standarisasi, serta pengembangan teknologi jaringan secara modular.`,
+    ],
+  },
+};
+
+const FALLBACK_CONTENT: EbookContent = {
+  publisher: "Penerbit UIN Press",
+  pages: 220,
+  chapter: "Bab 1 - Pendahuluan",
   paragraphs: [
-    `Bismillahirrahmanirrahim.  Al-Fātiḥah, surat pertama dalam Al-Qur'an, merupakan surat yang sangat istimewa dan sering disebut sebagai "induknya Al-Qur'an" (Umm Al-Qur'an). Surat ini terdiri dari tujuh ayat yang menjadi inti dari seluruh ajaran Islam.  Dalam tafsir ini, kita akan membahas makna mendalam dari setiap ayat Al-Fātiḥah. Setiap kata dipilih dengan sangat cermat untuk menyampaikan pesan ilahi yang sempurna.  Kata "Al-Ḥamdu" yang diterjemahkan sebagai "segala puji" memiliki makna yang sangat luas, mencakup pujian yang sempurna, menyeluruh, dan abadi, hanya milik Allah semata, Tuhan semesta alam.  Sifat "Ar-Raḥmān" dan "Ar-Raḥīm" keduanya berasal dari akar kata "raḥmah" yang berarti kasih sayang. Ar-Raḥmān menunjukkan kasih sayang yang luas mencakup seluruh makhluk, sedangkan Ar-Raḥīm adalah kasih sayang khusus bagi orang-orang beriman.  "Mālik yawm al-dīn" menegaskan bahwa Allah adalah satu-satunya pemilik dan penguasa pada hari pembalasan. Tidak ada kekuasaan lain yang dapat menandingi-Nya.  "Iyyāka na'budu wa iyyāka nasta'īn", hanya kepada-Mu kami menyembah dan hanya kepada-Mu kami meminta pertolongan. Ayat ini menjadi poros seluruh kehidupan seorang Muslim.`,
+    `Buku ini membahas pokok-pokok bahasan secara sistematis dan mudah dipahami, dilengkapi contoh dan ilustrasi yang relevan dengan kebutuhan akademik mahasiswa.`,
+    `Pada bab pembuka ini diuraikan latar belakang, ruang lingkup, serta tujuan penulisan sehingga pembaca memperoleh gambaran menyeluruh sebelum masuk ke pembahasan yang lebih mendalam pada bab-bab berikutnya.`,
   ],
 };
+
+export function ebookContent(bookId: string): EbookContent {
+  return EBOOK_CONTENT[bookId] ?? FALLBACK_CONTENT;
+}

@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { AuthProvider, useAuth } from "./lib/auth";
 import Landing from "./pages/Landing";
 import LoginMahasiswa from "./pages/LoginMahasiswa";
+import Daftar from "./pages/Daftar";
 import SsoLogin from "./pages/SsoLogin";
 import AdminLogin from "./pages/AdminLogin";
 import UserShell from "./components/UserShell";
@@ -56,6 +57,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<LoginMahasiswa />} />
+          <Route path="/daftar" element={<Daftar />} />
           <Route path="/sso" element={<SsoLogin />} />
           <Route path="/sso/callback" element={<SsoLogin />} />
           <Route path="/admin/login" element={<AdminLogin />} />

@@ -1,10 +1,8 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ArrowLeft, ChevronLeft, ChevronRight, Minus, Plus, Moon, Bookmark } from "lucide-react";
-import { bookById, READER_CONTENT } from "../../lib/data";
+import { bookById, ebookContent } from "../../lib/data";
 import { useToast } from "../../components/Toast";
-
-const TOTAL_PAGES = 180;
 
 export default function Reader() {
   const { id } = useParams();
@@ -12,10 +10,12 @@ export default function Reader() {
   const { notify } = useToast();
   const [fontSize, setFontSize] = useState(16);
   const [dark, setDark] = useState(false);
-  const [page, setPage] = useState(42);
+  const [page, setPage] = useState(1);
   const [bookmarked, setBookmarked] = useState(false);
 
   if (!book) return <p>Buku tidak ditemukan.</p>;
+  const content = ebookContent(book.id);
+  const TOTAL_PAGES = content.pages;
 
   return (
     <div className="-mx-5 -my-8">
@@ -80,13 +80,16 @@ export default function Reader() {
       >
         <div className="mx-auto max-w-[820px] px-6 py-12">
           <h1 className="font-display text-[32px] font-bold">
-            {book.title}: {READER_CONTENT.chapter}
+            {book.title}: {content.chapter}
           </h1>
+          <p className={`mt-2 text-[15px] ${dark ? "text-white/60" : "text-muted-fg"}`}>
+            {book.author} &middot; {content.publisher} &middot; {book.year}
+          </p>
           <div
             className="mt-8 space-y-6 leading-[1.9]"
             style={{ fontSize, fontFamily: "Georgia, 'Times New Roman', serif" }}
           >
-            {READER_CONTENT.paragraphs.map((p, i) => (
+            {content.paragraphs.map((p, i) => (
               <p key={i}>{p}</p>
             ))}
           </div>

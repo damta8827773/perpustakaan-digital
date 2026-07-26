@@ -1,5 +1,10 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { Bell, BookMarked, AlertCircle, Star } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Bell, BellOff } from "lucide-react";
+import {
+  useNotifications, markRead, markAllRead,
+  type NotifRole, type NotifTone,
+} from "../lib/notificationsStore";
 
 function useClickOutside(onClose: () => void) {
   const ref = useRef<HTMLDivElement>(null);
@@ -13,15 +18,22 @@ function useClickOutside(onClose: () => void) {
   return ref;
 }
 
-const NOTIFICATIONS = [
-  { icon: AlertCircle, tone: "text-destructive", title: "Metode Penelitian Kualitatif terlambat 7 hari", time: "Hari ini" },
-  { icon: BookMarked, tone: "text-warning", title: "Algoritma dan Pemrograman jatuh tempo 2 hari lagi", time: "Kemarin" },
-  { icon: Star, tone: "text-primary", title: "Beri rating untuk Psikologi Perkembangan", time: "3 hari lalu" },
-];
+const TONE_DOT: Record<NotifTone, string> = {
+  primary: "bg-primary",
+  warning: "bg-warning",
+  destructive: "bg-destructive",
+  success: "bg-success",
+  accent: "bg-accent",
+};
 
-export function NotificationBell({ dark = false }: { dark?: boolean }) {
+export function NotificationBell({
+  role, dark = false,
+}: { role: NotifRole; dark?: boolean }) {
   const [open, setOpen] = useState(false);
   const ref = useClickOutside(() => setOpen(false));
+  const navigate = useNavigate();
+  const items = useNotifications(role);
+  const unread = items.length;
 
   return (
     <div className="relative" ref={ref}>
@@ -31,28 +43,57 @@ export function NotificationBell({ dark = false }: { dark?: boolean }) {
         aria-label="Notifikasi"
       >
         <Bell size={20} />
-        <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-destructive" />
+        {unread > 0 && (
+          <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-white">
+            {unread}
+          </span>
+        )}
       </button>
 
       {open && (
-        <div className="absolute right-0 top-12 z-50 w-[340px] overflow-hidden rounded-xl border border-line bg-card shadow-xl">
-          <div className="border-b border-line px-5 py-3.5 font-display font-bold">
-            Notifikasi
+        <div className="absolute right-0 top-12 z-50 w-[360px] overflow-hidden rounded-xl border border-line bg-card shadow-xl">
+          <div className="flex items-center justify-between border-b border-line px-5 py-3.5">
+            <span className="font-display font-bold">Notifikasi</span>
+            <span className="text-xs text-muted-fg">
+              {role === "admin" ? "Panel Admin" : "Mahasiswa"}
+            </span>
           </div>
-          <div className="divide-y divide-line">
-            {NOTIFICATIONS.map((n) => (
-              <div key={n.title} className="flex items-start gap-3 px-5 py-3.5 hover:bg-muted/50">
-                <n.icon size={18} className={`mt-0.5 shrink-0 ${n.tone}`} />
-                <div>
-                  <div className="text-sm leading-snug">{n.title}</div>
-                  <div className="mt-1 text-xs text-muted-fg">{n.time}</div>
-                </div>
+
+          {unread === 0 ? (
+            <div className="flex flex-col items-center gap-2 px-5 py-10 text-center text-muted-fg">
+              <BellOff size={26} />
+              <span className="text-sm">Tidak ada notifikasi baru.</span>
+            </div>
+          ) : (
+            <>
+              <div className="max-h-[320px] divide-y divide-line overflow-y-auto">
+                {items.map((n) => (
+                  <button
+                    key={n.id}
+                    onClick={() => {
+                      markRead(role, n.id);
+                      setOpen(false);
+                      navigate(n.to);
+                    }}
+                    className="flex w-full items-start gap-3 px-5 py-3.5 text-left hover:bg-muted/50"
+                  >
+                    <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${TONE_DOT[n.tone]}`} />
+                    <div>
+                      <div className="text-sm font-semibold leading-snug">{n.title}</div>
+                      <div className="mt-0.5 text-sm leading-snug text-muted-fg">{n.detail}</div>
+                      <div className="mt-1 text-xs text-muted-fg">{n.time}</div>
+                    </div>
+                  </button>
+                ))}
               </div>
-            ))}
-          </div>
-          <button className="w-full cursor-pointer bg-muted/40 py-3 text-center text-sm font-semibold text-primary hover:bg-muted">
-            Tandai semua dibaca
-          </button>
+              <button
+                onClick={() => markAllRead(role)}
+                className="w-full cursor-pointer bg-muted/40 py-3 text-center text-sm font-semibold text-primary hover:bg-muted"
+              >
+                Tandai semua dibaca
+              </button>
+            </>
+          )}
         </div>
       )}
     </div>

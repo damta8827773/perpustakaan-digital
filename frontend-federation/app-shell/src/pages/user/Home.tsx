@@ -72,7 +72,7 @@ export default function Home() {
   return (
     <div>
       <h1 className="font-display text-[32px] font-bold">
-        Halo, {student.name}! 👋
+        Halo, <span className="uppercase">{student.name}</span>! 👋
       </h1>
       <p className="mt-1.5 text-muted-fg">
         {BOOKS.filter((b) => b.stockAvailable > 0).length} buku tersedia untuk

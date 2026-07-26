@@ -81,7 +81,9 @@ export default function Anggota() {
                     <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-white">
                       {m.name.split(" ").map((w) => w[0]).slice(0, 2).join("")}
                     </div>
-                    <span className="font-semibold">{m.name}</span>
+                    <span className="font-semibold" title={m.name}>
+                      {m.name.split(" ")[0]}
+                    </span>
                     {m.source === "sso" && (
                       <Badge tone="accent" className="uppercase">SSO</Badge>
                     )}

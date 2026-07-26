@@ -58,7 +58,7 @@ export default function UserShell() {
             ))}
           </nav>
 
-          <NotificationBell />
+          <NotificationBell role="user" />
 
           <div className="ml-2 border-l border-line pl-4">
             <DropdownMenu
@@ -67,7 +67,7 @@ export default function UserShell() {
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-sm font-bold text-white">
                     {initialsOf(student.name)}
                   </div>
-                  <div className="max-w-[110px] truncate text-left text-sm font-semibold leading-tight">
+                  <div className="max-w-[110px] truncate text-left text-sm font-semibold uppercase leading-tight">
                     {firstName}
                     <br />
                     {restName.join(" ")}
@@ -79,7 +79,7 @@ export default function UserShell() {
               {(close) => (
                 <>
                   <div className="border-b border-line px-4 py-3">
-                    <div className="font-display font-bold">{student.name}</div>
+                    <div className="font-display font-bold uppercase">{student.name}</div>
                     <div className="text-sm text-muted-fg">{student.nim}</div>
                   </div>
                   <button
