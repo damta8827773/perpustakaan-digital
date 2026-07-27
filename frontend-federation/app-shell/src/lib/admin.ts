@@ -1,6 +1,8 @@
 // Kontrol akses admin: HANYA email dalam allowlist yang boleh masuk ke panel
 // admin. Semua email lain diblokir.
-import { signInWithEmailAndPassword, signOut } from "firebase/auth";
+import {
+  GoogleAuthProvider, signInWithPopup, signOut,
+} from "firebase/auth";
 import { auth } from "./firebase";
 
 // Satu-satunya email yang memiliki akses admin.
@@ -29,26 +31,36 @@ export function clearAdminSession(): void {
 }
 
 /**
- * Login admin. Menolak email di luar allowlist. Pada produksi memverifikasi
- * kata sandi lewat Firebase; pada mode demo cukup email yang diizinkan.
+ * Login admin memakai akun Google (Firebase). Identitas diverifikasi oleh
+ * Google, bukan sekadar diketik, sehingga email tidak bisa ditebak. Hanya akun
+ * Google dengan email dalam allowlist yang diterima.
+ *
+ * Pada mode demo (provider Google belum aktif), alur popup tidak tersedia,
+ * sehingga sesi admin dibuat sebagai email allowlist untuk keperluan pratinjau.
  */
-export async function loginAdmin(email: string, password: string): Promise<void> {
-  const clean = email.trim().toLowerCase();
-  if (!isAdminEmail(clean)) {
-    throw new Error("Email ini tidak memiliki akses admin.");
-  }
-
+export async function loginAdminWithGoogle(): Promise<void> {
   if (!DEMO) {
     try {
-      await signInWithEmailAndPassword(auth, clean, password);
+      const cred = await signInWithPopup(auth, new GoogleAuthProvider());
+      const email = (cred.user.email ?? "").trim().toLowerCase();
+      if (!isAdminEmail(email)) {
+        await signOut(auth).catch(() => {});
+        throw new Error("Akun Google ini tidak memiliki akses admin.");
+      }
+      localStorage.setItem(KEY, email);
+      return;
     } catch (err) {
+      if (err instanceof Error && err.message.includes("akses admin")) throw err;
       const code = (err as { code?: string })?.code ?? "";
-      // Bila provider belum aktif, lanjut dengan sesi lokal.
-      if (code !== "auth/operation-not-allowed") {
-        throw new Error("Email atau kata sandi admin salah.");
+      if (code === "auth/popup-closed-by-user") {
+        throw new Error("Jendela Google ditutup sebelum selesai.");
+      }
+      // Provider Google belum aktif -> lanjut ke sesi demo di bawah.
+      if (code !== "auth/operation-not-allowed" && code !== "auth/configuration-not-found") {
+        throw new Error("Gagal masuk dengan Google. Coba lagi.");
       }
     }
   }
 
-  localStorage.setItem(KEY, clean);
+  localStorage.setItem(KEY, ADMIN_EMAILS[0]);
 }

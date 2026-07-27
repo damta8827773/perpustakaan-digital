@@ -12,7 +12,7 @@ export default function AdminReader() {
   const book = bookById(id ?? "");
   const [fontSize, setFontSize] = useState(17);
   const [dark, setDark] = useState(false);
-  const [page, setPage] = useState(1);
+  const [chapterIdx, setChapterIdx] = useState(0);
 
   if (!book) {
     return (
@@ -22,7 +22,8 @@ export default function AdminReader() {
     );
   }
   const content = ebookContent(book.id);
-  const TOTAL_PAGES = content.pages;
+  const totalChapters = content.chapters.length;
+  const chapter = content.chapters[chapterIdx];
 
   return (
     <div className={`min-h-screen ${dark ? "bg-[#0b1220] text-[#dbe4f0]" : "bg-card"}`}>
@@ -78,9 +79,7 @@ export default function AdminReader() {
         <span className="rounded-full bg-accent-light px-3 py-1 text-sm font-semibold text-accent">
           Pratinjau Admin
         </span>
-        <h1 className="mt-4 font-display text-[32px] font-bold">
-          {book.title}: {content.chapter}
-        </h1>
+        <h1 className="mt-4 font-display text-[32px] font-bold">{chapter.title}</h1>
         <p className={`mt-2 text-[15px] ${dark ? "text-white/60" : "text-muted-fg"}`}>
           {book.author} &middot; {content.publisher} &middot; {book.year}
         </p>
@@ -88,7 +87,7 @@ export default function AdminReader() {
           className="mt-8 space-y-6 leading-[1.9]"
           style={{ fontSize, fontFamily: "Georgia, 'Times New Roman', serif" }}
         >
-          {content.paragraphs.map((p, i) => (
+          {chapter.paragraphs.map((p, i) => (
             <p key={i}>{p}</p>
           ))}
         </div>
@@ -97,18 +96,18 @@ export default function AdminReader() {
       <div className={`border-t ${dark ? "border-white/10" : "border-line"}`}>
         <div className="mx-auto flex h-[76px] max-w-[1100px] items-center justify-between px-6">
           <button
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-            disabled={page <= 1}
+            onClick={() => setChapterIdx((i) => Math.max(0, i - 1))}
+            disabled={chapterIdx <= 0}
             className={`flex items-center gap-2 font-semibold enabled:cursor-pointer disabled:opacity-40 ${dark ? "text-white/70" : "text-muted-fg hover:text-fg"}`}
           >
             <ChevronLeft size={18} /> Bab Sebelumnya
           </button>
           <span className={dark ? "text-white/60" : "text-muted-fg"}>
-            Halaman {page} dari {TOTAL_PAGES}
+            Bab {chapterIdx + 1} dari {totalChapters}
           </span>
           <button
-            onClick={() => setPage((p) => Math.min(TOTAL_PAGES, p + 1))}
-            disabled={page >= TOTAL_PAGES}
+            onClick={() => setChapterIdx((i) => Math.min(totalChapters - 1, i + 1))}
+            disabled={chapterIdx >= totalChapters - 1}
             className={`flex items-center gap-2 font-semibold enabled:cursor-pointer disabled:opacity-40 ${dark ? "text-white/70" : "text-muted-fg hover:text-fg"}`}
           >
             Bab Berikutnya <ChevronRight size={18} />

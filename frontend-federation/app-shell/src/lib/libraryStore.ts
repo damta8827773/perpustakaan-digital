@@ -18,9 +18,16 @@ export interface Review {
   ts: number;     // untuk pengurutan
 }
 
+export interface ReturnedLoan {
+  bookId: string;
+  borrowDate: string;
+  returnDate: string;
+}
+
 interface LibraryState {
   wishlist: string[];               // daftar id buku
   loans: PhysicalLoan[];            // pinjaman fisik hasil reservasi pengguna
+  returned: ReturnedLoan[];         // riwayat buku yang sudah dikembalikan
   ratings: Record<string, number>;  // id buku -> nilai bintang milik pengguna
   reviews: Review[];                // ulasan lengkap dengan data penulis
 }
@@ -32,11 +39,11 @@ const listeners = new Set<Listener>();
 function read(): LibraryState {
   try {
     const raw = localStorage.getItem(KEY);
-    if (raw) return { wishlist: [], loans: [], ratings: {}, reviews: [], ...JSON.parse(raw) };
+    if (raw) return { wishlist: [], loans: [], returned: [], ratings: {}, reviews: [], ...JSON.parse(raw) };
   } catch {
     /* abaikan */
   }
-  return { wishlist: [], loans: [], ratings: {}, reviews: [] };
+  return { wishlist: [], loans: [], returned: [], ratings: {}, reviews: [] };
 }
 
 let cache: LibraryState = read();
@@ -104,6 +111,28 @@ export function addLoan(bookId: string, dueDate: string): void {
     progress: 0,
   };
   persist({ ...cache, loans: [loan, ...cache.loans] });
+}
+
+/** Mengembalikan buku fisik: dilepas dari pinjaman aktif dan dicatat ke riwayat. */
+export function returnLoan(bookId: string): void {
+  const loan = cache.loans.find((l) => l.bookId === bookId);
+  if (!loan) return;
+  const entry: ReturnedLoan = {
+    bookId,
+    borrowDate: loan.borrowDate,
+    returnDate: new Date().toLocaleDateString("id-ID", {
+      day: "2-digit", month: "short", year: "numeric",
+    }),
+  };
+  persist({
+    ...cache,
+    loans: cache.loans.filter((l) => l.bookId !== bookId),
+    returned: [entry, ...cache.returned],
+  });
+}
+
+export function getReturnedHistory(): ReturnedLoan[] {
+  return cache.returned;
 }
 
 /** Gabungan pinjaman bawaan (contoh desain) + pinjaman baru pengguna. */

@@ -6,6 +6,12 @@ import { BookCover, Button, Card, Modal, Stars } from "../../components/ui";
 import { useToast } from "../../components/Toast";
 import { useLibrary, toggleWishlist, reviewsFor } from "../../lib/libraryStore";
 import { ReviewModal } from "../../components/ReviewModal";
+import {
+  useWaitlist, entryFor, joinWaitlist, leaveWaitlist,
+  predictedAvailability, formatDate,
+} from "../../lib/waitlistStore";
+import type { Book } from "../../lib/data";
+import { Sparkles, BellRing, Users2 } from "lucide-react";
 
 export default function BookDetail() {
   const { id } = useParams();
@@ -112,6 +118,10 @@ export default function BookDetail() {
               </span>
             )}
           </div>
+
+          {book.stockAvailable === 0 && (
+            <SmartWaitlist book={book} />
+          )}
 
           <Card className="mt-7 p-7">
             <h2 className="font-display text-xl font-bold">Deskripsi</h2>
@@ -325,5 +335,83 @@ export default function BookDetail() {
         />
       )}
     </div>
+  );
+}
+
+// Antrean Cerdas: muncul untuk buku yang seluruh eksemplarnya sedang dipinjam.
+function SmartWaitlist({ book }: { book: Book }) {
+  const { notify } = useToast();
+  useWaitlist(); // berlangganan perubahan
+  const entry = entryFor(book.id);
+  const position = entry?.position ?? 0;
+  const date = predictedAvailability(book, position || 1);
+
+  return (
+    <Card className="mt-7 overflow-hidden border-accent/30">
+      <div className="flex items-center gap-2.5 bg-accent-light px-6 py-3.5">
+        <Sparkles size={18} className="text-accent" />
+        <span className="font-display font-bold text-accent">Antrean Cerdas</span>
+      </div>
+      <div className="p-6">
+        {entry ? (
+          <>
+            <div className="flex items-center gap-4">
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-accent text-lg font-bold text-white">
+                #{position}
+              </div>
+              <div>
+                <div className="font-display text-lg font-bold">
+                  Anda berada di antrean posisi {position}
+                </div>
+                <div className="mt-0.5 text-[15px] text-muted-fg">
+                  Kami akan memberi tahu Anda saat buku tersedia.
+                </div>
+              </div>
+            </div>
+            <div className="mt-4 flex items-center gap-2.5 rounded-xl bg-bg px-5 py-4">
+              <BellRing size={18} className="shrink-0 text-accent" />
+              <span className="text-[15px]">
+                Perkiraan tersedia sekitar{" "}
+                <strong className="font-display">{formatDate(date)}</strong>
+              </span>
+            </div>
+            <button
+              onClick={() => {
+                leaveWaitlist(book.id);
+                notify("Anda keluar dari antrean.");
+              }}
+              className="mt-4 w-full cursor-pointer rounded-xl border border-line py-3 font-display text-[15px] font-semibold hover:bg-muted"
+            >
+              Keluar dari Antrean
+            </button>
+          </>
+        ) : (
+          <>
+            <p className="text-[15px] leading-relaxed text-muted-fg">
+              Semua eksemplar sedang dipinjam. Masuk antrean untuk diberi tahu
+              secara otomatis begitu buku dikembalikan, tanpa perlu memeriksa
+              berulang kali.
+            </p>
+            <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 text-[15px]">
+              <span className="flex items-center gap-2 text-muted-fg">
+                <Users2 size={17} /> {(book.stockTotal + book.title.length) % 4} orang menunggu
+              </span>
+              <span className="flex items-center gap-2 text-muted-fg">
+                <BellRing size={17} /> Perkiraan: {formatDate(date)}
+              </span>
+            </div>
+            <button
+              onClick={() => {
+                const pos = joinWaitlist(book);
+                notify(`Anda masuk antrean pada posisi ${pos}.`);
+              }}
+              className="mt-5 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-accent py-3.5 font-display text-[16px] font-bold text-white hover:bg-accent-dark"
+            >
+              <BellRing size={18} /> Masuk Antrean & Beri Tahu Saya
+            </button>
+          </>
+        )}
+      </div>
+    </Card>
   );
 }

@@ -193,11 +193,13 @@ export const HISTORY_EBOOK: HistoryEbook[] = [];
 
 // ---------- Data admin ----------
 
+// Statistik dasar. Jumlah koleksi mengikuti data buku nyata; anggota &
+// peminjaman dihitung dari aktivitas nyata di panel admin (lihat Dashboard).
 export const ADMIN_STATS = {
-  totalCollection: 2847,
-  borrowedToday: 34,
-  lateReturns: 8,
-  activeMembers: 1204,
+  totalCollection: BOOKS.length,
+  borrowedToday: 0,
+  lateReturns: 0,
+  activeMembers: 0,
 };
 
 export interface AdminActivity {
@@ -209,13 +211,8 @@ export interface AdminActivity {
   lateHours?: number;
 }
 
-export const ADMIN_ACTIVITIES: AdminActivity[] = [
-  { no: 1, bookTitle: "Metode Penelitian Kualitatif", borrower: "Ahmad Fauzi", date: "10 Jun 2025", status: "aktif" },
-  { no: 2, bookTitle: "Tafsir Al-Misbah Vol. 1", borrower: "Siti Aminah", date: "05 Jun 2025", status: "terlambat", lateHours: 2 },
-  { no: 3, bookTitle: "Algoritma dan Pemrograman", borrower: "Budi Santoso", date: "12 Jun 2025", status: "aktif" },
-  { no: 4, bookTitle: "Hukum Islam di Indonesia", borrower: "Fatimah Zahra", date: "01 Jun 2025", status: "terlambat", lateHours: 5 },
-  { no: 5, bookTitle: "Ekonomi Mikro Islam", borrower: "Rizky Maulana", date: "14 Jun 2025", status: "aktif" },
-];
+// Tanpa data contoh: aktivitas admin hanya terisi dari peminjaman nyata.
+export const ADMIN_ACTIVITIES: AdminActivity[] = [];
 
 export const POPULAR_CATEGORIES = [
   { name: "Agama", count: 340 },
@@ -235,16 +232,9 @@ export interface Member {
   program?: string;
 }
 
-export const MEMBERS: Member[] = [
-  { nim: "11200000001", name: "Ahmad Fauzi", faculty: "SAINTEK", status: "aktif", activeLoans: 2 },
-  { nim: "11200000002", name: "Siti Aminah", faculty: "SYARIAH", status: "aktif", activeLoans: 1 },
-  { nim: "11200000003", name: "Budi Santoso", faculty: "FST", status: "aktif", activeLoans: 1 },
-  { nim: "11200000004", name: "Fatimah Zahra", faculty: "SYARIAH", status: "aktif", activeLoans: 0 },
-  { nim: "11200000005", name: "Rizky Maulana", faculty: "FEBI", status: "aktif", activeLoans: 1 },
-  { nim: "11200000006", name: "Nur Halimah", faculty: "ADAB", status: "nonaktif", activeLoans: 0 },
-  { nim: "11200000007", name: "Dimas Prayoga", faculty: "SAINTEK", status: "aktif", activeLoans: 3 },
-  { nim: "11200000008", name: "Layla Nurfitri", faculty: "FISIP", status: "aktif", activeLoans: 0 },
-];
+// Tanpa anggota contoh: daftar anggota hanya berisi mahasiswa yang benar-benar
+// mendaftar lewat SSO, Google, atau formulir pendaftaran.
+export const MEMBERS: Member[] = [];
 
 export interface AdminLoan {
   no: number;
@@ -257,14 +247,8 @@ export interface AdminLoan {
   status: "aktif" | "terlambat" | "dikembalikan";
 }
 
-export const ADMIN_LOANS: AdminLoan[] = [
-  { no: 1, nim: "11200000001", name: "Ahmad Fauzi", bookTitle: "Metode Penelitian Kualitatif", borrowDate: "10 Jun 2025", dueDate: "24 Jun 2025", late: false, status: "aktif" },
-  { no: 2, nim: "11200000002", name: "Siti Aminah", bookTitle: "Tafsir Al-Misbah Vol. 1", borrowDate: "05 Jun 2025", dueDate: "19 Jun 2025", late: true, status: "terlambat" },
-  { no: 3, nim: "11200000003", name: "Budi Santoso", bookTitle: "Algoritma dan Pemrograman", borrowDate: "12 Jun 2025", dueDate: "26 Jun 2025", late: false, status: "aktif" },
-  { no: 4, nim: "11200000004", name: "Fatimah Zahra", bookTitle: "Hukum Islam di Indonesia", borrowDate: "01 Jun 2025", dueDate: "15 Jun 2025", late: true, status: "terlambat" },
-  { no: 5, nim: "11200000005", name: "Rizky Maulana", bookTitle: "Ekonomi Mikro Islam", borrowDate: "14 Jun 2025", dueDate: "28 Jun 2025", late: false, status: "aktif" },
-  { no: 6, nim: "11200000006", name: "Nur Halimah", bookTitle: "Bahasa Arab Tingkat Dasar", borrowDate: "08 Jun 2025", dueDate: "22 Jun 2025", late: false, status: "dikembalikan" },
-];
+// Tanpa data contoh: peminjaman admin hanya berisi transaksi nyata.
+export const ADMIN_LOANS: AdminLoan[] = [];
 
 export const REPORT = {
   period: "Januari s.d. Juni 2026",
@@ -290,70 +274,168 @@ export const REPORT = {
   ],
 };
 
-// Metadata dan isi e-book yang nyata, per judul buku (penerbit, jumlah
-// halaman, bab pembuka, dan paragraf yang relevan dengan topik buku).
+// Metadata dan isi e-book, per judul buku. Setiap buku memiliki beberapa bab
+// dengan naskah yang ditulis ulang secara orisinal agar sesuai judul.
+export interface EbookChapter {
+  title: string;
+  paragraphs: string[];
+}
+
 export interface EbookContent {
   publisher: string;
   pages: number;
-  chapter: string;
-  paragraphs: string[];
+  chapters: EbookChapter[];
 }
 
 export const EBOOK_CONTENT: Record<string, EbookContent> = {
   "metode-penelitian": {
     publisher: "Alfabeta",
     pages: 380,
-    chapter: "Bab 1 - Hakikat Penelitian Kualitatif",
-    paragraphs: [
-      `Penelitian kualitatif adalah metode penelitian yang berlandaskan pada filsafat postpositivisme, digunakan untuk meneliti kondisi objek yang alamiah, di mana peneliti adalah instrumen kunci. Teknik pengumpulan data dilakukan secara triangulasi (gabungan), analisis data bersifat induktif, dan hasil penelitian lebih menekankan makna daripada generalisasi.`,
-      `Berbeda dengan pendekatan kuantitatif yang bertolak dari teori menuju data, penelitian kualitatif bertolak dari data lapangan untuk membangun teori. Peneliti terjun langsung ke lapangan, mengamati, mewawancarai, dan mencatat perilaku serta kejadian sebagaimana adanya. Karena itu, kualitas hasil sangat bergantung pada ketekunan, kepekaan, dan kredibilitas peneliti dalam menafsirkan fenomena sosial yang kompleks.`,
+    chapters: [
+      {
+        title: "Bab 1: Mengenal Penelitian Kualitatif",
+        paragraphs: [
+          `Penelitian kualitatif berangkat dari keinginan memahami suatu keadaan apa adanya, bukan mengukurnya dengan angka. Peneliti berusaha masuk ke dalam sudut pandang orang yang ditelitinya, menangkap alasan di balik tindakan, serta memahami makna yang tumbuh dari pengalaman sehari-hari. Karena itu, data yang dikumpulkan lebih banyak berupa kata, cerita, dan catatan pengamatan daripada tabel bilangan.`,
+          `Peneliti sendiri menjadi alat utama dalam proses ini. Ia yang mengamati, bertanya, mendengarkan, lalu menimbang setiap keterangan dengan hati-hati. Kualitas hasilnya sangat bergantung pada kepekaan dan kejujuran peneliti ketika berada di lapangan, sebab satu peristiwa yang sama bisa dimaknai berbeda oleh orang yang berbeda.`,
+        ],
+      },
+      {
+        title: "Bab 2: Menyusun Fokus dan Pertanyaan",
+        paragraphs: [
+          `Sebelum turun ke lapangan, peneliti perlu memperjelas apa yang benar-benar ingin ia pahami. Fokus yang terlalu luas membuat pengamatan kehilangan arah, sedangkan fokus yang terlalu sempit dapat menutup kemungkinan menemukan hal baru. Pertanyaan yang baik biasanya diawali dengan kata bagaimana atau mengapa, karena keduanya mengajak peneliti menelusuri proses dan alasan, bukan sekadar jumlah.`,
+          `Fokus dalam penelitian kualitatif bersifat lentur. Ketika data awal menunjukkan arah yang tidak terduga, peneliti boleh menyesuaikan pertanyaannya. Sikap terbuka semacam ini justru menjadi kekuatan, sebab kenyataan di lapangan sering kali lebih rumit daripada yang dibayangkan di meja kerja.`,
+        ],
+      },
+      {
+        title: "Bab 3: Mengumpulkan dan Menafsirkan Data",
+        paragraphs: [
+          `Data dikumpulkan melalui wawancara mendalam, pengamatan langsung, dan penelaahan dokumen. Ketiganya saling melengkapi sehingga peneliti dapat memeriksa satu keterangan dari beberapa sisi. Cara memeriksa silang seperti ini membantu mengurangi salah tafsir dan memperkuat keyakinan atas temuan.`,
+          `Menafsirkan data berarti menyusun potongan keterangan menjadi gambaran yang utuh dan masuk akal. Peneliti mencari pola, mengelompokkan hal yang serupa, lalu menamai setiap kelompok dengan istilah yang mewakili isinya. Dari langkah inilah lahir pemahaman yang lebih dalam tentang persoalan yang diteliti.`,
+        ],
+      },
     ],
   },
   "algoritma-pemrograman": {
     publisher: "Informatika Bandung",
     pages: 452,
-    chapter: "Bab 1 - Konsep Dasar Algoritma",
-    paragraphs: [
-      `Algoritma adalah urutan langkah-langkah logis penyelesaian masalah yang disusun secara sistematis dan runtut. Sebuah algoritma yang baik harus memiliki masukan (input), keluaran (output), bersifat pasti (definiteness), berhingga (finiteness), dan efektif. Notasi algoritma dapat ditulis dalam bentuk kalimat deskriptif, diagram alir (flowchart), maupun pseudocode.`,
-      `Dalam pemrograman terstruktur dikenal tiga struktur dasar: runtunan (sequence), pemilihan (selection), dan pengulangan (repetition). Ketiga struktur inilah yang menjadi fondasi bagi seluruh program, sekompleks apa pun. Menguasai logika penyusunan algoritma jauh lebih penting daripada sekadar menghafal sintaks bahasa pemrograman tertentu, sebab algoritma bersifat universal dan dapat diterjemahkan ke bahasa apa pun.`,
+    chapters: [
+      {
+        title: "Bab 1: Berpikir Secara Algoritmik",
+        paragraphs: [
+          `Algoritma adalah cara menyelesaikan persoalan melalui langkah yang tersusun rapi dan jelas urutannya. Sebelum menulis satu baris kode pun, seorang pemrogram sebaiknya lebih dulu memikirkan langkah penyelesaian secara utuh. Kebiasaan berpikir runtut inilah yang membedakan pemrogram yang matang dari sekadar penghafal perintah.`,
+          `Sebuah langkah dikatakan baik bila memiliki titik awal yang jelas, menghasilkan keluaran yang diharapkan, dan pasti berhenti setelah sejumlah langkah. Bila salah satu syarat itu tidak terpenuhi, program bisa berjalan tanpa akhir atau memberi hasil yang keliru.`,
+        ],
+      },
+      {
+        title: "Bab 2: Struktur Dasar Penyusun Program",
+        paragraphs: [
+          `Hampir semua program, sederhana maupun rumit, dibangun dari tiga bentuk dasar. Bentuk pertama adalah urutan, yaitu langkah yang dikerjakan satu per satu dari atas ke bawah. Bentuk kedua adalah pemilihan, yaitu keputusan untuk menjalankan langkah tertentu hanya ketika syaratnya terpenuhi.`,
+          `Bentuk ketiga adalah pengulangan, yaitu langkah yang dikerjakan berkali-kali selama syarat masih berlaku. Dengan memadukan ketiga bentuk ini, pemrogram dapat menyusun penyelesaian untuk persoalan apa pun. Kuncinya bukan pada banyaknya perintah yang dihafal, melainkan pada ketepatan memilih bentuk yang sesuai.`,
+        ],
+      },
+      {
+        title: "Bab 3: Menguji dan Menyempurnakan Solusi",
+        paragraphs: [
+          `Program yang baru selesai ditulis belum tentu benar. Karena itu, pengujian dilakukan dengan mencoba berbagai masukan, termasuk masukan yang tidak biasa, untuk memastikan keluarannya tetap tepat. Kesalahan yang ditemukan sejak dini jauh lebih mudah diperbaiki daripada yang baru ketahuan setelah program dipakai banyak orang.`,
+          `Menyempurnakan program berarti membuatnya lebih ringkas, lebih cepat, dan lebih mudah dibaca tanpa mengubah hasilnya. Kode yang rapi memudahkan orang lain, dan diri sendiri di kemudian hari, untuk memahami serta mengembangkannya.`,
+        ],
+      },
     ],
   },
   "psikologi-perkembangan": {
     publisher: "Erlangga",
     pages: 424,
-    chapter: "Bab 1 - Pola Perkembangan Manusia",
-    paragraphs: [
-      `Perkembangan adalah serangkaian perubahan progresif yang terjadi sebagai akibat dari proses kematangan dan pengalaman. Perkembangan bukan sekadar penambahan tinggi atau berat badan, melainkan proses yang teratur dan berkesinambungan menuju kedewasaan, mencakup aspek fisik, kognitif, emosi, dan sosial.`,
-      `Setiap fase kehidupan, mulai dari masa prenatal, bayi, kanak-kanak, remaja, dewasa, hingga usia lanjut, memiliki tugas perkembangan tersendiri. Keberhasilan menuntaskan tugas pada satu fase akan memudahkan penyelesaian tugas pada fase berikutnya, sedangkan kegagalan dapat menimbulkan hambatan yang berpengaruh pada tahap selanjutnya.`,
+    chapters: [
+      {
+        title: "Bab 1: Memahami Arti Perkembangan",
+        paragraphs: [
+          `Perkembangan menunjuk pada perubahan yang dialami manusia sepanjang hidupnya, dari saat dikandung hingga usia tua. Perubahan itu tidak hanya terlihat pada tubuh yang bertambah besar, tetapi juga pada cara berpikir, mengelola perasaan, dan menjalin hubungan dengan orang lain. Semuanya berlangsung bertahap dan saling berkaitan.`,
+          `Perkembangan berbeda dengan sekadar pertumbuhan. Pertumbuhan menekankan perubahan ukuran yang bisa diukur, sedangkan perkembangan mencakup kematangan yang tidak selalu tampak dari luar. Seorang anak yang belajar menahan keinginannya, misalnya, sedang berkembang meski tinggi badannya tidak berubah.`,
+        ],
+      },
+      {
+        title: "Bab 2: Tahap demi Tahap Kehidupan",
+        paragraphs: [
+          `Para ahli membagi rentang hidup manusia menjadi beberapa tahap agar lebih mudah dipahami. Setiap tahap membawa tugas yang khas, seperti belajar berjalan pada masa bayi, mencari jati diri pada masa remaja, atau menata makna hidup pada usia lanjut. Tugas-tugas ini menjadi penanda kematangan pada masing-masing tahap.`,
+          `Keberhasilan menuntaskan tugas di satu tahap biasanya memudahkan seseorang menghadapi tahap berikutnya. Sebaliknya, tugas yang terlewat dapat meninggalkan kesulitan yang terbawa hingga dewasa. Meski begitu, manusia selalu memiliki peluang untuk memperbaiki dan mengejar ketertinggalan.`,
+        ],
+      },
+      {
+        title: "Bab 3: Faktor yang Membentuk Perkembangan",
+        paragraphs: [
+          `Perkembangan seseorang dipengaruhi oleh dua kekuatan besar yang bekerja bersama, yaitu bawaan dan lingkungan. Bawaan diwariskan melalui keturunan, sedangkan lingkungan mencakup keluarga, sekolah, teman, serta budaya tempat seseorang tumbuh. Keduanya tidak berdiri sendiri, melainkan saling memengaruhi.`,
+          `Karena lingkungan turut menentukan, perhatian dan kasih sayang di masa kecil memberi dampak yang panjang. Anak yang tumbuh dalam suasana aman cenderung lebih percaya diri, sementara pengalaman yang menekan dapat menghambat perkembangan bila tidak diimbangi dukungan yang cukup.`,
+        ],
+      },
     ],
   },
   "statistika-terapan": {
     publisher: "Tarsito",
     pages: 508,
-    chapter: "Bab 1 - Statistika dan Peranannya",
-    paragraphs: [
-      `Statistika adalah ilmu yang mempelajari cara mengumpulkan, menyusun, menyajikan, menganalisis, dan menafsirkan data agar dapat diambil kesimpulan yang tepat. Statistika dibagi menjadi dua: statistika deskriptif yang menggambarkan data, dan statistika inferensial yang menarik kesimpulan tentang populasi berdasarkan sampel.`,
-      `Data dapat dibedakan menurut skala pengukurannya menjadi nominal, ordinal, interval, dan rasio. Pemahaman terhadap jenis data sangat penting karena menentukan teknik analisis yang boleh digunakan. Penyajian data yang baik melalui tabel distribusi frekuensi maupun grafik akan sangat membantu pembaca memahami pola dan kecenderungan yang terkandung dalam data.`,
+    chapters: [
+      {
+        title: "Bab 1: Peran Statistika dalam Penelitian",
+        paragraphs: [
+          `Statistika membantu manusia mengambil keputusan ketika berhadapan dengan data yang banyak dan beragam. Dengan cara yang teratur, sekumpulan angka yang semula membingungkan dapat diringkas menjadi keterangan yang mudah dipahami. Kemampuan ini membuat statistika dipakai di hampir semua bidang, dari ilmu sosial hingga ilmu alam.`,
+          `Secara umum statistika terbagi menjadi dua bagian. Bagian pertama berusaha menggambarkan keadaan data yang ada, sedangkan bagian kedua berusaha menarik kesimpulan tentang kelompok besar hanya dengan mengamati sebagian kecil darinya. Keduanya sama-sama berguna asalkan digunakan pada tempat yang tepat.`,
+        ],
+      },
+      {
+        title: "Bab 2: Mengenal Jenis dan Skala Data",
+        paragraphs: [
+          `Sebelum data diolah, peneliti perlu mengenali jenisnya terlebih dahulu. Ada data yang berupa keterangan, seperti jenis kelamin atau asal daerah, dan ada data yang berupa angka, seperti tinggi badan atau nilai ujian. Salah mengenali jenis data dapat membuat hasil analisis menjadi keliru.`,
+          `Data juga dibedakan menurut tingkatannya, mulai dari yang hanya membedakan, membedakan sekaligus mengurutkan, hingga yang memiliki jarak dan titik nol yang bermakna. Semakin tinggi tingkatannya, semakin banyak cara pengolahan yang boleh diterapkan padanya.`,
+        ],
+      },
+      {
+        title: "Bab 3: Membaca Pola melalui Ukuran Pemusatan",
+        paragraphs: [
+          `Untuk memahami sekumpulan angka, peneliti sering mencari nilai yang mewakili keseluruhannya. Rata-rata menunjukkan titik tengah dari semua nilai, nilai tengah menunjukkan posisi yang membelah data menjadi dua bagian sama banyak, dan modus menunjukkan nilai yang paling sering muncul. Ketiganya memberi gambaran yang berbeda namun saling melengkapi.`,
+          `Selain letak titik pusat, sebaran data juga perlu diperhatikan. Data yang mengelompok rapat menunjukkan keseragaman, sedangkan data yang menyebar jauh menunjukkan keragaman yang besar. Dengan membaca keduanya, peneliti memperoleh gambaran yang lebih jujur tentang keadaan sebenarnya.`,
+        ],
+      },
     ],
   },
   "jaringan-komputer": {
     publisher: "Salemba Teknika",
     pages: 396,
-    chapter: "Bab 1 - Model Referensi OSI",
-    paragraphs: [
-      `Jaringan komputer adalah kumpulan komputer dan perangkat lain yang saling terhubung untuk berbagi sumber daya dan bertukar data. Agar komunikasi antarperangkat dari vendor berbeda dapat berjalan, dibuatlah model referensi OSI (Open Systems Interconnection) yang membagi proses komunikasi menjadi tujuh lapisan.`,
-      `Ketujuh lapisan tersebut adalah Physical, Data Link, Network, Transport, Session, Presentation, dan Application. Masing-masing lapisan memiliki tugas spesifik dan hanya berkomunikasi dengan lapisan di atas dan di bawahnya. Pemodelan berlapis ini memudahkan pemecahan masalah, standarisasi, serta pengembangan teknologi jaringan secara modular.`,
+    chapters: [
+      {
+        title: "Bab 1: Dasar Komunikasi Antarperangkat",
+        paragraphs: [
+          `Jaringan komputer memungkinkan banyak perangkat saling berbicara dan berbagi berkas, mesin cetak, maupun sambungan internet. Agar percakapan itu berjalan tertib, setiap perangkat menaati sekumpulan aturan yang disepakati bersama. Aturan inilah yang membuat komputer buatan pabrik berbeda tetap dapat bekerja sama.`,
+          `Percakapan antarperangkat sebenarnya berupa pertukaran pesan yang dipecah menjadi potongan kecil. Setiap potongan dikirim, diperiksa, lalu disusun kembali di tujuan. Cara ini membuat pengiriman lebih tahan gangguan, karena bila satu potongan rusak, cukup potongan itu saja yang dikirim ulang.`,
+        ],
+      },
+      {
+        title: "Bab 2: Model Berlapis dan Fungsinya",
+        paragraphs: [
+          `Untuk memudahkan pemahaman, proses komunikasi digambarkan sebagai beberapa lapisan yang bertumpuk. Lapisan paling bawah mengurus sinyal dan kabel, sedangkan lapisan paling atas mengurus tampilan yang dilihat pengguna. Setiap lapisan hanya berbicara dengan tetangga di atas dan di bawahnya.`,
+          `Pembagian berlapis ini memberi banyak keuntungan. Bila terjadi masalah, teknisi dapat memeriksa satu lapisan tertentu tanpa mengganggu yang lain. Pengembang pun bisa memperbaiki satu bagian tanpa harus membongkar keseluruhan sistem.`,
+        ],
+      },
+      {
+        title: "Bab 3: Alamat, Rute, dan Keamanan Jaringan",
+        paragraphs: [
+          `Agar pesan sampai ke tujuan yang benar, setiap perangkat memiliki alamat yang unik. Ketika pesan melewati banyak persimpangan jaringan, perangkat pengarah memilih jalur terbaik menuju alamat tersebut, mirip petugas yang menunjukkan arah di persimpangan jalan.`,
+          `Karena jalur yang dilewati bisa panjang dan terbuka, keamanan menjadi hal yang tidak boleh diabaikan. Pesan penting sebaiknya disandikan agar hanya dapat dibaca oleh pihak yang berhak, dan setiap perangkat perlu memastikan lawan bicaranya benar-benar tepercaya.`,
+        ],
+      },
     ],
   },
 };
 
 const FALLBACK_CONTENT: EbookContent = {
-  publisher: "Penerbit UIN Press",
+  publisher: "UIN Jakarta Press",
   pages: 220,
-  chapter: "Bab 1 - Pendahuluan",
-  paragraphs: [
-    `Buku ini membahas pokok-pokok bahasan secara sistematis dan mudah dipahami, dilengkapi contoh dan ilustrasi yang relevan dengan kebutuhan akademik mahasiswa.`,
-    `Pada bab pembuka ini diuraikan latar belakang, ruang lingkup, serta tujuan penulisan sehingga pembaca memperoleh gambaran menyeluruh sebelum masuk ke pembahasan yang lebih mendalam pada bab-bab berikutnya.`,
+  chapters: [
+    {
+      title: "Bab 1: Pengantar",
+      paragraphs: [
+        `Buku ini disusun untuk membantu pembaca memahami pokok bahasan secara bertahap. Setiap bab dibuka dengan gambaran umum, dilanjutkan penjelasan yang lebih rinci, lalu ditutup dengan intisari agar mudah diingat.`,
+        `Pembaca disarankan mengikuti urutan bab agar pemahaman terbangun secara utuh. Meski demikian, setiap bab juga dirancang cukup mandiri sehingga dapat dibaca sesuai kebutuhan.`,
+      ],
+    },
   ],
 };
 

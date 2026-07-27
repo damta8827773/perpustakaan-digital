@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { BookOpen, BookText, Star } from "lucide-react";
+import { BookOpen, BookText, Star, RotateCcw } from "lucide-react";
 import {
   EBOOK_LOANS, HISTORY_PHYSICAL, HISTORY_EBOOK, bookById,
 } from "../../lib/data";
 import { Badge, BookCover, Button, Card, Modal, Progress } from "../../components/ui";
 import { useToast } from "../../components/Toast";
-import { useLibrary, getActiveLoans, submitReview } from "../../lib/libraryStore";
+import {
+  useLibrary, getActiveLoans, submitReview, returnLoan, getReturnedHistory,
+} from "../../lib/libraryStore";
 import { useCurrentStudent } from "../../lib/sessionStore";
 
 type Tab = "fisik" | "ebook" | "riwayat";
@@ -74,16 +76,18 @@ function RatingModal({
 export default function Pinjaman() {
   const [tab, setTab] = useState<Tab>("fisik");
   const [ratingFor, setRatingFor] = useState<{ bookId: string; title: string } | null>(null);
+  const [returnFor, setReturnFor] = useState<{ bookId: string; title: string } | null>(null);
   const navigate = useNavigate();
   const { notify } = useToast();
   const lib = useLibrary();
   const student = useCurrentStudent();
   const physicalLoans = getActiveLoans();
+  const returnedHistory = getReturnedHistory();
 
   const tabs: { key: Tab; label: string }[] = [
     { key: "fisik", label: `Buku Fisik (${physicalLoans.length})` },
     { key: "ebook", label: `E-book (${EBOOK_LOANS.length})` },
-    { key: "riwayat", label: `Riwayat (${HISTORY_PHYSICAL.length + HISTORY_EBOOK.length})` },
+    { key: "riwayat", label: `Riwayat (${returnedHistory.length + HISTORY_PHYSICAL.length + HISTORY_EBOOK.length})` },
   ];
 
   return (
@@ -108,6 +112,12 @@ export default function Pinjaman() {
 
       {tab === "fisik" && (
         <div className="mt-7 space-y-5">
+          {physicalLoans.length === 0 && (
+            <Card className="p-10 text-center text-muted-fg">
+              Belum ada buku fisik yang dipinjam. Pinjam buku dari halaman detail
+              untuk melihatnya di sini.
+            </Card>
+          )}
           {physicalLoans.map((loan) => {
             const book = bookById(loan.bookId)!;
             const meta = LOAN_META[loan.status];
@@ -141,10 +151,18 @@ export default function Pinjaman() {
                       </div>
                     </div>
                     <Progress value={loan.progress} color={meta.color} className="mt-4 h-2" />
-                    <div className="mt-2.5 text-[15px] font-semibold" style={{ color: meta.color }}>
-                      {loan.daysLeft >= 0
-                        ? `${loan.daysLeft} hari tersisa`
-                        : `Terlambat ${-loan.daysLeft} hari`}
+                    <div className="mt-2.5 flex items-center justify-between">
+                      <span className="text-[15px] font-semibold" style={{ color: meta.color }}>
+                        {loan.daysLeft >= 0
+                          ? `${loan.daysLeft} hari tersisa`
+                          : `Terlambat ${-loan.daysLeft} hari`}
+                      </span>
+                      <button
+                        onClick={() => setReturnFor({ bookId: loan.bookId, title: book.title })}
+                        className="flex cursor-pointer items-center gap-2 rounded-lg bg-success-light px-4 py-2 text-sm font-semibold text-success hover:bg-[#c6f0d4]"
+                      >
+                        <RotateCcw size={15} /> Kembalikan
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -209,6 +227,36 @@ export default function Pinjaman() {
 
       {tab === "riwayat" && (
         <div className="mt-7 space-y-9">
+          {returnedHistory.length > 0 && (
+            <section>
+              <div className="flex items-center gap-3">
+                <RotateCcw size={20} className="text-success" />
+                <h2 className="font-display text-xl font-bold">Buku Dikembalikan</h2>
+                <Badge tone="success">{returnedHistory.length} catatan</Badge>
+              </div>
+              <Card className="mt-4 divide-y divide-line">
+                {returnedHistory.map((h) => {
+                  const book = bookById(h.bookId);
+                  if (!book) return null;
+                  return (
+                    <div key={`${h.bookId}-${h.returnDate}`} className="flex items-center gap-4 px-6 py-4">
+                      <BookCover initials={book.initials} color={book.color} className="h-14 w-12 rounded-lg" textClass="text-sm" />
+                      <div className="flex-1">
+                        <div className="font-display font-bold">{book.title}</div>
+                        <div className="text-sm text-muted-fg">{book.author}</div>
+                      </div>
+                      <div className="text-right text-sm">
+                        <div className="text-muted-fg">Dipinjam {h.borrowDate}</div>
+                        <div className="font-semibold text-success">Dikembalikan {h.returnDate}</div>
+                      </div>
+                      <Badge tone="success">Selesai</Badge>
+                    </div>
+                  );
+                })}
+              </Card>
+            </section>
+          )}
+
           <section>
             <div className="flex items-center gap-3">
               <BookOpen size={20} className="text-primary" />
@@ -353,6 +401,34 @@ export default function Pinjaman() {
             </Card>
           </section>
         </div>
+      )}
+
+      {returnFor && (
+        <Modal title="Kembalikan Buku" onClose={() => setReturnFor(null)}>
+          <p className="text-lg text-muted-fg">
+            Kembalikan buku berikut ke perpustakaan?
+          </p>
+          <p className="mt-3 font-display text-2xl font-bold">"{returnFor.title}"</p>
+          <p className="mt-3 text-[15px] text-muted-fg">
+            Setelah dikembalikan, buku ini pindah ke tab Riwayat dan stoknya
+            tersedia kembali untuk peminjam lain.
+          </p>
+          <div className="mt-6 grid grid-cols-2 gap-4">
+            <Button variant="outline" className="py-3.5" onClick={() => setReturnFor(null)}>
+              Batal
+            </Button>
+            <Button
+              className="py-3.5"
+              onClick={() => {
+                returnLoan(returnFor.bookId);
+                notify(`"${returnFor.title}" berhasil dikembalikan.`);
+                setReturnFor(null);
+              }}
+            >
+              Ya, Kembalikan
+            </Button>
+          </div>
+        </Modal>
       )}
 
       {ratingFor && (
