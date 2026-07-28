@@ -4,7 +4,7 @@ import { Bell, BellOff } from "lucide-react";
 import {
   useNotifications, markRead, markAllRead,
   type NotifRole, type NotifTone,
-} from "../lib/notificationsStore";
+} from "@/services/notificationsStore";
 
 function useClickOutside(onClose: () => void) {
   const ref = useRef<HTMLDivElement>(null);

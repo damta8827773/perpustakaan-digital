@@ -1,30 +1,31 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import type { ReactNode } from "react";
-import { AuthProvider, useAuth } from "./lib/auth";
-import { isAdminAuthed } from "./lib/admin";
-import Landing from "./pages/Landing";
-import LoginMahasiswa from "./pages/LoginMahasiswa";
-import Daftar from "./pages/Daftar";
-import SsoLogin from "./pages/SsoLogin";
-import AdminLogin from "./pages/AdminLogin";
-import UserShell from "./components/UserShell";
-import AdminShell from "./components/AdminShell";
-import Home from "./pages/user/Home";
-import Search from "./pages/user/Search";
-import BookDetail from "./pages/user/BookDetail";
-import Reservasi from "./pages/user/Reservasi";
-import Konfirmasi from "./pages/user/Konfirmasi";
-import Berhasil from "./pages/user/Berhasil";
-import Pinjaman from "./pages/user/Pinjaman";
-import BacaList from "./pages/user/BacaList";
-import Reader from "./pages/user/Reader";
-import Profil from "./pages/user/Profil";
-import Dashboard from "./pages/admin/Dashboard";
-import Koleksi from "./pages/admin/Koleksi";
-import PeminjamanAdmin from "./pages/admin/Peminjaman";
-import Anggota from "./pages/admin/Anggota";
-import Laporan from "./pages/admin/Laporan";
-import AdminReader from "./pages/admin/AdminReader";
+import { AuthProvider, useAuth } from "@/services/auth";
+import { isAdminAuthed } from "@/services/admin";
+import Landing from "@/modules/auth/Landing";
+import LoginMahasiswa from "@/modules/auth/LoginMahasiswa";
+import Daftar from "@/modules/auth/Daftar";
+import SsoLogin from "@/modules/auth/SsoLogin";
+import AdminLogin from "@/modules/auth/AdminLogin";
+import UserShell from "@/components/UserShell";
+import AdminShell from "@/components/AdminShell";
+import Home from "@/modules/user/Home";
+import Search from "@/modules/user/Search";
+import BookDetail from "@/modules/user/BookDetail";
+import Reservasi from "@/modules/user/Reservasi";
+import Konfirmasi from "@/modules/user/Konfirmasi";
+import Berhasil from "@/modules/user/Berhasil";
+import Pinjaman from "@/modules/user/Pinjaman";
+import BacaList from "@/modules/user/BacaList";
+import Reader from "@/modules/user/Reader";
+import Profil from "@/modules/user/Profil";
+import Dashboard from "@/modules/admin/Dashboard";
+import Koleksi from "@/modules/admin/Koleksi";
+import PeminjamanAdmin from "@/modules/admin/Peminjaman";
+import Anggota from "@/modules/admin/Anggota";
+import Laporan from "@/modules/admin/Laporan";
+import UmpanBalik from "@/modules/admin/UmpanBalik";
+import AdminReader from "@/modules/admin/AdminReader";
 
 // Mode demo (VITE_DEMO=1): lewati login agar UI bisa dipratinjau
 // sebelum provider Email/Password diaktifkan di Firebase Console.
@@ -112,6 +113,7 @@ export default function App() {
             <Route path="koleksi" element={<Koleksi />} />
             <Route path="peminjaman" element={<PeminjamanAdmin />} />
             <Route path="anggota" element={<Anggota />} />
+            <Route path="umpan-balik" element={<UmpanBalik />} />
             <Route path="laporan" element={<Laporan />} />
           </Route>
 

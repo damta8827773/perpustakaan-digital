@@ -1,10 +1,10 @@
 import { useCallback } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { BookOpen, Home, Search, BookMarked, Book, User, LogOut, ChevronDown } from "lucide-react";
-import { useAuth } from "../lib/auth";
-import { useIdleLogout } from "../lib/security";
-import { useCurrentStudent, initialsOf, clearCurrentStudent } from "../lib/sessionStore";
-import { NotificationBell, DropdownMenu } from "./HeaderMenus";
+import { useAuth } from "@/services/auth";
+import { useIdleLogout } from "@/common/libs/security";
+import { useCurrentStudent, initialsOf, clearCurrentStudent } from "@/services/sessionStore";
+import { NotificationBell, DropdownMenu } from "@/components/HeaderMenus";
 
 const NAV = [
   { to: "/app", label: "Beranda", icon: Home, end: true },

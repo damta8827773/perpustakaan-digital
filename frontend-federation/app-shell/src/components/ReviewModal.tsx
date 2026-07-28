@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Star } from "lucide-react";
-import { Button, Modal } from "./ui";
-import { submitReview } from "../lib/libraryStore";
-import { useCurrentStudent } from "../lib/sessionStore";
+import { Button, Modal } from "@/components/ui";
+import { submitReview } from "@/services/libraryStore";
+import { useCurrentStudent } from "@/services/sessionStore";
 
 // Modal beri rating + ulasan yang menyimpan data lengkap penulis dan waktu.
 export function ReviewModal({

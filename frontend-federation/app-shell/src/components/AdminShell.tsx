@@ -1,18 +1,19 @@
 import { useCallback } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
-  BookOpen, LayoutGrid, Copy, BookMarked, Users, BarChart3, LogOut, ChevronDown,
+  BookOpen, LayoutGrid, Copy, BookMarked, Users, BarChart3, MessageSquare, LogOut, ChevronDown,
 } from "lucide-react";
-import { useAuth } from "../lib/auth";
-import { useIdleLogout } from "../lib/security";
-import { clearAdminSession, currentAdminEmail } from "../lib/admin";
-import { NotificationBell, DropdownMenu } from "./HeaderMenus";
+import { useAuth } from "@/services/auth";
+import { useIdleLogout } from "@/common/libs/security";
+import { clearAdminSession, currentAdminEmail } from "@/services/admin";
+import { NotificationBell, DropdownMenu } from "@/components/HeaderMenus";
 
 const NAV = [
   { to: "/admin", label: "Dashboard", icon: LayoutGrid, end: true },
   { to: "/admin/koleksi", label: "Koleksi Buku", icon: Copy, end: false },
   { to: "/admin/peminjaman", label: "Peminjaman", icon: BookMarked, end: false },
   { to: "/admin/anggota", label: "Anggota", icon: Users, end: false },
+  { to: "/admin/umpan-balik", label: "Umpan Balik", icon: MessageSquare, end: false },
   { to: "/admin/laporan", label: "Laporan", icon: BarChart3, end: false },
 ];
 
@@ -21,6 +22,7 @@ const TITLES: Record<string, string> = {
   "/admin/koleksi": "Koleksi Buku",
   "/admin/peminjaman": "Peminjaman",
   "/admin/anggota": "Data Anggota",
+  "/admin/umpan-balik": "Umpan Balik",
   "/admin/laporan": "Laporan",
 };
 

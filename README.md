@@ -58,26 +58,35 @@ peminjaman, memantau anggota, dan menyusun laporan operasional.
 ### 👨‍🎓 Portal Mahasiswa
 - **Beranda** dengan koleksi buku, filter kategori, dan ringkasan pinjaman aktif.
 - **Pencarian** buku berdasarkan judul, penulis, atau ISBN dengan filter ketersediaan.
-- **Detail buku** lengkap dengan rating, stok fisik, dan ketersediaan e-book.
+- **Detail buku** lengkap dengan rating, stok fisik, ketersediaan e-book,
+  tombol **Suka** dan **Favorit**, serta kolom **komentar**.
 - **Alur reservasi** buku fisik: pemilihan durasi, konfirmasi, hingga bukti peminjaman.
+- **Kembalikan buku** fisik dengan opsi meninggalkan komentar untuk perpustakaan.
 - **Peminjaman e-book** dengan pengembalian otomatis setelah masa pinjam berakhir.
-- **Pembaca e-book** bawaan: pengatur ukuran huruf, mode gelap, dan penanda halaman.
+- **Pembaca e-book** bawaan yang tersusun **berbab** dan dilengkapi **Daftar
+  Pustaka**, dengan pengatur ukuran huruf, mode gelap, dan penanda bab.
+- **Antrean Cerdas**: untuk buku yang habis dipinjam, pengguna dapat masuk
+  antrean dan memperoleh **perkiraan tanggal ketersediaan**.
 - **Pinjaman Saya** dengan tab Buku Fisik, E-book, dan Riwayat.
-- **Beri rating** dan ulasan untuk buku yang telah selesai dibaca.
-- **Profil** mahasiswa beserta statistik peminjaman.
+- **Beri rating**, ulasan, dan **kotak masuk** untuk membaca balasan admin.
+- **Profil** mahasiswa beserta statistik peminjaman yang dihitung otomatis.
 
 ### 🛠️ Panel Admin
 - **Dashboard** dengan statistik ringkas dan aktivitas peminjaman terkini.
-- **Koleksi Buku**: tambah, ubah, hapus, cari, dan filter status buku.
+- **Koleksi Buku**: tambah, ubah, hapus, cari, filter status, dan **baca e-book online**.
 - **Peminjaman**: pemantauan transaksi dengan penyaringan status.
-- **Data Anggota**: daftar mahasiswa lengkap dengan detail dan penyaringan fakultas.
+- **Data Anggota**: hanya mahasiswa yang benar-benar terdaftar (tanpa data contoh).
+- **Umpan Balik**: seluruh komentar, suka, dan favorit pengguna terkumpul di
+  satu tempat; admin dapat **membalas** dan balasan diteruskan ke pengguna.
 - **Laporan**: grafik peminjaman bulanan, buku terpopuler, keterlambatan, dan
   kategori favorit, dengan opsi ekspor data.
 
 ### 🔐 Autentikasi
-- Login mahasiswa menggunakan NIM dan login admin menggunakan username.
-- Opsi **Masuk dengan SSO UIN** yang mengarahkan ke portal resmi kampus.
-- Pemisahan akses berbasis peran (role) di sisi aplikasi.
+- **Mahasiswa**: SSO UIN, **Masuk dengan Google**, login **email tanpa kata
+  sandi**, atau login NIM. Tersedia **pendaftaran mandiri** dan **lupa sandi**.
+- **Admin**: masuk **hanya dengan akun Google** yang terdaftar pada allowlist,
+  sehingga akses tidak dapat dipalsukan dengan sekadar menebak email.
+- Pemisahan akses berbasis peran (role) dengan penjaga rute khusus.
 
 ---
 
@@ -132,15 +141,23 @@ perpustakaan-digital/
 
 ### Struktur aplikasi utama
 
+Aplikasi memakai alias `@/` yang mengarah ke `src/`, sehingga impor tetap rapi
+tanpa jalur relatif yang panjang (mis. `@/services/libraryStore`).
+
 ```text
 frontend-federation/app-shell/src/
-├── components/     # Komponen bersama (UI, Toast, header, hitung angka)
-├── lib/            # Firebase, autentikasi, keamanan, data, SSO, penyimpanan
-├── pages/
-│   ├── user/       # Halaman portal mahasiswa
-│   └── admin/      # Halaman panel admin
-├── App.tsx         # Definisi rute dan penjaga akses (route guard)
-└── main.tsx        # Titik masuk aplikasi
+├── common/
+│   ├── constants/   # Data katalog buku dan metadata aplikasi
+│   └── libs/        # Firebase, keamanan, SSO, unduhan
+├── services/        # Lapisan data & status: auth, akun, sesi, pinjaman,
+│                    # anggota, notifikasi, antrean, umpan balik
+├── components/      # Komponen bersama (UI, Toast, header, shell, feedback)
+├── modules/
+│   ├── auth/        # Landing, login mahasiswa, daftar, SSO, login admin
+│   ├── user/        # Halaman portal mahasiswa
+│   └── admin/       # Halaman panel admin
+├── App.tsx          # Definisi rute dan penjaga akses (route guard)
+└── main.tsx         # Titik masuk aplikasi
 ```
 
 ---
