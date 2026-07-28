@@ -2,7 +2,7 @@ import { useCallback } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { BookOpen, Home, Search, BookMarked, Book, User, LogOut, ChevronDown } from "lucide-react";
 import { useAuth } from "@/services/auth";
-import { useIdleLogout } from "@/common/libs/security";
+import { useIdleLogout } from "@/hooks/useIdleLogout";
 import { useCurrentStudent, initialsOf, clearCurrentStudent } from "@/services/sessionStore";
 import { NotificationBell, DropdownMenu } from "@/components/HeaderMenus";
 

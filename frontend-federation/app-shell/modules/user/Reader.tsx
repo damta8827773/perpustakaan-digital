@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ArrowLeft, ChevronLeft, ChevronRight, Minus, Plus, Moon, Bookmark } from "lucide-react";
-import { bookById, ebookContent, ebookReferences } from "@/common/constants/catalog";
+import { bookById } from "@/common/constants/catalog";
+import { ebookContent, ebookReferences } from "@/contents/ebooks";
 import { useToast } from "@/components/Toast";
 
 export default function Reader() {

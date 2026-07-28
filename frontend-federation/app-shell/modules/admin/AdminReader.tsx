@@ -3,7 +3,8 @@ import { Link, useParams } from "react-router-dom";
 import {
   ArrowLeft, ChevronLeft, ChevronRight, Minus, Plus, Moon, Sun,
 } from "lucide-react";
-import { bookById, ebookContent, ebookReferences } from "@/common/constants/catalog";
+import { bookById } from "@/common/constants/catalog";
+import { ebookContent, ebookReferences } from "@/contents/ebooks";
 import { BookCover } from "@/components/ui";
 
 // Pratinjau baca e-book online untuk admin, diakses dari Koleksi Buku.

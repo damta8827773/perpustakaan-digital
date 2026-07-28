@@ -141,23 +141,28 @@ perpustakaan-digital/
 
 ### Struktur aplikasi utama
 
-Aplikasi memakai alias `@/` yang mengarah ke `src/`, sehingga impor tetap rapi
-tanpa jalur relatif yang panjang (mis. `@/services/libraryStore`).
+Struktur disusun rapi pada root aplikasi dengan alias `@/` yang mengarah ke
+root tersebut, sehingga impor tetap bersih (mis. `@/services/libraryStore`).
 
 ```text
-frontend-federation/app-shell/src/
+frontend-federation/app-shell/
+├── app/             # Titik masuk aplikasi (main.tsx) dan definisi rute (App.tsx)
 ├── common/
-│   ├── constants/   # Data katalog buku dan metadata aplikasi
+│   ├── constants/   # Katalog buku dan metadata aplikasi
 │   └── libs/        # Firebase, keamanan, SSO, unduhan
-├── services/        # Lapisan data & status: auth, akun, sesi, pinjaman,
-│                    # anggota, notifikasi, antrean, umpan balik
 ├── components/      # Komponen bersama (UI, Toast, header, shell, feedback)
+├── contents/        # Naskah e-book (isi bab dan daftar pustaka)
+├── hooks/           # React hooks kustom (mis. useIdleLogout)
+├── i18n/            # Konfigurasi bahasa
+├── messages/        # Berkas terjemahan (id.json, en.json)
 ├── modules/
 │   ├── auth/        # Landing, login mahasiswa, daftar, SSO, login admin
 │   ├── user/        # Halaman portal mahasiswa
 │   └── admin/       # Halaman panel admin
-├── App.tsx          # Definisi rute dan penjaga akses (route guard)
-└── main.tsx         # Titik masuk aplikasi
+├── services/        # Lapisan data & status: auth, akun, sesi, pinjaman,
+│                    # anggota, notifikasi, antrean, umpan balik
+├── middleware.ts    # Aturan akses terpusat (setara middleware)
+└── public/          # Aset statis (favicon, ikon)
 ```
 
 ---

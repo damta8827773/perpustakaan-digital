@@ -1,0 +1,16 @@
+{
+  "app.name": "Digital Library",
+  "app.institution": "UIN Syarif Hidayatullah Jakarta",
+  "nav.home": "Home",
+  "nav.search": "Search Books",
+  "nav.loans": "My Loans",
+  "nav.read": "Read",
+  "nav.profile": "Profile",
+  "action.login": "Sign In",
+  "action.logout": "Sign Out",
+  "action.register": "Register",
+  "action.borrow": "Reserve Physical Book",
+  "action.return": "Return",
+  "book.available": "Available",
+  "book.borrowedAll": "All Borrowed"
+}

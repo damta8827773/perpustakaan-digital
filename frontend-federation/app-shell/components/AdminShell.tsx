@@ -4,7 +4,7 @@ import {
   BookOpen, LayoutGrid, Copy, BookMarked, Users, BarChart3, MessageSquare, LogOut, ChevronDown,
 } from "lucide-react";
 import { useAuth } from "@/services/auth";
-import { useIdleLogout } from "@/common/libs/security";
+import { useIdleLogout } from "@/hooks/useIdleLogout";
 import { clearAdminSession, currentAdminEmail } from "@/services/admin";
 import { NotificationBell, DropdownMenu } from "@/components/HeaderMenus";
 

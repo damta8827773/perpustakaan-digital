@@ -1,0 +1,16 @@
+{
+  "app.name": "Perpustakaan Digital",
+  "app.institution": "UIN Syarif Hidayatullah Jakarta",
+  "nav.home": "Beranda",
+  "nav.search": "Cari Buku",
+  "nav.loans": "Pinjaman Saya",
+  "nav.read": "Baca",
+  "nav.profile": "Profil",
+  "action.login": "Masuk",
+  "action.logout": "Keluar",
+  "action.register": "Daftar",
+  "action.borrow": "Reservasi Buku Fisik",
+  "action.return": "Kembalikan",
+  "book.available": "Tersedia",
+  "book.borrowedAll": "Dipinjam Semua"
+}

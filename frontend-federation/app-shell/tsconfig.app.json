@@ -6,6 +6,7 @@
     "module": "esnext",
     "types": ["vite/client"],
     "allowArbitraryExtensions": true,
+    "resolveJsonModule": true,
     "skipLibCheck": true,
 
     /* Bundler mode */
@@ -16,8 +17,8 @@
     "noEmit": true,
     "jsx": "react-jsx",
 
-    /* Path alias */
-    "paths": { "@/*": ["./src/*"] },
+    /* Path alias (root aplikasi) */
+    "paths": { "@/*": ["./*"] },
 
     /* Linting */
     "noUnusedLocals": true,
@@ -25,5 +26,8 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src"]
+  "include": [
+    "app", "common", "components", "contents", "hooks",
+    "i18n", "modules", "services", "middleware.ts", "vite-env.d.ts"
+  ]
 }
