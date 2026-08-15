@@ -2,7 +2,7 @@
 
 ## Lapisan yang sudah diterapkan
 
-1. Autentikasi (app-shell)
+1. Autentikasi
    - Firebase Auth dengan persistensi sesi per-tab
      (`browserSessionPersistence`).
    - Validasi input ketat sebelum request: NIM 8-14 digit, username

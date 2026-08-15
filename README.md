@@ -133,36 +133,30 @@ Referensi rancangan tersedia di [`referensi-desain/`](referensi-desain/).
 
 ## Struktur Repository
 
-Repository ini hanya berisi apa yang benar-benar dipakai:
+Root repository ini adalah root aplikasinya sendiri, tanpa folder pembungkus.
+Alias `@/` mengarah ke root ini sehingga impor tetap pendek dan jelas asalnya
+(mis. `@/services/libraryStore`):
 
 ```text
 perpustakaan-digital/
-├── app-shell/          # Aplikasi (React + Vite) - satu-satunya yang dijalankan
-└── referensi-desain/   # Tangkapan layar rancangan Figma sebagai acuan visual
-```
-
-Di dalam `app-shell/`, alias `@/` mengarah ke root aplikasi sehingga impor
-tetap pendek dan jelas asalnya (mis. `@/services/libraryStore`):
-
-```text
-app-shell/
-├── app/             # Titik masuk (main.tsx) dan definisi rute (App.tsx)
+├── app/               # Titik masuk (main.tsx) dan definisi rute (App.tsx)
 ├── common/
-│   ├── constants/   # Katalog buku dan metadata aplikasi
-│   └── libs/        # Firebase, keamanan, SSO, unduhan
-├── components/      # Komponen bersama: UI dasar, sampul buku, shell, feedback
-├── contents/        # Naskah e-book (isi bab dan daftar pustaka)
-├── hooks/           # React hooks kustom (mis. useIdleLogout)
-├── i18n/            # Konfigurasi bahasa
-├── messages/        # Berkas terjemahan (id.json, en.json)
+│   ├── constants/     # Katalog buku dan metadata aplikasi
+│   └── libs/          # Firebase, keamanan, SSO, unduhan
+├── components/        # Komponen bersama: UI dasar, sampul buku, shell, feedback
+├── contents/          # Naskah e-book (isi bab dan daftar pustaka)
+├── hooks/             # React hooks kustom (mis. useIdleLogout)
+├── i18n/              # Konfigurasi bahasa
+├── messages/          # Berkas terjemahan (id.json, en.json)
 ├── modules/
-│   ├── auth/        # Landing, login mahasiswa, daftar, SSO, login admin
-│   ├── user/        # Halaman portal mahasiswa
-│   └── admin/       # Halaman panel admin
-├── services/        # Data & status: auth, akun, sesi, pinjaman, anggota,
-│                    # notifikasi, antrean, umpan balik, Google Books
-├── middleware.ts    # Aturan akses terpusat
-└── public/          # Aset statis (favicon, ikon)
+│   ├── auth/          # Landing, login mahasiswa, daftar, SSO, login admin
+│   ├── user/          # Halaman portal mahasiswa
+│   └── admin/         # Halaman panel admin
+├── services/          # Data & status: auth, akun, sesi, pinjaman, anggota,
+│                      # notifikasi, antrean, umpan balik, Google Books
+├── middleware.ts      # Aturan akses terpusat
+├── public/            # Aset statis (favicon, ikon)
+└── referensi-desain/  # Tangkapan layar rancangan Figma sebagai acuan visual
 ```
 
 ---
@@ -171,7 +165,7 @@ app-shell/
 
 ```bash
 git clone https://github.com/damta8827773/perpustakaan-digital.git
-cd perpustakaan-digital/app-shell
+cd perpustakaan-digital
 npm install
 cp .env.example .env.local
 npm run dev
@@ -254,8 +248,6 @@ Rincian lengkap ada di [`SECURITY.md`](SECURITY.md).
 ---
 
 ## Skrip
-
-Dijalankan dari `app-shell`:
 
 | Perintah | Keterangan |
 | --- | --- |
