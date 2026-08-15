@@ -1,8 +1,8 @@
-<h1 align="center">📚 Perpustakaan Digital - UIN Syarif Hidayatullah Jakarta</h1>
+<h1 align="center">Perpustakaan Digital UIN Jakarta</h1>
 
 <p align="center">
-  <b>Sistem perpustakaan digital modern dengan antarmuka Mahasiswa dan Admin yang terpisah.</b><br/>
-  Pinjam buku fisik, baca e-book langsung di peramban, dan kelola koleksi dalam satu platform.
+  Perpustakaan digital dengan antarmuka Mahasiswa dan Admin yang terpisah:
+  pinjam buku fisik, baca e-book, dan kelola koleksi dari satu aplikasi.
 </p>
 
 <p align="center">
@@ -16,141 +16,141 @@
 
 ---
 
-## 📑 Daftar Isi
+## Daftar Isi
 
-- [Tentang Proyek](#-tentang-proyek)
-- [Fitur Utama](#-fitur-utama)
-- [Tangkapan Layar](#-tangkapan-layar)
-- [Teknologi](#-teknologi)
-- [Arsitektur Repository](#-arsitektur-repository)
-- [Prasyarat](#-prasyarat)
-- [Memulai](#-memulai)
-- [Konfigurasi Firebase](#-konfigurasi-firebase)
-- [Integrasi SSO UIN](#-integrasi-sso-uin)
-- [Keamanan](#-keamanan)
-- [Skrip yang Tersedia](#-skrip-yang-tersedia)
-- [Peta Jalan](#-peta-jalan)
-- [Lisensi](#-lisensi)
-- [Penulis](#-penulis)
-
----
-
-## 🎯 Tentang Proyek
-
-**Perpustakaan Digital** adalah aplikasi web yang dirancang untuk perpustakaan
-kampus UIN Syarif Hidayatullah Jakarta. Aplikasi ini memisahkan pengalaman
-**Mahasiswa** dan **Admin** ke dalam dua antarmuka berbeda dengan alamat (URL)
-yang terpisah, sehingga masing-masing peran mendapatkan tampilan dan alur kerja
-yang sesuai dengan kebutuhannya.
-
-Mahasiswa dapat menelusuri koleksi, mereservasi buku fisik, meminjam salinan
-e-book, membaca langsung di peramban, serta memantau tenggat pengembalian.
-Admin memperoleh panel kendali penuh untuk mengelola koleksi buku, memproses
-peminjaman, memantau anggota, dan menyusun laporan operasional.
-
-> **Catatan akademik:** Antarmuka aplikasi ini mereplikasi rancangan Figma
-> "Perpustakaan Digital" dengan tingkat kesesuaian visual yang tinggi.
+- [Tentang Proyek](#tentang-proyek)
+- [Fitur](#fitur)
+- [Integrasi Google Books](#integrasi-google-books)
+- [Tangkapan Layar](#tangkapan-layar)
+- [Teknologi](#teknologi)
+- [Struktur Repository](#struktur-repository)
+- [Memulai](#memulai)
+- [Konfigurasi Firebase](#konfigurasi-firebase)
+- [Integrasi SSO UIN](#integrasi-sso-uin)
+- [Keamanan](#keamanan)
+- [Skrip](#skrip)
+- [Peta Jalan](#peta-jalan)
+- [Lisensi](#lisensi)
 
 ---
 
-## ✨ Fitur Utama
+## Tentang Proyek
 
-### 👨‍🎓 Portal Mahasiswa
-- **Beranda** dengan koleksi buku, filter kategori, dan ringkasan pinjaman aktif.
-- **Pencarian** buku berdasarkan judul, penulis, atau ISBN dengan filter ketersediaan.
-- **Detail buku** lengkap dengan rating, stok fisik, ketersediaan e-book,
-  tombol **Suka** dan **Favorit**, serta kolom **komentar**.
-- **Alur reservasi** buku fisik: pemilihan durasi, konfirmasi, hingga bukti peminjaman.
-- **Kembalikan buku** fisik dengan opsi meninggalkan komentar untuk perpustakaan.
-- **Peminjaman e-book** dengan pengembalian otomatis setelah masa pinjam berakhir.
-- **Pembaca e-book** bawaan yang tersusun **berbab** dan dilengkapi **Daftar
-  Pustaka**, dengan pengatur ukuran huruf, mode gelap, dan penanda bab.
-- **Antrean Cerdas**: untuk buku yang habis dipinjam, pengguna dapat masuk
-  antrean dan memperoleh **perkiraan tanggal ketersediaan**.
-- **Pinjaman Saya** dengan tab Buku Fisik, E-book, dan Riwayat.
-- **Beri rating**, ulasan, dan **kotak masuk** untuk membaca balasan admin.
-- **Profil** mahasiswa beserta statistik peminjaman yang dihitung otomatis.
+Aplikasi ini dibuat untuk perpustakaan kampus UIN Syarif Hidayatullah Jakarta.
+Mahasiswa dan Admin memakai alamat (URL) yang sepenuhnya terpisah, masing-masing
+dengan tampilan dan alur kerja sendiri, bukan satu dasbor yang dipaksa muat
+untuk dua peran sekaligus.
 
-### 🛠️ Panel Admin
-- **Dashboard** dengan statistik ringkas dan aktivitas peminjaman terkini.
-- **Koleksi Buku**: tambah, ubah, hapus, cari, filter status, dan **baca e-book online**.
-- **Peminjaman**: pemantauan transaksi dengan penyaringan status.
-- **Data Anggota**: hanya mahasiswa yang benar-benar terdaftar (tanpa data contoh).
-- **Umpan Balik**: seluruh komentar, suka, dan favorit pengguna terkumpul di
-  satu tempat; admin dapat **membalas** dan balasan diteruskan ke pengguna.
-- **Laporan**: grafik peminjaman bulanan, buku terpopuler, keterlambatan, dan
-  kategori favorit, dengan opsi ekspor data.
+Mahasiswa dapat menelusuri koleksi, mereservasi buku fisik, meminjam e-book,
+membaca langsung di peramban, memberi ulasan, dan memantau tenggat
+pengembalian. Admin mengelola koleksi buku, memproses peminjaman, memantau
+anggota, membalas komentar pengguna, dan menyusun laporan.
 
-### 🔐 Autentikasi
-- **Mahasiswa**: SSO UIN, **Masuk dengan Google**, login **email tanpa kata
-  sandi**, atau login NIM. Tersedia **pendaftaran mandiri** dan **lupa sandi**.
-- **Admin**: masuk **hanya dengan akun Google** yang terdaftar pada allowlist,
-  sehingga akses tidak dapat dipalsukan dengan sekadar menebak email.
-- Pemisahan akses berbasis peran (role) dengan penjaga rute khusus.
+> Tampilan mengikuti rancangan Figma "Perpustakaan Digital" sebagai acuan visual.
 
 ---
 
-## 🖼️ Tangkapan Layar
+## Fitur
 
-Berkas referensi rancangan tersedia pada direktori [`referensi-desain/`](referensi-desain/).
+**Portal Mahasiswa**
+- Beranda dengan koleksi buku, filter kategori, dan ringkasan pinjaman aktif.
+- Pencarian berdasarkan judul, penulis, atau ISBN dengan filter ketersediaan.
+- Detail buku dengan rating, stok, ketersediaan e-book, tombol Suka/Favorit,
+  dan kolom komentar dengan balasan admin.
+- Reservasi buku fisik: pilih durasi, konfirmasi, sampai bukti peminjaman,
+  lengkap dengan alur pengembalian dan komentar untuk perpustakaan.
+- Peminjaman e-book dengan pengembalian otomatis setelah masa pinjam berakhir.
+- Pembaca e-book berbab, dilengkapi daftar pustaka, pengatur ukuran huruf,
+  mode gelap, dan penanda bab.
+- Antrean untuk buku yang sedang habis, dengan perkiraan tanggal tersedia.
+- Pinjaman Saya (Buku Fisik / E-book / Riwayat), kotak masuk balasan admin,
+  dan profil dengan statistik yang dihitung dari aktivitas nyata.
+
+**Panel Admin**
+- Dashboard dengan statistik dan aktivitas peminjaman terkini.
+- Koleksi Buku: tambah, ubah, hapus, cari, filter status, baca e-book online,
+  dan isi data buku otomatis dari Google Books.
+- Peminjaman dengan penyaringan status, dan Data Anggota (hanya mahasiswa
+  yang benar-benar mendaftar, tanpa data contoh).
+- Umpan Balik: seluruh komentar, suka, dan favorit pengguna terkumpul di satu
+  tempat; admin membalas dan balasannya diteruskan ke pengguna terkait.
+- Laporan: peminjaman bulanan, buku terpopuler, keterlambatan, dan kategori
+  favorit, dengan opsi ekspor data.
+
+**Autentikasi**
+- Mahasiswa: SSO UIN, Google, email tanpa kata sandi, atau NIM. Tersedia
+  pendaftaran mandiri dan pemulihan kata sandi.
+- Admin: hanya akun Google yang terdaftar pada allowlist (`VITE_ADMIN_EMAILS`)
+  yang bisa masuk, sehingga akses tidak bisa ditebak lewat email saja.
+
+---
+
+## Integrasi Google Books
+
+Katalog dan formulir admin tersambung ke [Google Books API](https://developers.google.com/books)
+agar data buku sesuai dengan data yang benar-benar ada, bukan contoh karangan:
+
+- **Sampul asli** — komponen `RemoteCover` (`components/ui.tsx`) mengambil
+  gambar sampul dari Google Books saat buku ditampilkan, dan kembali ke blok
+  warna berinisial bila API tidak menemukan hasil atau sedang tidak dapat
+  dihubungi.
+- **Pencarian di formulir admin** — saat menambah atau mengubah buku
+  (`modules/admin/Koleksi.tsx`), admin bisa mencari judul di Google Books lalu
+  klik salah satu hasil untuk mengisi otomatis penulis, penerbit, tahun terbit,
+  ISBN, dan deskripsi.
+- Layanan ini (`services/googleBooks.ts`) memakai endpoint publik tanpa API
+  key, dengan timeout, cache 7 hari di `localStorage`, dan selalu mengembalikan
+  hasil kosong (bukan error) saat gagal, sehingga tampilan tidak pernah rusak.
+
+---
+
+## Tangkapan Layar
+
+Referensi rancangan tersedia di [`referensi-desain/`](referensi-desain/).
 
 | Portal Mahasiswa | Panel Admin |
 | :---: | :---: |
 | Beranda, Pencarian, Detail Buku | Dashboard, Koleksi, Laporan |
-| Reservasi, Pembaca E-book, Profil | Peminjaman, Data Anggota |
+| Reservasi, Pembaca E-book, Profil | Peminjaman, Data Anggota, Umpan Balik |
 
 ---
 
-## 🧰 Teknologi
+## Teknologi
 
 | Kategori | Teknologi |
 | --- | --- |
-| **Framework** | React 19 |
-| **Bahasa** | TypeScript |
-| **Build Tool** | Vite |
-| **Styling** | Tailwind CSS v4 |
-| **Routing** | React Router |
-| **Autentikasi** | Firebase Authentication |
-| **Ikon** | lucide-react |
-| **Tipografi** | Plus Jakarta Sans, Inter, JetBrains Mono |
+| Framework | React 19 |
+| Bahasa | TypeScript |
+| Build Tool | Vite |
+| Styling | Tailwind CSS v4 |
+| Routing | React Router |
+| Autentikasi | Firebase Authentication (Email/Password, Google) |
+| Data Buku | Google Books API |
+| Ikon | lucide-react |
+| Tipografi | Plus Jakarta Sans, Inter, JetBrains Mono |
 
 ---
 
-## 🗂️ Arsitektur Repository
+## Struktur Repository
 
-Repository ini disusun sebagai **monorepo** yang meniru topologi layanan
-berskala besar. Aplikasi yang berjalan berada pada `frontend-federation/app-shell`,
-sedangkan direktori lain memuat kerangka layanan (service stub) dalam beragam
-bahasa sebagai gambaran arsitektur target.
+Repository ini hanya berisi apa yang benar-benar dipakai:
 
 ```text
 perpustakaan-digital/
-├── frontend-federation/
-│   ├── app-shell/                 # ⭐ Aplikasi utama (React + Vite) - DIJALANKAN
-│   ├── mfe-public-portal/         # Modul micro-frontend mahasiswa
-│   ├── mfe-admin-command-center/  # Modul micro-frontend admin
-│   └── wasm-drm-renderer/         # Kerangka pembaca e-book (C/C++ ke WebAssembly)
-├── hyper-edge/                    # Fungsi edge: WAF, validator JWT, optimizer gambar
-├── supergraph-gateway/            # Kerangka GraphQL Federation gateway
-├── autonomous-microservices/      # Layanan polyglot (Go, PHP, Python, Rust, dll.)
-├── event-nervous-system/          # Kontrak Kafka dan gRPC/Protobuf
-├── data-mesh/                     # Skema SQL, vector DB, penyimpanan IPFS
-├── platform-engineering/          # Infrastructure as Code: Terraform, Kubernetes, eBPF
-└── referensi-desain/              # Berkas referensi rancangan antarmuka
+├── app-shell/          # Aplikasi (React + Vite) - satu-satunya yang dijalankan
+└── referensi-desain/   # Tangkapan layar rancangan Figma sebagai acuan visual
 ```
 
-### Struktur aplikasi utama
-
-Struktur disusun rapi pada root aplikasi dengan alias `@/` yang mengarah ke
-root tersebut, sehingga impor tetap bersih (mis. `@/services/libraryStore`).
+Di dalam `app-shell/`, alias `@/` mengarah ke root aplikasi sehingga impor
+tetap pendek dan jelas asalnya (mis. `@/services/libraryStore`):
 
 ```text
-frontend-federation/app-shell/
-├── app/             # Titik masuk aplikasi (main.tsx) dan definisi rute (App.tsx)
+app-shell/
+├── app/             # Titik masuk (main.tsx) dan definisi rute (App.tsx)
 ├── common/
 │   ├── constants/   # Katalog buku dan metadata aplikasi
 │   └── libs/        # Firebase, keamanan, SSO, unduhan
-├── components/      # Komponen bersama (UI, Toast, header, shell, feedback)
+├── components/      # Komponen bersama: UI dasar, sampul buku, shell, feedback
 ├── contents/        # Naskah e-book (isi bab dan daftar pustaka)
 ├── hooks/           # React hooks kustom (mis. useIdleLogout)
 ├── i18n/            # Konfigurasi bahasa
@@ -159,55 +159,29 @@ frontend-federation/app-shell/
 │   ├── auth/        # Landing, login mahasiswa, daftar, SSO, login admin
 │   ├── user/        # Halaman portal mahasiswa
 │   └── admin/       # Halaman panel admin
-├── services/        # Lapisan data & status: auth, akun, sesi, pinjaman,
-│                    # anggota, notifikasi, antrean, umpan balik
-├── middleware.ts    # Aturan akses terpusat (setara middleware)
+├── services/        # Data & status: auth, akun, sesi, pinjaman, anggota,
+│                    # notifikasi, antrean, umpan balik, Google Books
+├── middleware.ts    # Aturan akses terpusat
 └── public/          # Aset statis (favicon, ikon)
 ```
 
 ---
 
-## ✅ Prasyarat
-
-- **Node.js** versi 20 atau lebih baru
-- **npm** versi 10 atau lebih baru
-- Sebuah proyek **Firebase** (untuk mengaktifkan autentikasi sungguhan)
-
----
-
-## 🚀 Memulai
-
-**1. Klon repository**
+## Memulai
 
 ```bash
 git clone https://github.com/damta8827773/perpustakaan-digital.git
-cd perpustakaan-digital/frontend-federation/app-shell
-```
-
-**2. Pasang dependensi**
-
-```bash
+cd perpustakaan-digital/app-shell
 npm install
-```
-
-**3. Siapkan variabel lingkungan**
-
-```bash
 cp .env.example .env.local
-```
-
-Buka `.env.local` lalu isi kredensial Firebase Anda. Untuk sekadar melihat
-tampilan tanpa autentikasi, cukup biarkan `VITE_DEMO=1`.
-
-**4. Jalankan server pengembangan**
-
-```bash
 npm run dev
 ```
 
-Buka alamat yang ditampilkan (biasanya `http://localhost:5173`).
+Buka alamat yang ditampilkan di terminal (biasanya `http://localhost:5173`).
+Selama `.env.local` berisi `VITE_DEMO=1`, login dilewati sehingga seluruh
+tampilan bisa langsung dicoba tanpa mengisi kredensial Firebase.
 
-**5. Bangun untuk produksi**
+Untuk build produksi:
 
 ```bash
 npm run build
@@ -218,19 +192,19 @@ npm run preview
 
 | Rute | Deskripsi |
 | --- | --- |
-| `/` | Halaman utama pemilihan peran |
-| `/login` | Login mahasiswa |
-| `/admin/login` | Login admin |
+| `/` | Halaman pemilihan peran |
+| `/login`, `/daftar` | Login dan pendaftaran mahasiswa |
 | `/app` | Beranda mahasiswa |
+| `/admin/login` | Login admin (Google) |
 | `/admin` | Dashboard admin |
 
 ---
 
-## 🔥 Konfigurasi Firebase
+## Konfigurasi Firebase
 
-1. Buat proyek pada [Firebase Console](https://console.firebase.google.com/).
-2. Aktifkan **Authentication → Sign-in method → Email/Password**.
-3. Salin kredensial Web App ke berkas `.env.local`:
+1. Buat proyek di [Firebase Console](https://console.firebase.google.com/).
+2. Aktifkan **Authentication → Sign-in method → Email/Password** dan **Google**.
+3. Salin kredensial Web App ke `.env.local`:
 
    ```env
    VITE_FIREBASE_API_KEY=...
@@ -239,23 +213,19 @@ npm run preview
    VITE_FIREBASE_STORAGE_BUCKET=...
    VITE_FIREBASE_MESSAGING_SENDER_ID=...
    VITE_FIREBASE_APP_ID=...
+   VITE_ADMIN_EMAILS=email-admin-anda@gmail.com
    ```
 
-4. Buat akun uji pada tab **Users**:
-   - Mahasiswa: `<nim>@mahasiswa.perpusdigital.web.id`
-   - Admin: `<username>@admin.perpusdigital.web.id`
-5. Hapus baris `VITE_DEMO=1` untuk mengaktifkan login sungguhan.
+4. Hapus baris `VITE_DEMO=1` untuk mengaktifkan login sungguhan.
 
-> ⚠️ Berkas `.env.local` sudah tercantum dalam `.gitignore` dan **tidak akan
-> pernah** terunggah ke repository.
+> `.env.local` sudah tercantum di `.gitignore` dan tidak pernah ikut ter-commit.
 
 ---
 
-## 🎓 Integrasi SSO UIN
+## Integrasi SSO UIN
 
 Tombol **Masuk dengan SSO UIN** mengarahkan pengguna ke portal resmi
-`e-semesta.uinjkt.ac.id`. Konfigurasi mode berada pada
-`src/lib/sso.ts` melalui `SSO_MODE`:
+`e-semesta.uinjkt.ac.id`. Mode diatur lewat `SSO_MODE` di `common/libs/sso.ts`:
 
 | Mode | Perilaku |
 | --- | --- |
@@ -263,66 +233,54 @@ Tombol **Masuk dengan SSO UIN** mengarahkan pengguna ke portal resmi
 | `oidc` | Alur OIDC/CAS resmi (aktif setelah aplikasi terdaftar) |
 | `simulasi` | Alur simulasi untuk pengembangan |
 
-> Integrasi login otomatis penuh membutuhkan pendaftaran aplikasi secara resmi
-> ke pengelola SSO kampus (PTIPD UIN) untuk memperoleh `client_id` dan endpoint.
-> Penukaran token wajib dilakukan di sisi server, bukan di peramban.
+Integrasi login otomatis penuh membutuhkan pendaftaran resmi ke pengelola SSO
+kampus (PTIPD UIN) untuk memperoleh `client_id` dan endpoint; penukaran token
+wajib dilakukan di sisi server, bukan di peramban.
 
 ---
 
-## 🛡️ Keamanan
+## Keamanan
 
-Praktik keamanan yang diterapkan pada aplikasi:
+- Seluruh kredensial dibaca dari `.env.local`, tidak pernah di-commit.
+- Validasi input: format NIM, username, dan panjang kata sandi.
+- Pembatasan percobaan login: penguncian sementara setelah beberapa kali gagal.
+- Logout otomatis saat pengguna tidak aktif; sesi berakhir saat tab ditutup.
+- Panel admin dibatasi allowlist email dan hanya menerima login Google.
+- Permintaan ke Google Books memakai endpoint publik tanpa kredensial, dengan
+  timeout dan fallback aman bila gagal.
 
-- **Rahasia berbasis lingkungan** - seluruh kredensial dibaca dari `.env.local`
-  yang tidak pernah di-commit.
-- **Validasi input** - pemeriksaan format NIM, username, dan panjang kata sandi.
-- **Pembatasan percobaan login** - penguncian sementara setelah beberapa kali gagal.
-- **Logout otomatis** - sesi berakhir ketika pengguna tidak aktif.
-- **Persistensi sesi terbatas** - sesi hanya bertahan selama tab peramban terbuka.
-- **Pemisahan peran** - penjaga rute memisahkan area mahasiswa dan admin.
-
-Rincian selengkapnya tersedia pada berkas [`SECURITY.md`](SECURITY.md).
+Rincian lengkap ada di [`SECURITY.md`](SECURITY.md).
 
 ---
 
-## 📜 Skrip yang Tersedia
+## Skrip
 
-Dijalankan dari `frontend-federation/app-shell`:
+Dijalankan dari `app-shell`:
 
 | Perintah | Keterangan |
 | --- | --- |
-| `npm run dev` | Menjalankan server pengembangan |
-| `npm run build` | Membangun berkas produksi ke `dist/` |
-| `npm run preview` | Meninjau hasil build produksi secara lokal |
+| `npm run dev` | Server pengembangan |
+| `npm run build` | Build produksi ke `dist/` |
+| `npm run preview` | Meninjau hasil build secara lokal |
 
 ---
 
-## 🗺️ Peta Jalan
+## Peta Jalan
 
 - [ ] Menghubungkan koleksi dan peminjaman ke Cloud Firestore.
 - [ ] Penyimpanan berkas e-book pada Firebase Storage.
 - [ ] Integrasi SSO OIDC/CAS resmi dengan penukaran token di sisi server.
-- [ ] Notifikasi tenggat pengembalian secara otomatis.
+- [ ] Notifikasi tenggat pengembalian lewat email/push, bukan hanya in-app.
 - [ ] Ekspor laporan ke format PDF dan Excel yang sesungguhnya.
 
 ---
 
-## 📄 Lisensi
+## Lisensi
 
-Proyek ini dirilis di bawah **Lisensi MIT**. Lihat berkas [`LICENSE`](LICENSE)
-untuk keterangan selengkapnya.
-
----
-
-## 👤 Penulis
-
-**damta8827773**
-
-- GitHub: [@damta8827773](https://github.com/damta8827773)
+Lisensi MIT. Lihat [`LICENSE`](LICENSE).
 
 ---
 
 <p align="center">
-  Dibuat untuk UIN Syarif Hidayatullah Jakarta.<br/>
-  Jika proyek ini bermanfaat, berikan ⭐ pada repository ini.
+  <sub>Perpustakaan Digital UIN Syarif Hidayatullah Jakarta</sub>
 </p>

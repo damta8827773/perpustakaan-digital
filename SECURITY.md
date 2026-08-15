@@ -10,6 +10,9 @@
    - Anti brute-force: 5 kegagalan dalam 10 menit mengunci login 5 menit.
    - Logout otomatis setelah 15 menit idle.
    - Route guard berbasis role (student/admin) dari domain email.
+   - Akses panel admin dibatasi allowlist email (`VITE_ADMIN_EMAILS`) dan
+     hanya menerima login melalui akun Google terverifikasi, sehingga akses
+     tidak dapat dipalsukan hanya dengan menebak alamat email.
 
 2. Browser hardening
    - Content-Security-Policy (meta di `index.html`, header penuh di
@@ -21,10 +24,11 @@
    - `firestore.rules`: default tolak semua; buku hanya bisa ditulis admin;
      data pinjaman hanya bisa dibaca pemiliknya atau admin.
 
-4. Edge dan jaringan (stub arsitektur)
-   - `hyper-edge/ai-waf`: penyaringan pola SQLi/XSS sebelum origin.
-   - `hyper-edge/auth-edge-validator`: verifikasi JWT di edge.
-   - `platform-engineering/ebpf-networking`: blokir IP abusive di kernel.
+4. Data pihak ketiga
+   - Sampul dan metadata buku diambil dari Google Books API (`services/googleBooks.ts`)
+     melalui permintaan `GET` publik tanpa mengirim kredensial apa pun.
+   - Hasil pencarian disaring (hanya field teks/URL gambar yang dipakai) dan
+     selalu punya jalur cadangan (sampul warna) bila permintaan gagal.
 
 ## Hal yang harus dijaga manual
 
