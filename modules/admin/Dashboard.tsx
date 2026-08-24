@@ -1,8 +1,31 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Copy, BookOpen, AlertCircle, Users } from "lucide-react";
 import { ADMIN_STATS, ADMIN_ACTIVITIES, POPULAR_CATEGORIES } from "@/common/constants/catalog";
 import { Badge, Card } from "@/components/ui";
 import { CountUp } from "@/components/CountUp";
+
+function PopularCategoryBar({ name, count, max }: { name: string; count: number; max: number }) {
+  const [grown, setGrown] = useState(false);
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setGrown(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
+  return (
+    <div className="group">
+      <div className="flex items-center justify-between">
+        <span className="font-display text-[17px] font-bold">{name}</span>
+        <span className="text-[15px] font-semibold text-primary">{count}</span>
+      </div>
+      <div className="mt-2.5 h-2 overflow-hidden rounded-full bg-muted">
+        <div
+          className="h-full rounded-full bg-primary transition-[width] duration-700 ease-out group-hover:bg-primary-dark"
+          style={{ width: grown ? `${(count / max) * 100}%` : "0%" }}
+        />
+      </div>
+    </div>
+  );
+}
 
 const STATS = [
   { icon: Copy, value: ADMIN_STATS.totalCollection, label: "Total Koleksi", bg: "bg-primary-light", fg: "text-primary" },
@@ -78,18 +101,7 @@ export default function Dashboard() {
         <h2 className="font-display text-xl font-bold">Kategori Populer</h2>
         <div className="mt-6 grid grid-cols-2 gap-x-10 gap-y-6 lg:grid-cols-5">
           {POPULAR_CATEGORIES.map((c) => (
-            <div key={c.name}>
-              <div className="flex items-center justify-between">
-                <span className="font-display text-[17px] font-bold">{c.name}</span>
-                <span className="text-[15px] font-semibold text-primary">{c.count}</span>
-              </div>
-              <div className="mt-2.5 h-2 overflow-hidden rounded-full bg-muted">
-                <div
-                  className="h-full rounded-full bg-primary"
-                  style={{ width: `${(c.count / max) * 100}%` }}
-                />
-              </div>
-            </div>
+            <PopularCategoryBar key={c.name} name={c.name} count={c.count} max={max} />
           ))}
         </div>
       </Card>

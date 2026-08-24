@@ -11,11 +11,16 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   updateProfile,
-  GoogleAuthProvider,
-  signInWithPopup,
   sendPasswordResetEmail,
+  reauthenticateWithCredential,
+  updatePassword,
+  EmailAuthProvider,
 } from "firebase/auth";
 import { auth } from "@/common/libs/firebase";
+import { signInWithGooglePopup } from "@/services/googleAuth";
+import { ensureUserDoc, type UserRole } from "@/services/userDoc";
+import { setAdminSession } from "@/services/admin";
+import { isValidPassword } from "@/common/libs/security";
 
 const DEMO = import.meta.env.VITE_DEMO === "1";
 
@@ -148,58 +153,59 @@ export async function loginWithEmailOnly(email: string): Promise<MemberProfile> 
 }
 
 // ---------- Masuk dengan Google ----------
+//
+// Satu popup Google (lewat signInWithGooglePopup) dipakai baik dari halaman
+// mahasiswa maupun admin, lalu role ditentukan dari allowlist admin
+// (ensureUserDoc) SEBELUM profil mahasiswa dibuat — supaya akun Google yang
+// terdaftar sebagai admin tidak pernah salah dianggap mahasiswa, apa pun
+// tombol yang dipencet untuk masuk.
 
-export async function loginWithGoogle(): Promise<MemberProfile> {
-  if (!DEMO) {
-    try {
-      const cred = await signInWithPopup(auth, new GoogleAuthProvider());
-      const u = cred.user;
-      const email = (u.email ?? "").trim().toLowerCase();
-      const existing = readAll().find((a) => a.email === email);
-      if (existing) {
-        const { password: _pw, ...profile } = existing;
-        void _pw;
-        return profile;
-      }
-      const profile: MemberProfile = {
-        name: u.displayName ?? "Pengguna Google",
-        nim: "-",
-        faculty: "UIN Jakarta",
-        program: "Umum",
-        angkatan: String(new Date().getFullYear()),
-        email,
-      };
-      writeAll([...readAll(), { ...profile, password: "" }]);
-      return profile;
-    } catch (err) {
-      const code = (err as { code?: string })?.code ?? "";
-      // Provider Google belum diaktifkan -> pakai sesi demo di bawah.
-      if (
-        code !== "auth/operation-not-allowed" &&
-        code !== "auth/configuration-not-found"
-      ) {
-        if (code === "auth/popup-closed-by-user") {
-          throw new Error("Jendela Google ditutup sebelum selesai.");
-        }
-        throw new Error("Gagal masuk dengan Google. Coba lagi.");
-      }
-    }
+function memberProfileFromGoogle(identity: { email: string; name: string }): MemberProfile {
+  const existing = readAll().find((a) => a.email === identity.email);
+  if (existing) {
+    const { password: _pw, ...profile } = existing;
+    void _pw;
+    return profile;
   }
-
-  // Mode demo / provider belum aktif: buat sesi Google contoh.
-  const demo: MemberProfile = {
-    name: "Pengguna Google",
+  const profile: MemberProfile = {
+    name: identity.name || "Pengguna Google",
     nim: "-",
     faculty: "UIN Jakarta",
     program: "Umum",
     angkatan: String(new Date().getFullYear()),
-    email: "pengguna.google@gmail.com",
+    email: identity.email,
   };
-  const list = readAll();
-  if (!list.some((a) => a.email === demo.email)) {
-    writeAll([...list, { ...demo, password: "" }]);
+  writeAll([...readAll(), { ...profile, password: "" }]);
+  return profile;
+}
+
+export async function loginWithGoogle(): Promise<{ profile: MemberProfile; role: UserRole }> {
+  const identity = await signInWithGooglePopup({
+    uid: "demo-google-user",
+    email: "pengguna.google@gmail.com",
+    name: "Pengguna Google",
+  });
+  const userDoc = await ensureUserDoc(identity);
+
+  if (userDoc.role === "admin") {
+    // Profil mahasiswa sengaja tidak dibuat/ditulis ke localStorage untuk
+    // akun admin. Tandai sesi admin di sini juga (bukan cuma dari
+    // /admin/login) supaya Guard need="admin" mengenali sesi ini.
+    setAdminSession(identity.email);
+    return {
+      profile: {
+        name: identity.name,
+        nim: "-",
+        faculty: "-",
+        program: "-",
+        angkatan: "-",
+        email: identity.email,
+      },
+      role: "admin",
+    };
   }
-  return demo;
+
+  return { profile: memberProfileFromGoogle(identity), role: "student" };
 }
 
 // ---------- Lupa kata sandi ----------
@@ -230,7 +236,8 @@ export async function sendResetPassword(email: string): Promise<void> {
 
 // ---------- Ubah kata sandi ----------
 
-export function changePassword(
+/** Cadangan lokal (dipakai mode demo / provider Email-Password belum aktif). */
+function changePasswordLocal(
   email: string,
   oldPassword: string,
   newPassword: string,
@@ -242,9 +249,53 @@ export function changePassword(
   if (list[idx].password !== oldPassword) {
     throw new Error("Kata sandi lama salah.");
   }
-  if (newPassword.length < 6) {
-    throw new Error("Kata sandi baru minimal 6 karakter.");
-  }
   list[idx] = { ...list[idx], password: newPassword };
   writeAll(list);
+}
+
+/**
+ * Ganti kata sandi memakai Firebase Auth asli (reauthenticate + updatePassword)
+ * untuk akun email/password sungguhan — bukan sekadar menimpa cadangan lokal
+ * seperti sebelumnya. Akun Google tidak memiliki kata sandi untuk diubah.
+ */
+export async function changePasswordSecure(
+  email: string,
+  oldPassword: string,
+  newPassword: string,
+): Promise<void> {
+  if (!isValidPassword(newPassword)) {
+    throw new Error("Kata sandi baru minimal 8 karakter.");
+  }
+
+  const user = auth.currentUser;
+  const hasPasswordProvider = !!user?.providerData.some((p) => p.providerId === "password");
+
+  if (!DEMO && user && hasPasswordProvider) {
+    try {
+      await reauthenticateWithCredential(user, EmailAuthProvider.credential(email, oldPassword));
+      await updatePassword(user, newPassword);
+    } catch (err) {
+      const code = (err as { code?: string })?.code ?? "";
+      if (code === "auth/wrong-password" || code === "auth/invalid-credential") {
+        throw new Error("Kata sandi lama salah.");
+      }
+      throw new Error("Gagal mengubah kata sandi. Coba lagi.");
+    }
+    try {
+      const clean = email.trim().toLowerCase();
+      const list = readAll();
+      const idx = list.findIndex((a) => a.email === clean);
+      if (idx !== -1) writeAll(list.map((a, i) => (i === idx ? { ...a, password: newPassword } : a)));
+    } catch {
+      // Cadangan lokal gagal disinkronkan -> abaikan, kata sandi asli sudah berhasil diubah.
+    }
+    return;
+  }
+
+  if (!DEMO && user && !hasPasswordProvider) {
+    throw new Error("Akun ini masuk lewat Google dan tidak memiliki kata sandi untuk diubah.");
+  }
+
+  // Mode demo, atau provider Email/Password belum aktif di Firebase Console.
+  changePasswordLocal(email, oldPassword, newPassword);
 }

@@ -1,9 +1,15 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, ChevronLeft, ChevronRight, Minus, Plus, Moon, Bookmark } from "lucide-react";
+import {
+  ArrowLeft, ChevronLeft, ChevronRight, Minus, Plus, Moon, Bookmark,
+  Volume2, Pause, Square, Gauge,
+} from "lucide-react";
 import { bookById } from "@/common/constants/catalog";
 import { ebookContent, ebookReferences } from "@/contents/ebooks";
 import { useToast } from "@/components/Toast";
+import { useSpeechReader } from "@/hooks/useSpeechReader";
+
+const RATES = [0.75, 1, 1.25, 1.5];
 
 export default function Reader() {
   const { id } = useParams();
@@ -14,8 +20,18 @@ export default function Reader() {
   const [chapterIdx, setChapterIdx] = useState(0);
   const [bookmarked, setBookmarked] = useState(false);
 
-  if (!book) return <p>Buku tidak ditemukan.</p>;
-  const content = ebookContent(book.id);
+  // Dihitung sebelum kemungkinan early-return di bawah, supaya useSpeechReader
+  // (hook) selalu dipanggil di urutan yang sama setiap render.
+  const bookId = book?.id ?? "";
+  const content = book ? ebookContent(bookId) : null;
+  const speechText = !content
+    ? ""
+    : chapterIdx === content.chapters.length
+      ? ebookReferences(bookId).join(". ")
+      : `${content.chapters[chapterIdx].title}. ${content.chapters[chapterIdx].paragraphs.join(" ")}`;
+  const speech = useSpeechReader(speechText);
+
+  if (!book || !content) return <p>Buku tidak ditemukan.</p>;
   const references = ebookReferences(book.id);
   const totalChapters = content.chapters.length + 1; // + Daftar Pustaka
   const isReferences = chapterIdx === content.chapters.length;
@@ -54,6 +70,46 @@ export default function Reader() {
                 <Plus size={15} />
               </button>
             </div>
+            {speech.supported && (
+              <div
+                className={`flex items-center gap-1 rounded-xl px-2 py-1.5 ${dark ? "bg-white/10" : "bg-muted"}`}
+              >
+                <button
+                  onClick={() => {
+                    if (speech.status === "speaking") speech.pause();
+                    else if (speech.status === "paused") speech.resume();
+                    else speech.play();
+                  }}
+                  className="cursor-pointer rounded-md p-1.5 hover:bg-black/10"
+                  aria-label={speech.status === "speaking" ? "Jeda bacaan" : "Dengarkan bab ini"}
+                  title="Dengarkan bab ini"
+                >
+                  {speech.status === "speaking" ? <Pause size={15} /> : <Volume2 size={15} />}
+                </button>
+                {speech.status !== "idle" && (
+                  <button
+                    onClick={speech.stop}
+                    className="cursor-pointer rounded-md p-1.5 hover:bg-black/10"
+                    aria-label="Hentikan bacaan"
+                    title="Hentikan"
+                  >
+                    <Square size={13} />
+                  </button>
+                )}
+                <button
+                  onClick={() => {
+                    const next = RATES[(RATES.indexOf(speech.rate) + 1) % RATES.length];
+                    speech.setRate(next);
+                    if (speech.status !== "idle") speech.play();
+                  }}
+                  className="flex cursor-pointer items-center gap-1 rounded-md px-1.5 py-1.5 text-sm font-semibold hover:bg-black/10"
+                  aria-label="Kecepatan bacaan"
+                  title="Kecepatan bacaan"
+                >
+                  <Gauge size={14} /> {speech.rate}x
+                </button>
+              </div>
+            )}
             <button
               onClick={() => setDark((d) => !d)}
               className={`cursor-pointer rounded-xl p-2.5 ${dark ? "bg-white/10" : "bg-muted"}`}

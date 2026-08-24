@@ -17,6 +17,8 @@ import {
   isValidNim, isValidUsername, isValidPassword,
   loginLockSeconds, recordLoginFailure, clearLoginFailures,
 } from "@/common/libs/security";
+import { isAdminEmail } from "@/services/admin";
+import { ensureUserDoc } from "@/services/userDoc";
 
 export type Role = "student" | "admin" | null;
 
@@ -33,8 +35,12 @@ const AuthContext = createContext<AuthState | null>(null);
 
 function roleFromEmail(email: string | null): Role {
   if (!email) return null;
-  if (email.endsWith(`@${ADMIN_EMAIL_DOMAIN}`)) return "admin";
-  if (email.endsWith(`@${STUDENT_EMAIL_DOMAIN}`)) return "student";
+  const clean = email.trim().toLowerCase();
+  // Email Google asli yang terdaftar di allowlist admin harus tetap dikenali
+  // sebagai admin di sini juga — bukan cuma di jalur login Google — supaya
+  // sesi admin yang nyasar ke area /app tidak dianggap mahasiswa biasa.
+  if (isAdminEmail(clean) || clean.endsWith(`@${ADMIN_EMAIL_DOMAIN}`)) return "admin";
+  if (clean.endsWith(`@${STUDENT_EMAIL_DOMAIN}`)) return "student";
   return "student";
 }
 
@@ -82,11 +88,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!isValidNim(nim)) throw new Error("invalid-nim");
       if (!isValidPassword(password)) throw new Error("invalid-password");
       await guardedSignIn(studentEmail(nim), password);
+      // Email sintetis (@mahasiswa...) tidak pernah cocok allowlist admin,
+      // jadi role dipaksa "student" di sini (bukan dihitung dari email).
+      const u = auth.currentUser;
+      if (u) void ensureUserDoc({ uid: u.uid, email: studentEmail(nim), name: u.displayName ?? "" }, "student");
     },
     loginAdmin: async (username, password) => {
       if (!isValidUsername(username)) throw new Error("invalid-username");
       if (!isValidPassword(password)) throw new Error("invalid-password");
       await guardedSignIn(adminEmail(username), password);
+      const u = auth.currentUser;
+      if (u) void ensureUserDoc({ uid: u.uid, email: adminEmail(username), name: u.displayName ?? "" }, "admin");
     },
     logout: () => signOut(auth),
   };

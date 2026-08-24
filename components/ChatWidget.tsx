@@ -1,0 +1,76 @@
+import { useState } from "react";
+import { MessageCircle, X, Clock } from "lucide-react";
+import { auth } from "@/common/libs/firebase";
+import { ChatThread } from "@/components/ChatThread";
+import { useCurrentStudent } from "@/services/sessionStore";
+import {
+  isChatAvailable, markChatRead, useChatSummary, useWaitingQueueCount,
+} from "@/services/chatStore";
+
+/** Tombol chat mengambang untuk portal mahasiswa, dipasang sekali di UserShell. */
+export function ChatWidget() {
+  const [open, setOpen] = useState(false);
+  const student = useCurrentStudent();
+  const uid = auth.currentUser?.uid ?? null;
+  const summary = useChatSummary(uid);
+  const available = isChatAvailable() && !!uid;
+  const isWaiting = !!summary?.unreadByAdmin;
+  const queueCount = useWaitingQueueCount(isWaiting);
+
+  function toggle() {
+    setOpen((o) => {
+      const next = !o;
+      if (next && uid) void markChatRead(uid, "student");
+      return next;
+    });
+  }
+
+  return (
+    <div className="fixed bottom-6 right-6 z-40">
+      {open && (
+        <div className="mb-3 flex h-[520px] w-[340px] flex-col overflow-hidden rounded-2xl border border-line bg-card shadow-2xl">
+          <div className="flex shrink-0 items-center justify-between border-b border-line px-4 py-3">
+            <span className="font-display font-bold">Live Chat Admin</span>
+            <button
+              onClick={() => setOpen(false)}
+              className="cursor-pointer rounded-md p-1 text-muted-fg hover:bg-muted"
+              aria-label="Tutup"
+            >
+              <X size={18} />
+            </button>
+          </div>
+          {isWaiting && queueCount > 1 && (
+            <div className="flex shrink-0 items-center gap-2 border-b border-line bg-warning-light/60 px-4 py-2 text-xs font-semibold text-warning">
+              <Clock size={13} /> Sekitar {queueCount - 1} mahasiswa lain juga sedang menunggu balasan admin.
+            </div>
+          )}
+          {available && uid ? (
+            <ChatThread
+              studentUid={uid}
+              studentName={student.name}
+              viewerRole="student"
+              viewerUid={uid}
+              viewerName={student.name}
+            />
+          ) : (
+            <div className="flex flex-1 items-center justify-center px-6 text-center text-sm text-muted-fg">
+              {isChatAvailable()
+                ? "Masuk dengan akun (Google atau kata sandi) untuk memakai live chat."
+                : "Fitur chat memerlukan konfigurasi Firebase (nonaktif di mode demo)."}
+            </div>
+          )}
+        </div>
+      )}
+      <button
+        onClick={toggle}
+        className="relative flex h-14 w-14 cursor-pointer items-center justify-center rounded-full bg-primary text-white shadow-lg transition-colors hover:bg-primary-dark"
+        aria-label="Live chat admin"
+      >
+        {open ? <X size={22} /> : <MessageCircle size={22} />}
+        {!open && summary?.unreadByStudent && (
+          <span className="absolute right-0 top-0 h-3.5 w-3.5 rounded-full border-2 border-card bg-destructive" />
+        )}
+      </button>
+    </div>
+  );
+}

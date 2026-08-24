@@ -1,9 +1,9 @@
 // Kontrol akses admin: HANYA email dalam allowlist yang boleh masuk ke panel
 // admin. Semua email lain diblokir.
-import {
-  GoogleAuthProvider, signInWithPopup, signOut,
-} from "firebase/auth";
+import { signOut } from "firebase/auth";
 import { auth } from "@/common/libs/firebase";
+import { signInWithGooglePopup } from "@/services/googleAuth";
+import { ensureUserDoc } from "@/services/userDoc";
 
 // Daftar email yang memiliki akses admin. Diisi dari environment variable
 // (VITE_ADMIN_EMAILS, dipisah koma) agar email asli tidak tersimpan di
@@ -32,42 +32,41 @@ export function isAdminAuthed(): boolean {
   return !!email && isAdminEmail(email);
 }
 
+/**
+ * Tandai sesi admin aktif di localStorage (dibaca oleh Guard need="admin" di
+ * app/App.tsx). Diekspor supaya bisa dipanggil dari jalur login mana pun yang
+ * berhasil mengonfirmasi role admin — bukan cuma dari halaman /admin/login.
+ */
+export function setAdminSession(email: string): void {
+  localStorage.setItem(KEY, email.trim().toLowerCase());
+}
+
 export function clearAdminSession(): void {
   localStorage.removeItem(KEY);
   if (!DEMO) void signOut(auth).catch(() => {});
 }
 
 /**
- * Login admin memakai akun Google (Firebase). Identitas diverifikasi oleh
- * Google, bukan sekadar diketik, sehingga email tidak bisa ditebak. Hanya akun
- * Google dengan email dalam allowlist yang diterima.
+ * Login admin memakai akun Google (Firebase). Popup Google yang sama dipakai
+ * di halaman mahasiswa (lihat services/accounts.ts::loginWithGoogle) supaya
+ * cuma ada SATU jalur pengecekan allowlist admin, bukan dua yang bisa beda
+ * hasil. Hanya akun Google dengan email dalam allowlist yang diterima.
  *
  * Pada mode demo (provider Google belum aktif), alur popup tidak tersedia,
  * sehingga sesi admin dibuat sebagai email allowlist untuk keperluan pratinjau.
  */
 export async function loginAdminWithGoogle(): Promise<void> {
-  if (!DEMO) {
-    try {
-      const cred = await signInWithPopup(auth, new GoogleAuthProvider());
-      const email = (cred.user.email ?? "").trim().toLowerCase();
-      if (!isAdminEmail(email)) {
-        await signOut(auth).catch(() => {});
-        throw new Error("Akun Google ini tidak memiliki akses admin.");
-      }
-      localStorage.setItem(KEY, email);
-      return;
-    } catch (err) {
-      if (err instanceof Error && err.message.includes("akses admin")) throw err;
-      const code = (err as { code?: string })?.code ?? "";
-      if (code === "auth/popup-closed-by-user") {
-        throw new Error("Jendela Google ditutup sebelum selesai.");
-      }
-      // Provider Google belum aktif -> lanjut ke sesi demo di bawah.
-      if (code !== "auth/operation-not-allowed" && code !== "auth/configuration-not-found") {
-        throw new Error("Gagal masuk dengan Google. Coba lagi.");
-      }
-    }
+  const identity = await signInWithGooglePopup({
+    uid: "demo-admin-user",
+    email: ADMIN_EMAILS[0],
+    name: "Admin Demo",
+  });
+  const userDoc = await ensureUserDoc(identity);
+
+  if (userDoc.role !== "admin") {
+    if (!DEMO) await signOut(auth).catch(() => {});
+    throw new Error("Akun Google ini tidak memiliki akses admin.");
   }
 
-  localStorage.setItem(KEY, ADMIN_EMAILS[0]);
+  setAdminSession(identity.email);
 }

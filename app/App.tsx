@@ -23,6 +23,7 @@ import Dashboard from "@/modules/admin/Dashboard";
 import Koleksi from "@/modules/admin/Koleksi";
 import PeminjamanAdmin from "@/modules/admin/Peminjaman";
 import Anggota from "@/modules/admin/Anggota";
+import Pesan from "@/modules/admin/Pesan";
 import Laporan from "@/modules/admin/Laporan";
 import UmpanBalik from "@/modules/admin/UmpanBalik";
 import AdminReader from "@/modules/admin/AdminReader";
@@ -113,6 +114,7 @@ export default function App() {
             <Route path="koleksi" element={<Koleksi />} />
             <Route path="peminjaman" element={<PeminjamanAdmin />} />
             <Route path="anggota" element={<Anggota />} />
+            <Route path="pesan" element={<Pesan />} />
             <Route path="umpan-balik" element={<UmpanBalik />} />
             <Route path="laporan" element={<Laporan />} />
           </Route>

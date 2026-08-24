@@ -33,7 +33,7 @@ export default function AdminLogin() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-bg px-4 py-10">
+    <div className="theme-admin flex min-h-screen items-center justify-center bg-bg px-4 py-10">
       <div className="w-full max-w-[460px] rounded-2xl bg-card px-8 py-12 shadow-sm">
         <div className="flex flex-col items-center text-center">
           <div className="flex h-[72px] w-[72px] items-center justify-center rounded-2xl bg-primary text-white">

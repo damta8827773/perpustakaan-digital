@@ -1,20 +1,48 @@
 rules_version = '2';
 
-// Aturan keamanan Firestore: default tolak semua, akses berbasis role
-// yang diturunkan dari domain email akun.
+// Aturan keamanan Firestore: default tolak semua, akses berbasis role.
+//
+// PENTING: isAllowlistedAdminEmail() di bawah HARUS disalin manual dari
+// VITE_ADMIN_EMAILS (.env.local) setiap kali daftar admin berubah — Security
+// Rules tidak bisa membaca environment variable milik aplikasi. Kalau daftar
+// ini tidak disinkronkan, users/{uid} milik admin baru akan gagal dibuat
+// dengan role "admin" (fallback aman: login tetap jalan, tapi fitur yang
+// butuh status admin di Firestore — chat, reset password, dst — tidak
+// mengenali admin tsb sampai daftar ini diperbarui).
 service cloud.firestore {
   match /databases/{database}/documents {
     function isSignedIn() {
       return request.auth != null;
     }
 
+    function isAllowlistedAdminEmail() {
+      return isSignedIn() && request.auth.token.email.lower() in [
+        'damtafaiz@gmail.com' // harus sama persis dengan VITE_ADMIN_EMAILS di .env.local
+      ];
+    }
+
+    // Admin sekarang dikenali dari dokumen users/{uid}.role (ditulis oleh
+    // services/userDoc.ts saat login), BUKAN lagi dari pola domain email
+    // sintetis — itu tidak pernah cocok untuk admin yang login via Google.
     function isAdmin() {
       return isSignedIn()
-        && request.auth.token.email.matches('.*@admin[.]perpusdigital[.]web[.]id');
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
     function isOwner(uid) {
       return isSignedIn() && request.auth.uid == uid;
+    }
+
+    match /users/{uid} {
+      allow read: if isSignedIn() && (request.auth.uid == uid || isAdmin());
+      // Role saat dokumen dibuat WAJIB cocok allowlist -> mencegah user
+      // biasa membuat dokumennya sendiri dengan role "admin" dari devtools.
+      allow create: if request.auth.uid == uid
+        && request.resource.data.role == (isAllowlistedAdminEmail() ? 'admin' : 'student');
+      allow update: if isAdmin()
+        || (request.auth.uid == uid && request.resource.data.role == resource.data.role);
+      allow delete: if false;
     }
 
     match /books/{bookId} {
@@ -31,6 +59,61 @@ service cloud.firestore {
 
     match /members/{memberId} {
       allow read, write: if isAdmin();
+    }
+
+    // Live chat mahasiswa <-> admin: satu thread bersama per mahasiswa,
+    // bisa dijawab admin mana pun (bukan 1:1 ke admin tertentu).
+    match /chats/{studentUid} {
+      allow read, write: if request.auth.uid == studentUid || isAdmin();
+
+      match /messages/{messageId} {
+        allow read: if request.auth.uid == studentUid || isAdmin();
+        allow create: if (request.auth.uid == studentUid || isAdmin())
+          && request.resource.data.senderUid == request.auth.uid
+          && request.resource.data.text is string
+          && request.resource.data.text.size() > 0
+          && request.resource.data.text.size() <= 2000
+          && request.resource.data.createdAt == request.time;
+        allow update, delete: if false; // riwayat tidak bisa diedit/dihapus
+      }
+    }
+
+    // Hitungan antrean (berapa percakapan yang masih menunggu admin) —
+    // agregat tanpa identitas, aman dibaca siapa pun yang sudah masuk.
+    // Ditulis lewat transaksi client (lihat chatStore.ts); validasi longgar
+    // (cukup bilangan bulat >= 0) karena ini cuma angka informatif, bukan
+    // data yang mengontrol akses.
+    match /chatQueue/summary {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn()
+        && request.resource.data.keys().hasOnly(['waitingCount'])
+        && request.resource.data.waitingCount is int
+        && request.resource.data.waitingCount >= 0;
+    }
+
+    // Audit log reset password oleh admin: wajib ada alasan (>=20 karakter),
+    // ditegakkan di sini supaya tidak bisa dilewati dari sisi klien.
+    match /passwordResetRequests/{id} {
+      allow read: if isAdmin();
+      allow create: if isAdmin()
+        && request.resource.data.requestedByUid == request.auth.uid
+        && request.resource.data.reason is string
+        && request.resource.data.reason.size() >= 20
+        && request.resource.data.createdAt == request.time;
+      allow update, delete: if false;
+    }
+
+    // Form "hubungi admin" untuk akun yang emailnya tidak bisa menerima
+    // tautan reset (mis. akun NIM dengan email sintetis) — bisa diisi
+    // sebelum login, tapi hanya admin yang bisa membacanya kembali.
+    match /passwordResetHelpTickets/{id} {
+      allow create: if request.resource.data.nimOrEmail is string
+        && request.resource.data.nimOrEmail.size() > 0
+        && request.resource.data.message is string
+        && request.resource.data.message.size() <= 500
+        && request.resource.data.status == 'open'
+        && request.resource.data.createdAt == request.time;
+      allow read, update, delete: if isAdmin();
     }
 
     match /{document=**} {

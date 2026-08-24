@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode, type MouseEventHandler } from "react";
 import { X } from "lucide-react";
 import { findGoogleBookCover } from "@/services/googleBooks";
+import { initialsOf } from "@/services/sessionStore";
 
 export function BookCover({
   initials, color, className = "", textClass = "text-2xl",
@@ -62,6 +63,29 @@ export function RemoteCover({
 
   return (
     <BookCover initials={initials} color={color} className={className} textClass={textClass} />
+  );
+}
+
+export function Avatar({
+  photoURL, name, className = "", textClass = "text-sm",
+}: { photoURL?: string | null; name: string; className?: string; textClass?: string }) {
+  const [broken, setBroken] = useState(false);
+  if (photoURL && !broken) {
+    return (
+      <img
+        src={photoURL}
+        alt={name}
+        className={`rounded-full object-cover ${className}`}
+        onError={() => setBroken(true)}
+      />
+    );
+  }
+  return (
+    <div
+      className={`flex items-center justify-center rounded-full bg-primary font-display font-bold text-white ${textClass} ${className}`}
+    >
+      {initialsOf(name)}
+    </div>
   );
 }
 
@@ -170,7 +194,7 @@ export function Button({
 }) {
   const variants: Record<BtnVariant, string> = {
     primary: "bg-primary text-white hover:bg-primary-dark",
-    secondary: "bg-primary-light text-primary hover:bg-[#d8e8f8]",
+    secondary: "bg-primary-light text-primary hover:bg-primary-light-hover",
     accent: "bg-accent text-white hover:bg-accent-dark",
     outline: "border border-line bg-card text-fg hover:bg-muted",
     "outline-primary": "border border-primary bg-card text-primary hover:bg-primary-light",
@@ -182,7 +206,7 @@ export function Button({
       type={type}
       disabled={disabled}
       onClick={onClick}
-      className={`cursor-pointer rounded-lg px-5 py-2.5 font-display text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${variants[variant]} ${className}`}
+      className={`cursor-pointer rounded-lg px-5 py-2.5 font-display text-sm font-semibold transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 disabled:active:scale-100 ${variants[variant]} ${className}`}
     >
       {children}
     </button>

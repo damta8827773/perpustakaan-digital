@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
 
 // Konfigurasi dibaca dari environment variable (file .env.local yang tidak
 // pernah masuk ke repository). Lihat .env.example untuk daftar variabel.
@@ -14,6 +15,10 @@ const firebaseConfig = {
 
 export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
+// Dipakai mulai fitur foto profil, live chat, dan reset password oleh admin.
+// Firestore Database harus diaktifkan di Firebase Console agar fitur-fitur
+// itu berfungsi (lihat README bagian Konfigurasi Firebase).
+export const db = getFirestore(app);
 
 // Login memakai NIM (mahasiswa) atau username (admin); Firebase Auth butuh
 // email, jadi identitas dipetakan ke domain internal berikut.

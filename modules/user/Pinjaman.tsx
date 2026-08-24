@@ -307,7 +307,7 @@ export default function Pinjaman() {
                           ) : (
                             <button
                               onClick={() => setRatingFor({ bookId: book.id, title: book.title })}
-                              className="cursor-pointer rounded-lg bg-primary-light px-4 py-2 text-sm font-semibold text-primary hover:bg-[#d8e8f8]"
+                              className="cursor-pointer rounded-lg bg-primary-light px-4 py-2 text-sm font-semibold text-primary hover:bg-primary-light-hover"
                             >
                               + Beri Rating
                             </button>

@@ -3,8 +3,10 @@ import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { BookOpen, Home, Search, BookMarked, Book, User, LogOut, ChevronDown } from "lucide-react";
 import { useAuth } from "@/services/auth";
 import { useIdleLogout } from "@/hooks/useIdleLogout";
-import { useCurrentStudent, initialsOf, clearCurrentStudent } from "@/services/sessionStore";
+import { useCurrentStudent, clearCurrentStudent } from "@/services/sessionStore";
 import { NotificationBell, DropdownMenu } from "@/components/HeaderMenus";
+import { Avatar } from "@/components/ui";
+import { ChatWidget } from "@/components/ChatWidget";
 
 const NAV = [
   { to: "/app", label: "Beranda", icon: Home, end: true },
@@ -64,9 +66,7 @@ export default function UserShell() {
             <DropdownMenu
               trigger={() => (
                 <div className="flex items-center gap-2.5">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-sm font-bold text-white">
-                    {initialsOf(student.name)}
-                  </div>
+                  <Avatar photoURL={student.photoURL} name={student.name} className="h-10 w-10" />
                   <div className="max-w-[110px] truncate text-left text-sm font-semibold uppercase leading-tight">
                     {firstName}
                     <br />
@@ -110,6 +110,8 @@ export default function UserShell() {
       <main className="mx-auto max-w-[1200px] px-5 py-8">
         <Outlet />
       </main>
+
+      <ChatWidget />
     </div>
   );
 }

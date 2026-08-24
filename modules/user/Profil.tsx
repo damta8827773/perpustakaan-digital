@@ -1,18 +1,21 @@
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
-  Heart, Clock, Lock, Globe, HelpCircle, LogOut, ChevronRight, BookOpen, Mail, ShieldCheck,
+  Heart, Clock, Lock, Globe, HelpCircle, LogOut, ChevronRight, BookOpen, Mail, ShieldCheck, Camera,
 } from "lucide-react";
 import { bookById } from "@/common/constants/catalog";
-import { RemoteCover, Button, Card, Modal } from "@/components/ui";
+import { RemoteCover, Button, Card, Modal, Avatar } from "@/components/ui";
 import { CountUp } from "@/components/CountUp";
 import { useToast } from "@/components/Toast";
 import { useAuth } from "@/services/auth";
 import { useLibrary, getActiveLoans } from "@/services/libraryStore";
-import { useCurrentStudent, initialsOf, clearCurrentStudent } from "@/services/sessionStore";
-import { changePassword } from "@/services/accounts";
+import { useCurrentStudent, clearCurrentStudent, updateCurrentStudent } from "@/services/sessionStore";
+import { changePasswordSecure } from "@/services/accounts";
 import { sendHelpToAdmin } from "@/services/notificationsStore";
 import { useFeedback, inboxFor } from "@/services/feedbackStore";
+import { PasswordField } from "@/components/PasswordField";
+import { uploadAvatar, isAvatarUploadAvailable } from "@/services/avatarStore";
+import { auth } from "@/common/libs/firebase";
 
 type Sheet = "wishlist" | "password" | "bantuan" | "inbox" | null;
 
@@ -25,6 +28,29 @@ export default function Profil() {
   useFeedback(); // berlangganan agar balasan admin langsung muncul
   const [sheet, setSheet] = useState<Sheet>(null);
   const [lang, setLang] = useState("Indonesia");
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  async function handlePhotoChange(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    const uid = auth.currentUser?.uid;
+    if (!uid) {
+      notify("Tidak bisa mengganti foto: sesi tidak ditemukan.");
+      return;
+    }
+    setUploadingPhoto(true);
+    try {
+      const photoURL = await uploadAvatar(uid, file);
+      updateCurrentStudent({ photoURL });
+      notify("Foto profil berhasil diperbarui.");
+    } catch (err) {
+      notify((err as Error).message || "Gagal mengunggah foto.");
+    } finally {
+      setUploadingPhoto(false);
+    }
+  }
 
   const email = student.email || `${student.nim}@mahasiswa.uinjkt.ac.id`;
   const inbox = inboxFor(email);
@@ -65,8 +91,29 @@ export default function Profil() {
       <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-[380px_1fr]">
         <div>
           <Card className="flex flex-col items-center p-9 text-center">
-            <div className="flex h-[120px] w-[120px] items-center justify-center rounded-full bg-primary font-display text-4xl font-bold text-white">
-              {initialsOf(student.name)}
+            <div className="relative">
+              <Avatar
+                photoURL={student.photoURL}
+                name={student.name}
+                className="h-[120px] w-[120px]"
+                textClass="text-4xl"
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploadingPhoto || !isAvatarUploadAvailable()}
+                title={isAvatarUploadAvailable() ? "Ganti foto profil" : "Fitur perlu konfigurasi Firebase"}
+                className="absolute bottom-0 right-0 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border-2 border-card bg-fg text-white shadow-sm transition-colors hover:bg-fg/90 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <Camera size={16} />
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className="hidden"
+                onChange={handlePhotoChange}
+              />
             </div>
             <h2 className="mt-6 font-display text-[26px] font-bold uppercase">{student.name}</h2>
             <p className="mt-1 text-lg uppercase text-muted-fg">{student.nim}</p>
@@ -225,18 +272,23 @@ function ChangePasswordModal({
   const [newPw, setNewPw] = useState("");
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
   const input =
     "mt-2 w-full rounded-xl border border-line px-4 py-3 text-[15px] outline-none focus:border-primary";
 
-  function submit(e: FormEvent) {
+  async function submit(e: FormEvent) {
     e.preventDefault();
     if (!email) return setError("Ubah sandi hanya untuk akun email. Akun SSO dikelola oleh UIN.");
     if (newPw !== confirm) return setError("Konfirmasi kata sandi tidak sama.");
+    setError("");
+    setBusy(true);
     try {
-      changePassword(email, oldPw, newPw);
+      await changePasswordSecure(email, oldPw, newPw);
       onDone();
     } catch (err) {
       setError((err as Error).message);
+    } finally {
+      setBusy(false);
     }
   }
 
@@ -244,15 +296,15 @@ function ChangePasswordModal({
     <Modal title="Ubah Password" onClose={onClose}>
       <form onSubmit={submit}>
         <label className="font-display text-[15px] font-semibold">Kata Sandi Lama</label>
-        <input type="password" value={oldPw} onChange={(e) => setOldPw(e.target.value)} className={input} />
+        <PasswordField value={oldPw} onChange={setOldPw} className={input} autoComplete="current-password" />
         <label className="mt-4 block font-display text-[15px] font-semibold">Kata Sandi Baru</label>
-        <input type="password" value={newPw} onChange={(e) => setNewPw(e.target.value)} className={input} />
+        <PasswordField value={newPw} onChange={setNewPw} className={input} showStrength autoComplete="new-password" />
         <label className="mt-4 block font-display text-[15px] font-semibold">Ulangi Sandi Baru</label>
-        <input type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} className={input} />
+        <PasswordField value={confirm} onChange={setConfirm} className={input} autoComplete="new-password" />
         {error && <p className="mt-4 rounded-lg bg-destructive-light px-4 py-3 text-sm text-destructive">{error}</p>}
         <div className="mt-6 grid grid-cols-2 gap-4">
           <Button variant="outline" className="py-3.5" onClick={onClose}>Batal</Button>
-          <Button type="submit" className="py-3.5">Simpan</Button>
+          <Button type="submit" className="py-3.5" disabled={busy}>{busy ? "Menyimpan..." : "Simpan"}</Button>
         </div>
       </form>
     </Modal>

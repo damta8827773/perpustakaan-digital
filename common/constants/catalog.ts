@@ -230,6 +230,7 @@ export interface Member {
   activeLoans: number;
   source?: "manual" | "sso";
   program?: string;
+  email?: string;
 }
 
 // Tanpa anggota contoh: daftar anggota hanya berisi mahasiswa yang benar-benar

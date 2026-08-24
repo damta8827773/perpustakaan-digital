@@ -1,16 +1,21 @@
-import { useState, useSyncExternalStore } from "react";
-import { Search, Filter, Eye } from "lucide-react";
+import { useState, useSyncExternalStore, type FormEvent } from "react";
+import { Search, Filter, Eye, ShieldAlert, KeyRound, CheckCircle2 } from "lucide-react";
 import { MEMBERS, type Member } from "@/common/constants/catalog";
 import { getSsoMembers, subscribe } from "@/services/membersStore";
-import { Badge, Card, Modal } from "@/components/ui";
+import { Badge, Card, Modal, Button } from "@/components/ui";
+import { useToast } from "@/components/Toast";
+import { adminTriggerPasswordReset, isPasswordResetAvailable } from "@/services/passwordReset";
+import { resolveHelpTicket, useOpenHelpTickets } from "@/services/passwordResetHelp";
 
 const FACULTIES = ["Semua", "SAINTEK", "SYARIAH", "FST", "FEBI", "ADAB", "FISIP"];
 
 export default function Anggota() {
+  const { notify } = useToast();
   const [query, setQuery] = useState("");
   const [faculty, setFaculty] = useState("Semua");
   const [filterOpen, setFilterOpen] = useState(false);
   const [detail, setDetail] = useState<Member | null>(null);
+  const [resetTarget, setResetTarget] = useState<Member | null>(null);
   const ssoMembers = useSyncExternalStore(subscribe, getSsoMembers);
   const all = [...ssoMembers, ...MEMBERS];
   const q = query.trim().toLowerCase();
@@ -19,9 +24,38 @@ export default function Anggota() {
     if (faculty !== "Semua" && m.faculty !== faculty) return false;
     return true;
   });
+  const helpTickets = useOpenHelpTickets(isPasswordResetAvailable());
 
   return (
     <div>
+      {helpTickets.length > 0 && (
+        <Card className="mb-6 divide-y divide-line border-warning/40 bg-warning-light/30">
+          <div className="flex items-center gap-2 px-5 py-4">
+            <ShieldAlert size={18} className="text-warning" />
+            <span className="font-display font-bold">
+              Permintaan Bantuan Lupa Password ({helpTickets.length})
+            </span>
+          </div>
+          {helpTickets.map((t) => (
+            <div key={t.id} className="flex items-start justify-between gap-4 px-5 py-4">
+              <div>
+                <div className="font-semibold">{t.nimOrEmail}</div>
+                {t.message && <p className="mt-1 text-sm text-muted-fg">{t.message}</p>}
+              </div>
+              <button
+                onClick={() => {
+                  void resolveHelpTicket(t.id);
+                  notify("Permintaan ditandai selesai.");
+                }}
+                className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold text-success hover:bg-success-light"
+              >
+                <CheckCircle2 size={15} /> Tandai selesai
+              </button>
+            </div>
+          ))}
+        </Card>
+      )}
+
       <div className="flex items-center gap-4">
         <div className="relative flex-1">
           <Search size={18} className="pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 text-muted-fg" />
@@ -137,8 +171,91 @@ export default function Anggota() {
               </div>
             ))}
           </div>
+
+          <div className="mt-6 border-t border-line pt-5">
+            {detail.email ? (
+              <button
+                onClick={() => setResetTarget(detail)}
+                disabled={!isPasswordResetAvailable()}
+                title={isPasswordResetAvailable() ? undefined : "Fitur perlu konfigurasi Firebase"}
+                className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-line py-3 text-[15px] font-semibold text-destructive hover:bg-destructive-light disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <KeyRound size={17} /> Reset Password (dengan alasan)
+              </button>
+            ) : (
+              <p className="text-center text-sm text-muted-fg">
+                Email anggota ini tidak tercatat — reset password tidak bisa dikirim.
+              </p>
+            )}
+          </div>
         </Modal>
       )}
+
+      {resetTarget && (
+        <ResetPasswordModal
+          member={resetTarget}
+          onClose={() => setResetTarget(null)}
+          onDone={() => {
+            setResetTarget(null);
+            notify(`Tautan reset password terkirim ke ${resetTarget.email}.`);
+          }}
+        />
+      )}
     </div>
+  );
+}
+
+function ResetPasswordModal({
+  member, onClose, onDone,
+}: { member: Member; onClose: () => void; onDone: () => void }) {
+  const [reason, setReason] = useState("");
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+  const MIN_LEN = 20;
+
+  async function submit(e: FormEvent) {
+    e.preventDefault();
+    setError("");
+    setBusy(true);
+    try {
+      await adminTriggerPasswordReset({ name: member.name, email: member.email ?? "" }, reason);
+      onDone();
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <Modal title="Reset Password" onClose={onClose}>
+      <form onSubmit={submit}>
+        <p className="text-[15px] text-muted-fg">
+          Tautan reset akan dikirim ke <strong className="text-fg">{member.email}</strong>.
+          Ini hanya memicu tautan reset resmi Firebase — admin tidak pernah
+          melihat atau menyentuh password asli anggota.
+        </p>
+        <label className="mt-4 block font-display text-[15px] font-semibold">
+          Alasan (wajib, minimal {MIN_LEN} karakter)
+        </label>
+        <textarea
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+          rows={3}
+          placeholder="Contoh: Anggota melapor lewat live chat tidak bisa masuk sejak..."
+          className="mt-2 w-full resize-none rounded-xl border border-line px-4 py-3 text-[15px] outline-none focus:border-primary"
+        />
+        <div className="mt-1 text-right text-xs text-muted-fg">{reason.trim().length}/{MIN_LEN}</div>
+        {error && (
+          <p className="mt-2 rounded-lg bg-destructive-light px-4 py-3 text-sm text-destructive">{error}</p>
+        )}
+        <div className="mt-4 grid grid-cols-2 gap-4">
+          <Button variant="outline" className="py-3.5" onClick={onClose} type="button">Batal</Button>
+          <Button type="submit" className="py-3.5" disabled={busy || reason.trim().length < MIN_LEN}>
+            {busy ? "Mengirim..." : "Kirim Reset"}
+          </Button>
+        </div>
+      </form>
+    </Modal>
   );
 }

@@ -11,6 +11,7 @@ export interface SessionStudent {
   program: string;
   angkatan: string;
   email: string;
+  photoURL?: string;
 }
 
 const DEFAULT: SessionStudent = {
@@ -58,6 +59,11 @@ export function setCurrentStudent(student: SessionStudent): void {
   cache = student;
   localStorage.setItem(KEY, JSON.stringify(student));
   listeners.forEach((l) => l());
+}
+
+/** Perbarui sebagian field identitas aktif (mis. photoURL setelah unggah foto). */
+export function updateCurrentStudent(patch: Partial<SessionStudent>): void {
+  setCurrentStudent({ ...cache, ...patch });
 }
 
 /** Menghapus identitas aktif (saat logout). */

@@ -24,7 +24,7 @@ function ExportButtons({
     <div className="flex items-center gap-2.5">
       <button
         onClick={() => exportCsv("pdf")}
-        className="flex cursor-pointer items-center gap-1.5 rounded-lg bg-primary-light px-4 py-2 text-sm font-semibold text-primary hover:bg-[#d8e8f8]"
+        className="flex cursor-pointer items-center gap-1.5 rounded-lg bg-primary-light px-4 py-2 text-sm font-semibold text-primary hover:bg-primary-light-hover"
       >
         <Download size={14} /> PDF
       </button>
@@ -46,66 +46,99 @@ function LineChart() {
   const y = (v: number) => H - PADY - ((v - min) / (max - min)) * (H - PADY * 2);
   const points = data.map((d, i) => `${x(i)},${y(d.value)}`).join(" ");
   const gridValues = [0, 45, 89, 134, 178];
+  const [hover, setHover] = useState<number | null>(null);
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="mt-4 w-full">
-      {gridValues.map((v) => (
-        <g key={v}>
-          <line
-            x1={PADX} x2={W - 8} y1={y(v)} y2={y(v)}
-            stroke="#e2e8f0" strokeDasharray="4 4"
-          />
-          <text x={PADX - 8} y={y(v) + 4} textAnchor="end" fontSize="10" fill="#64748b">
-            {v}
-          </text>
+    <div className="relative mt-4">
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
+        {gridValues.map((v) => (
+          <g key={v}>
+            <line
+              x1={PADX} x2={W - 8} y1={y(v)} y2={y(v)}
+              stroke="#e2e8f0" strokeDasharray="4 4"
+            />
+            <text x={PADX - 8} y={y(v) + 4} textAnchor="end" fontSize="10" fill="#64748b">
+              {v}
+            </text>
+          </g>
+        ))}
+        <g className="chart-grow">
+          <polyline points={points} fill="none" stroke="#1a73c8" strokeWidth="2.5" />
+          {data.map((d, i) => (
+            <g key={d.month}>
+              <circle
+                cx={x(i)} cy={y(d.value)}
+                r={hover === i ? 6 : 4}
+                fill="#1a73c8"
+                className="cursor-pointer transition-[r] duration-150"
+                onMouseEnter={() => setHover(i)}
+                onMouseLeave={() => setHover((h) => (h === i ? null : h))}
+              />
+              <text x={x(i)} y={H - 4} textAnchor="middle" fontSize="10" fill="#64748b">
+                {d.month}
+              </text>
+            </g>
+          ))}
         </g>
-      ))}
-      <polyline points={points} fill="none" stroke="#1a73c8" strokeWidth="2.5" />
-      {data.map((d, i) => (
-        <g key={d.month}>
-          <circle cx={x(i)} cy={y(d.value)} r="4" fill="#1a73c8" />
-          <text x={x(i)} y={H - 4} textAnchor="middle" fontSize="10" fill="#64748b">
-            {d.month}
-          </text>
-        </g>
-      ))}
-    </svg>
+      </svg>
+      {hover !== null && (
+        <div
+          className="pointer-events-none absolute -translate-x-1/2 -translate-y-full rounded-lg bg-fg px-2.5 py-1.5 text-xs font-semibold text-white shadow-lg"
+          style={{ left: `${(x(hover) / W) * 100}%`, top: `${(y(data[hover].value) / H) * 100}%`, marginTop: -8 }}
+        >
+          {data[hover].month}: {data[hover].value}
+        </div>
+      )}
+    </div>
   );
 }
 
 function Donut() {
   const R = 70, STROKE = 30, C = 2 * Math.PI * R;
+  const [hover, setHover] = useState<string | null>(null);
   let offset = 0;
   return (
     <div className="mt-4 flex items-center gap-8">
       <svg width="190" height="190" viewBox="0 0 190 190">
-        {REPORT.punctuality.map((p) => {
-          const len = (p.value / 100) * C;
-          const el = (
-            <circle
-              key={p.label}
-              cx="95" cy="95" r={R}
-              fill="none"
-              stroke={p.color}
-              strokeWidth={STROKE}
-              strokeDasharray={`${len} ${C - len}`}
-              strokeDashoffset={-offset}
-              transform="rotate(-90 95 95)"
-            />
-          );
-          offset += len;
-          return el;
-        })}
+        <g className="chart-fade-scale">
+          {REPORT.punctuality.map((p) => {
+            const len = (p.value / 100) * C;
+            const el = (
+              <circle
+                key={p.label}
+                cx="95" cy="95" r={R}
+                fill="none"
+                stroke={p.color}
+                strokeWidth={hover === p.label ? STROKE + 4 : STROKE}
+                strokeDasharray={`${len} ${C - len}`}
+                strokeDashoffset={-offset}
+                transform="rotate(-90 95 95)"
+                className="cursor-pointer transition-[stroke-width] duration-150"
+                onMouseEnter={() => setHover(p.label)}
+                onMouseLeave={() => setHover((h) => (h === p.label ? null : h))}
+              />
+            );
+            offset += len;
+            return el;
+          })}
+        </g>
         <text x="95" y="90" textAnchor="middle" fontSize="22" fontWeight="700" fill="#0d1b2a">
-          75%
+          {hover ? `${REPORT.punctuality.find((p) => p.label === hover)?.value}%` : "75%"}
         </text>
         <text x="95" y="110" textAnchor="middle" fontSize="11" fill="#64748b">
-          Tepat Waktu
+          {hover ?? "Tepat Waktu"}
         </text>
       </svg>
       <div className="space-y-4">
         {REPORT.punctuality.map((p) => (
-          <div key={p.label} className="flex items-center gap-3">
+          <div
+            key={p.label}
+            onMouseEnter={() => setHover(p.label)}
+            onMouseLeave={() => setHover((h) => (h === p.label ? null : h))}
+            className={`flex cursor-pointer items-center gap-3 rounded-lg px-1.5 py-1 transition-colors ${
+              hover === p.label ? "bg-muted" : ""
+            }`}
+          >
             <span className="h-3.5 w-3.5 rounded-full" style={{ backgroundColor: p.color }} />
             <span className="w-32 text-[15px]">{p.label}</span>
             <span className="font-display text-[17px] font-bold">{p.value}%</span>
@@ -123,31 +156,51 @@ function BarChart() {
   const bw = 52;
   const gap = (W - PADX - 16 - bw * data.length) / (data.length - 1);
   const y = (v: number) => H - PADY - (v / max) * (H - PADY * 2);
+  const [hover, setHover] = useState<number | null>(null);
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="mt-4 w-full">
-      {[0, 100, 200, 300].map((v) => (
-        <g key={v}>
-          <line x1={PADX} x2={W - 8} y1={y(v)} y2={y(v)} stroke="#e2e8f0" strokeDasharray="4 4" />
-          <text x={PADX - 8} y={y(v) + 4} textAnchor="end" fontSize="10" fill="#64748b">
-            {v}
-          </text>
-        </g>
-      ))}
-      {data.map((d, i) => {
-        const bx = PADX + i * (bw + gap);
-        return (
-          <g key={d.name}>
-            <rect
-              x={bx} y={y(d.value)} width={bw} height={H - PADY - y(d.value)}
-              rx="6" fill="#8b5cf6"
-            />
-            <text x={bx + bw / 2} y={H - 6} textAnchor="middle" fontSize="10" fill="#64748b">
-              {d.name}
+    <div className="relative mt-4">
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
+        {[0, 100, 200, 300].map((v) => (
+          <g key={v}>
+            <line x1={PADX} x2={W - 8} y1={y(v)} y2={y(v)} stroke="#e2e8f0" strokeDasharray="4 4" />
+            <text x={PADX - 8} y={y(v) + 4} textAnchor="end" fontSize="10" fill="#64748b">
+              {v}
             </text>
           </g>
-        );
-      })}
-    </svg>
+        ))}
+        {data.map((d, i) => {
+          const bx = PADX + i * (bw + gap);
+          return (
+            <g key={d.name}>
+              <rect
+                x={bx} y={y(d.value)} width={bw} height={H - PADY - y(d.value)}
+                rx="6"
+                fill={hover === i ? "#7c3aed" : "#8b5cf6"}
+                className="chart-grow cursor-pointer transition-colors"
+                style={{ animationDelay: `${i * 60}ms` }}
+                onMouseEnter={() => setHover(i)}
+                onMouseLeave={() => setHover((h) => (h === i ? null : h))}
+              />
+              <text x={bx + bw / 2} y={H - 6} textAnchor="middle" fontSize="10" fill="#64748b">
+                {d.name}
+              </text>
+            </g>
+          );
+        })}
+      </svg>
+      {hover !== null && (
+        <div
+          className="pointer-events-none absolute -translate-x-1/2 -translate-y-full rounded-lg bg-fg px-2.5 py-1.5 text-xs font-semibold text-white shadow-lg"
+          style={{
+            left: `${((PADX + hover * (bw + gap) + bw / 2) / W) * 100}%`,
+            top: `${(y(data[hover].value) / H) * 100}%`,
+            marginTop: -8,
+          }}
+        >
+          {data[hover].name}: {data[hover].value}
+        </div>
+      )}
+    </div>
   );
 }
 

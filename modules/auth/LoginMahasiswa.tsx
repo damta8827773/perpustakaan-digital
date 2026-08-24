@@ -10,6 +10,7 @@ import {
 } from "@/services/accounts";
 import { setCurrentStudent } from "@/services/sessionStore";
 import { registerSsoMember } from "@/services/membersStore";
+import { submitHelpTicket } from "@/services/passwordResetHelp";
 
 type Method = "email" | "nim";
 
@@ -63,7 +64,13 @@ export default function LoginMahasiswa() {
     setError("");
     setBusy(true);
     try {
-      const profile = await loginWithGoogle();
+      const { profile, role } = await loginWithGoogle();
+      if (role === "admin") {
+        // Email ini terdaftar di allowlist admin — arahkan ke panel admin
+        // meskipun masuknya lewat tombol Google di halaman mahasiswa.
+        navigate("/admin", { replace: true });
+        return;
+      }
       setCurrentStudent(profile);
       registerSsoMember({
         nim: profile.nim,
@@ -72,6 +79,7 @@ export default function LoginMahasiswa() {
         program: profile.program,
         status: "aktif",
         activeLoans: 0,
+        email: profile.email,
       });
       navigate("/app");
     } catch (err) {
@@ -242,18 +250,20 @@ export default function LoginMahasiswa() {
 }
 
 function ForgotPasswordModal({ onClose }: { onClose: () => void }) {
+  const [mode, setMode] = useState<"reset" | "reset-sent" | "help" | "help-sent">("reset");
   const [email, setEmail] = useState("");
+  const [nimOrEmail, setNimOrEmail] = useState("");
+  const [message, setMessage] = useState("");
   const [error, setError] = useState("");
-  const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);
 
-  async function submit(e: FormEvent) {
+  async function submitReset(e: FormEvent) {
     e.preventDefault();
     setError("");
     setBusy(true);
     try {
       await sendResetPassword(email);
-      setSent(true);
+      setMode("reset-sent");
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -261,9 +271,23 @@ function ForgotPasswordModal({ onClose }: { onClose: () => void }) {
     }
   }
 
-  return (
-    <Modal title="Lupa Kata Sandi" onClose={onClose}>
-      {sent ? (
+  async function submitHelp(e: FormEvent) {
+    e.preventDefault();
+    setError("");
+    setBusy(true);
+    try {
+      await submitHelpTicket(nimOrEmail, message);
+      setMode("help-sent");
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (mode === "reset-sent") {
+    return (
+      <Modal title="Lupa Kata Sandi" onClose={onClose}>
         <div className="py-2 text-center">
           <p className="text-[15px] text-muted-fg">
             Tautan atur ulang kata sandi telah dikirim ke
@@ -274,18 +298,48 @@ function ForgotPasswordModal({ onClose }: { onClose: () => void }) {
           </p>
           <Button className="mt-6 w-full py-3.5" onClick={onClose}>Tutup</Button>
         </div>
-      ) : (
-        <form onSubmit={submit}>
+      </Modal>
+    );
+  }
+
+  if (mode === "help-sent") {
+    return (
+      <Modal title="Pesan Terkirim" onClose={onClose}>
+        <div className="py-2 text-center">
           <p className="text-[15px] text-muted-fg">
-            Masukkan email terdaftar. Kami akan mengirim tautan untuk mengatur
-            ulang kata sandi Anda.
+            Permintaan bantuan Anda sudah diteruskan ke admin perpustakaan.
           </p>
+          <p className="mt-3 text-sm text-muted-fg">
+            Admin akan menghubungi/memproses berdasarkan data yang Anda kirim.
+          </p>
+          <Button className="mt-6 w-full py-3.5" onClick={onClose}>Tutup</Button>
+        </div>
+      </Modal>
+    );
+  }
+
+  if (mode === "help") {
+    return (
+      <Modal title="Hubungi Admin" onClose={onClose}>
+        <form onSubmit={submitHelp}>
+          <p className="text-[15px] text-muted-fg">
+            Untuk akun yang emailnya tidak bisa menerima tautan reset (mis.
+            akun NIM), isi data berikut agar admin bisa membantu.
+          </p>
+          <label className="mt-4 block font-display text-[15px] font-semibold">NIM atau Email</label>
           <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="nama@email.com"
-            className="mt-4 w-full rounded-xl border border-line px-4 py-3.5 text-[15px] outline-none focus:border-primary"
+            value={nimOrEmail}
+            onChange={(e) => setNimOrEmail(e.target.value)}
+            placeholder="NIM atau email terdaftar"
+            className="mt-2 w-full rounded-xl border border-line px-4 py-3.5 text-[15px] outline-none focus:border-primary"
+          />
+          <label className="mt-4 block font-display text-[15px] font-semibold">Pesan (opsional)</label>
+          <textarea
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            rows={3}
+            placeholder="Jelaskan kendala Anda..."
+            className="mt-2 w-full resize-none rounded-xl border border-line px-4 py-3.5 text-[15px] outline-none focus:border-primary"
           />
           {error && (
             <p className="mt-4 rounded-lg bg-destructive-light px-4 py-3 text-sm text-destructive">
@@ -293,13 +347,51 @@ function ForgotPasswordModal({ onClose }: { onClose: () => void }) {
             </p>
           )}
           <div className="mt-6 grid grid-cols-2 gap-4">
-            <Button variant="outline" className="py-3.5" onClick={onClose}>Batal</Button>
-            <Button type="submit" className="py-3.5" disabled={busy}>
-              {busy ? "Mengirim..." : "Kirim Tautan"}
+            <Button variant="outline" className="py-3.5" onClick={() => setMode("reset")} type="button">
+              Kembali
+            </Button>
+            <Button type="submit" className="py-3.5" disabled={busy || !nimOrEmail.trim()}>
+              {busy ? "Mengirim..." : "Kirim ke Admin"}
             </Button>
           </div>
         </form>
-      )}
+      </Modal>
+    );
+  }
+
+  return (
+    <Modal title="Lupa Kata Sandi" onClose={onClose}>
+      <form onSubmit={submitReset}>
+        <p className="text-[15px] text-muted-fg">
+          Masukkan email terdaftar. Kami akan mengirim tautan untuk mengatur
+          ulang kata sandi Anda.
+        </p>
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="nama@email.com"
+          className="mt-4 w-full rounded-xl border border-line px-4 py-3.5 text-[15px] outline-none focus:border-primary"
+        />
+        {error && (
+          <p className="mt-4 rounded-lg bg-destructive-light px-4 py-3 text-sm text-destructive">
+            {error}
+          </p>
+        )}
+        <div className="mt-6 grid grid-cols-2 gap-4">
+          <Button variant="outline" className="py-3.5" onClick={onClose} type="button">Batal</Button>
+          <Button type="submit" className="py-3.5" disabled={busy}>
+            {busy ? "Mengirim..." : "Kirim Tautan"}
+          </Button>
+        </div>
+        <button
+          type="button"
+          onClick={() => { setError(""); setMode("help"); }}
+          className="mt-4 w-full cursor-pointer text-center text-sm font-semibold text-muted-fg hover:text-primary"
+        >
+          Tidak bisa menerima email? Hubungi admin
+        </button>
+      </form>
     </Modal>
   );
 }

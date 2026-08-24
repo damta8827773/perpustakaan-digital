@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
   BookOpen, GraduationCap, ArrowRight, Copy, Users, Star, Shield,
+  BookMarked, Tablet, History, BellRing, MessageCircle,
 } from "lucide-react";
 import { Card } from "@/components/ui";
 import { CountUp } from "@/components/CountUp";
@@ -12,6 +14,51 @@ const FEATURES = [
   "Notifikasi jatuh tempo otomatis",
 ];
 
+interface FeatureDetail {
+  icon: typeof BookMarked;
+  title: string;
+  summary: string;
+  detail: string;
+}
+
+const FEATURE_DETAILS: FeatureDetail[] = [
+  {
+    icon: BookMarked,
+    title: "Pinjam & Kembalikan Buku Online",
+    summary: "Reservasi buku fisik tanpa antre di tempat.",
+    detail:
+      "Cari buku yang tersedia lewat halaman Cari Buku, pilih durasi pinjam sesuai kebutuhan, lalu konfirmasi reservasi — kamu langsung dapat bukti peminjaman digital. Tanggal jatuh tempo bisa dipantau kapan saja dari menu Pinjaman Saya. Pengembalian dilakukan langsung ke perpustakaan sebelum tenggat waktu berakhir.",
+  },
+  {
+    icon: Tablet,
+    title: "Baca E-book Langsung di Browser",
+    summary: "Tanpa aplikasi tambahan, tanpa perlu ke perpustakaan.",
+    detail:
+      "Buku berlabel E-book bisa dibaca langsung dari browser, kapan saja. Pembaca dilengkapi pengatur ukuran huruf, mode gelap untuk membaca malam hari, penanda bab, dan daftar pustaka per judul. Masa pinjam e-book berakhir otomatis sesuai durasi yang dipilih — tidak perlu mengembalikan secara manual.",
+  },
+  {
+    icon: History,
+    title: "Pantau Riwayat Peminjaman",
+    summary: "Semua aktivitas tercatat rapi di satu tempat.",
+    detail:
+      "Setiap peminjaman — baik buku fisik maupun e-book — tercatat di menu Pinjaman Saya, lengkap dengan status aktif, sisa waktu, dan riwayat yang sudah selesai. Kamu juga bisa memberi rating dan ulasan untuk buku yang pernah dipinjam, membantu mahasiswa lain memilih bacaan.",
+  },
+  {
+    icon: BellRing,
+    title: "Notifikasi Jatuh Tempo Otomatis",
+    summary: "Tidak akan lagi lupa tenggat pengembalian.",
+    detail:
+      "Sistem mengirim pengingat dalam aplikasi menjelang tanggal jatuh tempo buku fisik, dan memberi tahu saat masa pinjam e-book akan berakhir. Semua notifikasi terkumpul di ikon lonceng pada header, tidak akan tenggelam di antara aktivitas lain.",
+  },
+  {
+    icon: MessageCircle,
+    title: "Live Chat dengan Admin",
+    summary: "Bertanya langsung, dijawab cepat.",
+    detail:
+      "Punya pertanyaan seputar jam operasional, cara pinjam, atau kendala akun? Chat langsung dari tombol mengambang di pojok layar. Pertanyaan umum dijawab otomatis dalam hitungan detik; untuk hal yang lebih spesifik, admin perpustakaan akan menindaklanjuti secara langsung — dan kamu akan selalu tahu mana balasan otomatis, mana balasan admin sungguhan.",
+  },
+];
+
 const STATS = [
   { icon: Copy, value: 12000, suffix: "+", label: "Koleksi", desc: "Buku, jurnal, dan e-book akademik" },
   { icon: Users, value: 5800, suffix: "+", label: "Mahasiswa", desc: "Terdaftar aktif di sistem" },
@@ -20,6 +67,9 @@ const STATS = [
 ];
 
 export default function Landing() {
+  const [activeFeature, setActiveFeature] = useState(0);
+  const active = FEATURE_DETAILS[activeFeature];
+
   return (
     <div className="min-h-screen bg-bg">
       <header className="border-b border-line bg-card">
@@ -78,6 +128,53 @@ export default function Landing() {
             </div>
           </div>
         </Card>
+
+        <div className="mt-14">
+          <h2 className="text-center font-display text-[28px] font-bold">
+            Apa yang Bisa Kamu Lakukan di Sini?
+          </h2>
+          <p className="mx-auto mt-2 max-w-[560px] text-center text-muted-fg">
+            Sebelum masuk, kenali dulu fitur-fitur yang tersedia — klik salah satu
+            di sebelah kiri untuk membaca penjelasan lengkapnya.
+          </p>
+
+          <div className="mt-8 grid grid-cols-1 gap-0 overflow-hidden rounded-2xl border border-line bg-card md:grid-cols-[280px_1fr]">
+            <div className="divide-y divide-line border-b border-line md:border-b-0 md:border-r">
+              {FEATURE_DETAILS.map((f, i) => (
+                <button
+                  key={f.title}
+                  onClick={() => setActiveFeature(i)}
+                  className={`flex w-full cursor-pointer items-start gap-3 px-5 py-4 text-left transition-colors ${
+                    i === activeFeature ? "bg-primary-light/60" : "hover:bg-muted/60"
+                  }`}
+                >
+                  <div
+                    className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
+                      i === activeFeature ? "bg-primary text-white" : "bg-muted text-muted-fg"
+                    }`}
+                  >
+                    <f.icon size={18} />
+                  </div>
+                  <div>
+                    <div className={`font-display text-[15px] font-bold ${i === activeFeature ? "text-primary" : ""}`}>
+                      {f.title}
+                    </div>
+                    <div className="mt-0.5 text-sm text-muted-fg">{f.summary}</div>
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            {/* Penjelasan lengkap fitur yang dipilih, tampil di sebelah kanan daftar. */}
+            <div className="p-8">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-light text-primary">
+                <active.icon size={26} />
+              </div>
+              <h3 className="mt-5 font-display text-2xl font-bold">{active.title}</h3>
+              <p className="mt-4 text-[15px] leading-relaxed text-muted-fg">{active.detail}</p>
+            </div>
+          </div>
+        </div>
 
         <div className="mt-8 grid grid-cols-2 gap-6 lg:grid-cols-4">
           {STATS.map(({ icon: Icon, value, suffix, decimals, label, desc }) => (

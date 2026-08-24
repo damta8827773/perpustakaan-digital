@@ -4,7 +4,8 @@ import { BookOpen, ArrowLeft, UserPlus } from "lucide-react";
 import { registerAccount, isValidEmail } from "@/services/accounts";
 import { setCurrentStudent } from "@/services/sessionStore";
 import { registerSsoMember } from "@/services/membersStore";
-import { isValidNim } from "@/common/libs/security";
+import { isValidNim, isValidPassword } from "@/common/libs/security";
+import { PasswordField } from "@/components/PasswordField";
 
 const FACULTIES = [
   "Adab dan Humaniora", "Syariah dan Hukum", "Ushuluddin", "Tarbiyah dan Keguruan",
@@ -37,7 +38,7 @@ export default function Daftar() {
     if (!isValidNim(form.nim)) return setError("NIM harus 8-14 digit angka.");
     if (form.program.trim().length < 2) return setError("Isi program studi Anda.");
     if (!isValidEmail(form.email)) return setError("Format email tidak valid.");
-    if (form.password.length < 6) return setError("Kata sandi minimal 6 karakter.");
+    if (!isValidPassword(form.password)) return setError("Kata sandi minimal 8 karakter.");
     if (form.password !== form.confirm) return setError("Konfirmasi kata sandi tidak sama.");
 
     setError("");
@@ -62,6 +63,7 @@ export default function Daftar() {
         program: profile.program,
         status: "aktif",
         activeLoans: 0,
+        email: profile.email,
       });
       navigate("/app", { replace: true });
     } catch (err) {
@@ -118,11 +120,24 @@ export default function Daftar() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="font-display text-[15px] font-semibold">Kata Sandi</label>
-              <input type="password" value={form.password} onChange={set("password")} placeholder="Minimal 6 karakter" className={input} />
+              <PasswordField
+                value={form.password}
+                onChange={(v) => setForm((f) => ({ ...f, password: v }))}
+                placeholder="Minimal 8 karakter"
+                className={input}
+                showStrength
+                autoComplete="new-password"
+              />
             </div>
             <div>
               <label className="font-display text-[15px] font-semibold">Ulangi Sandi</label>
-              <input type="password" value={form.confirm} onChange={set("confirm")} placeholder="Ulangi kata sandi" className={input} />
+              <PasswordField
+                value={form.confirm}
+                onChange={(v) => setForm((f) => ({ ...f, confirm: v }))}
+                placeholder="Ulangi kata sandi"
+                className={input}
+                autoComplete="new-password"
+              />
             </div>
           </div>
         </div>

@@ -3,8 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { Bell, BellOff } from "lucide-react";
 import {
   useNotifications, markRead, markAllRead,
-  type NotifRole, type NotifTone,
+  type NotifRole, type NotifTone, type AppNotification,
 } from "@/services/notificationsStore";
+import { markChatRead, useAdminChatInbox } from "@/services/chatStore";
 
 function useClickOutside(onClose: () => void) {
   const ref = useRef<HTMLDivElement>(null);
@@ -33,7 +34,22 @@ export function NotificationBell({
   const ref = useClickOutside(() => setOpen(false));
   const navigate = useNavigate();
   const items = useNotifications(role);
-  const unread = items.length;
+
+  // Live chat masuk (Firestore, real-time) digabung ke daftar notifikasi
+  // admin yang sudah ada (localStorage) — bentuk datanya sama persis supaya
+  // tidak perlu pola tampilan baru.
+  const chatInbox = useAdminChatInbox(role === "admin");
+  const unreadChats = role === "admin" ? chatInbox.filter((c) => c.unreadByAdmin) : [];
+  const chatItems: AppNotification[] = unreadChats.map((c) => ({
+    id: `chat-${c.studentUid}`,
+    tone: "accent",
+    title: `Pesan baru dari ${c.studentName || "mahasiswa"}`,
+    detail: c.lastMessageText,
+    time: "Live chat",
+    to: "/admin/pesan",
+  }));
+  const allItems = [...chatItems, ...items];
+  const unread = allItems.length;
 
   return (
     <div className="relative" ref={ref}>
@@ -67,11 +83,12 @@ export function NotificationBell({
           ) : (
             <>
               <div className="max-h-[320px] divide-y divide-line overflow-y-auto">
-                {items.map((n) => (
+                {allItems.map((n) => (
                   <button
                     key={n.id}
                     onClick={() => {
-                      markRead(role, n.id);
+                      if (n.id.startsWith("chat-")) void markChatRead(n.id.slice("chat-".length), "admin");
+                      else markRead(role, n.id);
                       setOpen(false);
                       navigate(n.to);
                     }}
@@ -87,7 +104,10 @@ export function NotificationBell({
                 ))}
               </div>
               <button
-                onClick={() => markAllRead(role)}
+                onClick={() => {
+                  markAllRead(role);
+                  unreadChats.forEach((c) => void markChatRead(c.studentUid, "admin"));
+                }}
                 className="w-full cursor-pointer bg-muted/40 py-3 text-center text-sm font-semibold text-primary hover:bg-muted"
               >
                 Tandai semua dibaca

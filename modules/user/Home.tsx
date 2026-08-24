@@ -118,7 +118,7 @@ export default function Home() {
                     onClick={() =>
                       notify(`Peminjaman "${book.title}" diperpanjang 7 hari.`)
                     }
-                    className="cursor-pointer rounded-lg bg-primary-light px-3.5 py-1.5 text-sm font-semibold text-primary hover:bg-[#d8e8f8]"
+                    className="cursor-pointer rounded-lg bg-primary-light px-3.5 py-1.5 text-sm font-semibold text-primary hover:bg-primary-light-hover"
                   >
                     Perpanjang
                   </button>
