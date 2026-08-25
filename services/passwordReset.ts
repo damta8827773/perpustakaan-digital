@@ -1,9 +1,17 @@
 // Reset password TERPICU OLEH ADMIN, dengan alasan wajib yang dicatat
 // sebagai audit log. Admin tidak pernah melihat atau menyentuh password
-// asli — ini murni memicu sendPasswordResetEmail bawaan Firebase; "landasan
-// kuat"-nya adalah jejak audit (siapa, kapan, kenapa), ditegakkan juga di
-// firestore.rules (reason minimal 20 karakter), bukan cuma validasi UI.
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+// asli — ini murni memicu sendPasswordResetEmail bawaan Firebase.
+//
+// CATATAN KEAMANAN (dari tinjauan ulang): dua hal berikut sengaja dibuat
+// KETAT, bukan cuma validasi UI —
+// 1. Peran admin dicek eksplisit di sini (bukan cuma "ada yang login"),
+//    supaya pesan errornya jelas kalau bukan admin, dan tidak bergantung
+//    semata pada Firestore Rules menolak diam-diam.
+// 2. Penulisan audit log sekarang WAJIB berhasil (kalau gagal, seluruh
+//    operasi dianggap gagal) — sebelumnya kegagalan audit log ditelan diam-
+//    diam, artinya reset bisa "berhasil" tanpa jejak audit sama sekali,
+//    melemahkan jaminan "landasan kuat" yang jadi inti fitur ini.
+import { addDoc, collection, doc, getDoc, serverTimestamp } from "firebase/firestore";
 import { sendPasswordResetEmail } from "firebase/auth";
 import { auth, db } from "@/common/libs/firebase";
 
@@ -28,30 +36,32 @@ export async function adminTriggerPasswordReset(
   const admin = auth.currentUser;
   if (!admin) throw new Error("Sesi admin tidak ditemukan.");
 
-  let sendError: string | null = null;
+  const adminDoc = await getDoc(doc(db, "users", admin.uid)).catch(() => null);
+  if (adminDoc?.data()?.role !== "admin") {
+    throw new Error("Akun ini tidak memiliki hak admin untuk memicu reset password.");
+  }
+
+  // Audit log ditulis DULU, sebelum email reset dikirim — kalau langkah ini
+  // gagal (mis. Firestore rules menolak / offline), seluruh operasi
+  // dibatalkan. Tidak pernah ada reset yang "berhasil" tanpa jejak audit.
+  await addDoc(collection(db, "passwordResetRequests"), {
+    requestedByUid: admin.uid,
+    requestedByEmail: admin.email ?? "",
+    targetName: target.name,
+    targetEmail: target.email,
+    reason: cleanReason,
+    status: "requested",
+    createdAt: serverTimestamp(),
+  });
+
   try {
     await sendPasswordResetEmail(auth, target.email);
   } catch (err) {
     const code = (err as { code?: string })?.code ?? "";
-    sendError = code === "auth/user-not-found"
-      ? "Email ini tidak terdaftar di Firebase Authentication."
-      : "Gagal mengirim tautan reset.";
+    throw new Error(
+      code === "auth/user-not-found"
+        ? "Email ini tidak terdaftar di Firebase Authentication."
+        : "Gagal mengirim tautan reset (sudah tercatat di audit log sebagai permintaan).",
+    );
   }
-
-  try {
-    await addDoc(collection(db, "passwordResetRequests"), {
-      requestedByUid: admin.uid,
-      requestedByEmail: admin.email ?? "",
-      targetName: target.name,
-      targetEmail: target.email,
-      reason: cleanReason,
-      status: sendError ? "failed" : "sent",
-      createdAt: serverTimestamp(),
-    });
-  } catch {
-    // Firestore belum aktif -> audit log tidak tersimpan, tapi jangan
-    // sembunyikan hasil kirim reset dari admin.
-  }
-
-  if (sendError) throw new Error(sendError);
 }

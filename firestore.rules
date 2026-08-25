@@ -68,12 +68,21 @@ service cloud.firestore {
 
       match /messages/{messageId} {
         allow read: if request.auth.uid == studentUid || isAdmin();
-        allow create: if (request.auth.uid == studentUid || isAdmin())
-          && request.resource.data.senderUid == request.auth.uid
+        // senderRole DIPAKSA cocok dengan siapa yang benar-benar login —
+        // sebelumnya field ini tidak divalidasi sama sekali, artinya
+        // mahasiswa bisa memalsukan pesan "admin" di thread miliknya
+        // sendiri (mis. pura-pura sudah dijawab admin). "ai" tetap boleh
+        // ditulis dari sesi mahasiswa karena balasan otomatis memang
+        // dibuat di sisi klien mahasiswa (lihat chatStore.ts), bukan server.
+        allow create: if request.resource.data.senderUid == request.auth.uid
           && request.resource.data.text is string
           && request.resource.data.text.size() > 0
           && request.resource.data.text.size() <= 2000
-          && request.resource.data.createdAt == request.time;
+          && request.resource.data.createdAt == request.time
+          && (
+            (request.auth.uid == studentUid && request.resource.data.senderRole in ['student', 'ai'])
+            || (isAdmin() && request.resource.data.senderRole == 'admin')
+          );
         allow update, delete: if false; // riwayat tidak bisa diedit/dihapus
       }
     }
