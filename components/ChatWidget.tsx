@@ -38,9 +38,9 @@ export function ChatWidget() {
   }
 
   return (
-    <div className="fixed bottom-6 right-6 z-40">
+    <>
       {open && (
-        <div className="mb-3 flex h-[520px] w-[340px] flex-col overflow-hidden rounded-2xl border border-line bg-card shadow-2xl">
+        <div className="fixed bottom-24 right-6 z-40 flex h-[520px] w-[340px] flex-col overflow-hidden rounded-2xl border border-line bg-card shadow-2xl">
           <div className="flex shrink-0 items-center justify-between border-b border-line px-4 py-3">
             <span className="flex items-center gap-2 font-display font-bold">
               <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary-light text-primary">
@@ -84,7 +84,7 @@ export function ChatWidget() {
       )}
       <button
         onClick={toggle}
-        className="relative flex h-14 w-14 cursor-pointer items-center justify-center rounded-full bg-primary text-white shadow-lg transition-colors hover:bg-primary-dark"
+        className="fixed bottom-6 right-6 z-40 flex h-14 w-14 cursor-pointer items-center justify-center rounded-full bg-primary text-white shadow-lg transition-colors hover:bg-primary-dark"
         aria-label="Live chat admin"
       >
         {open ? <X size={22} /> : <MessageCircle size={22} />}
@@ -92,6 +92,6 @@ export function ChatWidget() {
           <span className="absolute right-0 top-0 h-3.5 w-3.5 rounded-full border-2 border-card bg-destructive" />
         )}
       </button>
-    </div>
+    </>
   );
 }

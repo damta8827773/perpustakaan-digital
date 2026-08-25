@@ -1,7 +1,8 @@
 // Balasan otomatis berbasis kata kunci (BUKAN LLM sungguhan — dipilih agar
-// gratis dan tidak butuh server/API key yang bisa bocor ke browser). Cukup
-// untuk menjawab pertanyaan umum; kalau tidak ada yang cocok, sistem diam
-// dan menunggu admin manusia membalas — supaya tidak terkesan "sok tahu".
+// gratis dan tidak butuh server/API key yang bisa bocor ke browser). Kalau
+// topiknya dikenali di sini, AI menjawab spesifik; kalau tidak, chatStore.ts
+// tetap mengirim pengakuan umum (bukan diam) supaya mahasiswa tahu pesannya
+// diterima, sambil menunggu admin manusia menindaklanjuti.
 interface FaqEntry {
   keywords: string[];
   answer: string;
@@ -42,6 +43,35 @@ const FAQ: FaqEntry[] = [
     keywords: ["halo", "hai", "hallo", "permisi", "tanya"],
     answer:
       "Halo! Saya asisten otomatis perpustakaan. Saya bisa bantu jawab pertanyaan umum seputar jam operasional, cara pinjam buku, e-book, atau lupa sandi. Kalau butuh bantuan lebih lanjut, admin manusia akan segera membalas.",
+  },
+  {
+    keywords: ["perpanjang", "extend", "tambah waktu pinjam"],
+    answer:
+      "Perpanjangan pinjaman bisa dilakukan dari menu Pinjaman Saya (atau kartu Pinjaman Aktif di Beranda) selama buku belum dipesan mahasiswa lain, biasanya menambah masa pinjam 7 hari.",
+  },
+  {
+    keywords: ["error", "eror", "bug", "gangguan", "rusak", "tidak berfungsi", "gagal terus", "loading terus"],
+    answer:
+      "Mohon maaf atas kendalanya. Bisa dijelaskan lebih detail halaman mana dan apa yang terjadi saat error muncul? Admin perpustakaan akan segera memeriksa laporan ini.",
+  },
+  {
+    keywords: ["biaya", "gratis", "bayar", "berbayar", "harga"],
+    answer:
+      "Layanan Perpustakaan Digital ini gratis untuk seluruh mahasiswa terdaftar. Denda hanya berlaku untuk keterlambatan pengembalian buku fisik sesuai kebijakan kampus.",
+  },
+  {
+    keywords: ["wishlist", "favorit", "simpan buku"],
+    answer:
+      "Klik ikon hati/favorit pada halaman detail buku untuk menyimpannya ke Wishlist — bisa dilihat lagi lewat menu Profil → Wishlist Saya.",
+  },
+  {
+    keywords: ["rating", "ulasan", "review", "beri nilai"],
+    answer:
+      "Setelah buku selesai dipinjam/dibaca, kamu bisa memberi rating dan ulasan lewat menu Pinjaman Saya → tab Riwayat, pada buku yang bersangkutan.",
+  },
+  {
+    keywords: ["terima kasih", "makasih", "thanks", "oke", "baik"],
+    answer: "Sama-sama! Kalau ada pertanyaan lain seputar perpustakaan, silakan tanyakan lagi ya.",
   },
 ];
 

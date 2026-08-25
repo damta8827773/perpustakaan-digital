@@ -182,12 +182,10 @@ export async function sendChatMessage(
   );
 
   if (senderRole === "student" && lastRole !== "admin") {
-    const matched = matchFaqAnswer(clean);
-    // Kalau tidak ada topik yang cocok, AI tetap membalas dengan pengakuan
-    // umum (bukan diam) — tapi cuma SEKALI per rentetan pesan yang tidak
-    // dikenali (lastRole === "ai" berarti sudah diakui sebelumnya), supaya
-    // tidak spam "diteruskan ke admin" berulang untuk tiap pesan beruntun.
-    const reply = matched ?? (lastRole !== "ai" ? GENERIC_ACK : null);
+    // AI selalu membalas SETIAP pesan mahasiswa (sesuai permintaan) selama
+    // admin manusia belum turun tangan — jawaban spesifik kalau topiknya
+    // dikenali, kalau tidak tetap pakai pengakuan umum (bukan diam).
+    const reply = matchFaqAnswer(clean) ?? GENERIC_ACK;
     if (reply) {
       window.setTimeout(() => void sendAiAutoReply(studentUid, reply), 700);
     }
