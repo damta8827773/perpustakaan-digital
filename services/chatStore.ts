@@ -18,6 +18,8 @@ import { matchFaqAnswer } from "@/services/chatBot";
 
 const DEMO = import.meta.env.VITE_DEMO === "1";
 const AI_SENDER_NAME = "AI Asisten Perpustakaan";
+const GENERIC_ACK =
+  "Terima kasih, pesan Anda sudah kami catat dan diteruskan ke admin perpustakaan. Mohon tunggu sebentar, admin akan segera membalas.";
 
 export type ChatSenderRole = "student" | "admin" | "ai";
 
@@ -180,9 +182,14 @@ export async function sendChatMessage(
   );
 
   if (senderRole === "student" && lastRole !== "admin") {
-    const answer = matchFaqAnswer(clean);
-    if (answer) {
-      window.setTimeout(() => void sendAiAutoReply(studentUid, answer), 700);
+    const matched = matchFaqAnswer(clean);
+    // Kalau tidak ada topik yang cocok, AI tetap membalas dengan pengakuan
+    // umum (bukan diam) — tapi cuma SEKALI per rentetan pesan yang tidak
+    // dikenali (lastRole === "ai" berarti sudah diakui sebelumnya), supaya
+    // tidak spam "diteruskan ke admin" berulang untuk tiap pesan beruntun.
+    const reply = matched ?? (lastRole !== "ai" ? GENERIC_ACK : null);
+    if (reply) {
+      window.setTimeout(() => void sendAiAutoReply(studentUid, reply), 700);
     }
   }
 }
