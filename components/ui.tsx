@@ -214,10 +214,10 @@ export function Button({
 }
 
 export function Card({
-  className = "", children,
-}: { className?: string; children: ReactNode }) {
+  className = "", children, onClick,
+}: { className?: string; children: ReactNode; onClick?: MouseEventHandler<HTMLDivElement> }) {
   return (
-    <div className={`rounded-xl border border-line bg-card ${className}`}>
+    <div className={`rounded-xl border border-line bg-card ${className}`} onClick={onClick}>
       {children}
     </div>
   );

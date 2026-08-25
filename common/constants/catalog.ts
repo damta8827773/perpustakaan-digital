@@ -20,7 +20,8 @@ export interface Book {
   relatedId?: string;
 }
 
-export const BOOKS: Book[] = [
+// 12 buku kurasi tangan (dipakai di referensi desain, komentar, dsb).
+const CURATED_BOOKS: Book[] = [
   {
     id: "tafsir-al-misbah", initials: "TA", title: "Tafsir Al-Misbah Vol. 1",
     author: "M. Quraish Shihab", category: "Agama", year: 2020, isbn: "978-602-291-4",
@@ -130,6 +131,85 @@ export const BOOKS: Book[] = [
     relatedId: "algoritma-pemrograman",
   },
 ];
+
+// ---------------------------------------------------------------------------
+// Koleksi tambahan (dibangkitkan otomatis, bukan data sungguhan) supaya
+// katalog terasa seperti perpustakaan kampus asli dengan ribuan judul —
+// bukan direktori 12 buku. Dibuat sekali saat modul dimuat (PRNG dengan
+// seed tetap, bukan Math.random) supaya hasilnya stabil di setiap reload,
+// bukan berubah-ubah acak.
+const TOPIC_WORDS: Record<Kategori, string[]> = {
+  Agama: ["Tafsir Al-Qur'an", "Fiqih Ibadah", "Akidah Islam", "Sirah Nabawiyah", "Tasawuf", "Ilmu Hadits", "Ushul Fiqih", "Perbandingan Agama", "Fiqih Muamalah", "Akhlak Tasawuf"],
+  Sains: ["Fisika Dasar", "Kimia Organik", "Biologi Sel", "Astronomi", "Matematika Diskrit", "Genetika", "Ekologi", "Biokimia", "Fisika Kuantum", "Ilmu Lingkungan"],
+  Hukum: ["Hukum Perdata", "Hukum Pidana", "Hukum Tata Negara", "Hukum Internasional", "Hukum Adat", "Hukum Bisnis", "Hukum Islam", "Hukum Acara", "Hak Asasi Manusia", "Hukum Agraria"],
+  Teknik: ["Algoritma Pemrograman", "Jaringan Komputer", "Basis Data", "Kecerdasan Buatan", "Rekayasa Perangkat Lunak", "Elektronika Dasar", "Sistem Operasi", "Keamanan Siber", "Struktur Data", "Pemrograman Web"],
+  Ekonomi: ["Ekonomi Makro", "Manajemen Keuangan", "Akuntansi Syariah", "Perbankan Syariah", "Ekonomi Pembangunan", "Manajemen Pemasaran", "Ekonomi Mikro", "Kewirausahaan", "Investasi", "Manajemen SDM"],
+  Bahasa: ["Bahasa Arab Lanjutan", "Bahasa Inggris Akademik", "Linguistik Umum", "Sastra Indonesia", "Penerjemahan", "Kajian Wacana", "Semantik", "Bahasa Arab Dasar", "Fonologi", "Sosiolinguistik"],
+  Psikologi: ["Psikologi Klinis", "Psikologi Sosial", "Psikologi Pendidikan", "Psikologi Kepribadian", "Psikologi Perkembangan", "Psikologi Industri", "Psikometri", "Psikologi Kognitif"],
+  Pendidikan: ["Kurikulum Pendidikan", "Media Pembelajaran", "Evaluasi Pendidikan", "Manajemen Sekolah", "Pendidikan Karakter", "Bimbingan Konseling", "Teknologi Pendidikan", "Sosiologi Pendidikan"],
+  Metodologi: ["Metode Penelitian Kualitatif", "Metode Penelitian Kuantitatif", "Statistika Terapan", "Analisis Data", "Penulisan Karya Ilmiah", "Metodologi Studi Islam"],
+};
+const AUTHOR_TITLES = ["Dr.", "Prof. Dr.", "Dra.", "Ir.", "Dr. Hj.", "Dr. H."];
+const FIRST_NAMES = [
+  "Ahmad", "Siti", "Muhammad", "Rina", "Budi", "Dewi", "Agus", "Fitri", "Hendra", "Yuni",
+  "Rizky", "Nadia", "Bambang", "Sri", "Andi", "Wulan", "Fauzan", "Indah", "Taufik", "Ratna",
+];
+const LAST_NAMES = [
+  "Santoso", "Wijaya", "Pratama", "Rahayu", "Kusuma", "Setiawan", "Nugroho", "Hidayat",
+  "Purnomo", "Wibowo", "Suryani", "Gunawan", "Lestari", "Firmansyah", "Handayani", "Saputra",
+];
+const COLORS = ["#1a73c8", "#8b5cf6", "#dc2626", "#d97706", "#16a34a", "#f59e0b", "#ec4899", "#64748b", "#0891b2", "#7c3aed", "#b45309", "#0d9488"];
+const CATEGORY_LIST = Object.keys(TOPIC_WORDS) as Kategori[];
+
+function seededRandom(seed: number) {
+  let s = seed % 2147483647;
+  if (s <= 0) s += 2147483646;
+  return () => {
+    s = (s * 16807) % 2147483647;
+    return (s - 1) / 2147483646;
+  };
+}
+
+function generateBooks(count: number): Book[] {
+  const rand = seededRandom(20260824);
+  const pick = <T,>(arr: T[]) => arr[Math.floor(rand() * arr.length)];
+  const books: Book[] = [];
+  for (let i = 0; i < count; i++) {
+    const category = pick(CATEGORY_LIST);
+    const topic = pick(TOPIC_WORDS[category]);
+    const volume = Math.floor(rand() * 4) + 1;
+    const title = volume > 1 ? `${topic} Jilid ${volume}` : topic;
+    const author = `${pick(AUTHOR_TITLES)} ${pick(FIRST_NAMES)} ${pick(LAST_NAMES)}`;
+    const year = 2014 + Math.floor(rand() * 12);
+    const rating = Math.round((3.4 + rand() * 1.6) * 10) / 10;
+    const stockTotal = 1 + Math.floor(rand() * 12);
+    const stockAvailable = Math.floor(rand() * (stockTotal + 1));
+    const hasEbook = rand() > 0.45;
+    const ebookTotal = hasEbook ? 1 + Math.floor(rand() * 4) : 0;
+    const ebookAvailable = hasEbook ? Math.floor(rand() * (ebookTotal + 1)) : 0;
+    const idx = i + 1;
+    books.push({
+      id: `koleksi-${idx}`,
+      initials: title.split(" ").filter((w) => /^[A-Za-z]/.test(w)).slice(0, 2).map((w) => w[0]).join("").toUpperCase() || "BK",
+      title: `${title} (Vol. ${idx})`,
+      author,
+      category,
+      year,
+      isbn: `978-602-${String(400000 + idx * 7).slice(0, 6)}-${idx % 10}`,
+      color: pick(COLORS),
+      rating,
+      stockTotal,
+      stockAvailable,
+      ebookTotal,
+      ebookAvailable,
+      description:
+        `Buku referensi ${category.toLowerCase()} yang membahas ${topic.toLowerCase()} secara mendalam, disusun sebagai bahan bacaan pendukung perkuliahan dan penelitian mahasiswa.`,
+    });
+  }
+  return books;
+}
+
+export const BOOKS: Book[] = [...CURATED_BOOKS, ...generateBooks(988)];
 
 export const bookById = (id: string) => BOOKS.find((b) => b.id === id);
 

@@ -12,5 +12,14 @@
   "action.borrow": "Reserve Physical Book",
   "action.return": "Return",
   "book.available": "Available",
-  "book.borrowedAll": "All Borrowed"
+  "book.borrowedAll": "All Borrowed",
+  "profile.title": "My Profile",
+  "profile.inbox": "Inbox",
+  "profile.wishlist": "My Wishlist",
+  "profile.history": "Reading History",
+  "profile.changePassword": "Change Password",
+  "profile.editProfile": "Edit Profile",
+  "profile.language": "Language",
+  "profile.help": "Help",
+  "profile.logout": "Sign Out"
 }

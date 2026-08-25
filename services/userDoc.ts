@@ -6,7 +6,8 @@
 // hanya "mengekspos" hasilnya ke Firestore. Kalau Firestore belum diaktifkan
 // di Firebase Console, fungsi ini gagal secara diam-diam (fallback ke role
 // hasil hitungan lokal) supaya login tetap berjalan.
-import { doc, getDoc, serverTimestamp, setDoc } from "firebase/firestore";
+import { doc, getDoc, onSnapshot, serverTimestamp, setDoc } from "firebase/firestore";
+import { useEffect, useState } from "react";
 import { db } from "@/common/libs/firebase";
 import { isAdminEmail } from "@/services/admin";
 
@@ -20,6 +21,51 @@ export interface UserDoc {
   name: string;
   role: UserRole;
   photoURL?: string;
+  nim?: string;
+  faculty?: string;
+  program?: string;
+  angkatan?: string;
+}
+
+/**
+ * Sinkronkan field profil mahasiswa (NIM/fakultas/prodi/angkatan) ke
+ * users/{uid} — dipakai admin di panel verifikasi identitas live chat
+ * (lihat modules/admin/Pesan.tsx) untuk mencocokkan klaim identitas
+ * sebelum memproses reset password. Gagal secara diam-diam kalau
+ * Firestore belum aktif, konsisten dengan pola di seluruh services/.
+ */
+export async function syncStudentProfile(
+  uid: string,
+  patch: Partial<Pick<UserDoc, "name" | "nim" | "faculty" | "program" | "angkatan">>,
+): Promise<void> {
+  if (import.meta.env.VITE_DEMO === "1") return;
+  try {
+    await setDoc(doc(db, "users", uid), patch, { merge: true });
+  } catch (err) {
+    console.error("syncStudentProfile gagal:", err);
+  }
+}
+
+/**
+ * Baca profil users/{uid} secara real-time — dipakai panel "Info Akun" admin
+ * di live chat (modules/admin/Pesan.tsx) untuk verifikasi identitas sebelum
+ * memproses reset password.
+ */
+export function useUserProfile(uid: string | null): UserDoc | null {
+  const [profile, setProfile] = useState<UserDoc | null>(null);
+  useEffect(() => {
+    if (DEMO || !uid) {
+      setProfile(null);
+      return;
+    }
+    const unsub = onSnapshot(
+      doc(db, "users", uid),
+      (snap) => setProfile(snap.exists() ? (snap.data() as UserDoc) : null),
+      () => setProfile(null),
+    );
+    return unsub;
+  }, [uid]);
+  return profile;
 }
 
 export interface BasicIdentity {

@@ -18,7 +18,7 @@ import {
 } from "firebase/auth";
 import { auth } from "@/common/libs/firebase";
 import { signInWithGooglePopup } from "@/services/googleAuth";
-import { ensureUserDoc, type UserRole } from "@/services/userDoc";
+import { ensureUserDoc, syncStudentProfile, type UserRole } from "@/services/userDoc";
 import { setAdminSession } from "@/services/admin";
 import { isValidPassword } from "@/common/libs/security";
 
@@ -92,6 +92,10 @@ export async function registerAccount(
     try {
       const cred = await createUserWithEmailAndPassword(auth, email, password);
       await updateProfile(cred.user, { displayName: data.name });
+      await ensureUserDoc({ uid: cred.user.uid, email, name: data.name }, "student");
+      void syncStudentProfile(cred.user.uid, {
+        name: data.name, nim: data.nim, faculty: data.faculty, program: data.program, angkatan: data.angkatan,
+      });
     } catch (err) {
       const code = (err as { code?: string })?.code ?? "";
       // Bila provider belum diaktifkan, jatuh ke penyimpanan lokal.
@@ -205,7 +209,11 @@ export async function loginWithGoogle(): Promise<{ profile: MemberProfile; role:
     };
   }
 
-  return { profile: memberProfileFromGoogle(identity), role: "student" };
+  const profile = memberProfileFromGoogle(identity);
+  void syncStudentProfile(identity.uid, {
+    name: profile.name, nim: profile.nim, faculty: profile.faculty, program: profile.program, angkatan: profile.angkatan,
+  });
+  return { profile, role: "student" };
 }
 
 // ---------- Lupa kata sandi ----------

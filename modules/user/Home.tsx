@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ArrowRight, BookText } from "lucide-react";
 import { BOOKS, bookById } from "@/common/constants/catalog";
 import { RemoteCover, Card, Progress } from "@/components/ui";
@@ -8,6 +8,7 @@ import { useLibrary, getActiveLoans } from "@/services/libraryStore";
 import { useCurrentStudent } from "@/services/sessionStore";
 
 const CATEGORIES = ["Semua", "Agama", "Sains", "Hukum", "Teknik", "Ekonomi", "Bahasa", "Psikologi", "Pendidikan"];
+const PAGE_SIZE = 24;
 
 const LOAN_COLORS = { aktif: "#1a73c8", hampir: "#ea580c", terlambat: "#dc2626" } as const;
 
@@ -60,12 +61,15 @@ export function BookCard({ book }: { book: (typeof BOOKS)[number] }) {
 
 export default function Home() {
   const [category, setCategory] = useState("Semua");
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const { notify } = useToast();
+  const navigate = useNavigate();
   const student = useCurrentStudent();
   useLibrary(); // berlangganan perubahan agar pinjaman baru langsung tampil
   const loans = getActiveLoans();
   const books =
     category === "Semua" ? BOOKS : BOOKS.filter((b) => b.category === category);
+  const visibleBooks = books.slice(0, visibleCount);
 
   return (
     <div>
@@ -94,17 +98,29 @@ export default function Home() {
             const book = bookById(loan.bookId)!;
             const color = LOAN_COLORS[loan.status];
             return (
-              <Card key={loan.bookId} className="p-4">
+              <Card
+                key={loan.bookId}
+                onClick={() => navigate("/app/pinjaman")}
+                className="cursor-pointer p-4 transition-shadow hover:shadow-md"
+              >
                 <div className="flex items-center gap-3">
                   <RemoteCover title={book.title} author={book.author} initials={book.initials} color={book.color}
                     className="h-12 w-12 rounded-lg"
                     textClass="text-sm"
                   />
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <div className="truncate font-display text-[15px] font-bold">
                       {book.title}
                     </div>
-                    <div className="truncate text-sm text-muted-fg">{book.author}</div>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="truncate text-sm text-muted-fg">{book.author}</span>
+                      <span className="flex shrink-0 items-center gap-1 text-xs font-semibold text-muted-fg">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="#f59e0b">
+                          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                        </svg>
+                        {book.rating.toFixed(1)}
+                      </span>
+                    </div>
                   </div>
                 </div>
                 <Progress value={loan.progress} color={color} className="mt-4" />
@@ -115,9 +131,10 @@ export default function Home() {
                       : `Terlambat ${-loan.daysLeft} hari`}
                   </span>
                   <button
-                    onClick={() =>
-                      notify(`Peminjaman "${book.title}" diperpanjang 7 hari.`)
-                    }
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      notify(`Peminjaman "${book.title}" diperpanjang 7 hari.`);
+                    }}
                     className="cursor-pointer rounded-lg bg-primary-light px-3.5 py-1.5 text-sm font-semibold text-primary hover:bg-primary-light-hover"
                   >
                     Perpanjang
@@ -133,7 +150,10 @@ export default function Home() {
         {CATEGORIES.map((c) => (
           <button
             key={c}
-            onClick={() => setCategory(c)}
+            onClick={() => {
+              setCategory(c);
+              setVisibleCount(PAGE_SIZE);
+            }}
             className={`cursor-pointer rounded-full px-5 py-2.5 text-sm font-semibold transition-colors ${
               category === c
                 ? "bg-primary text-white"
@@ -153,10 +173,20 @@ export default function Home() {
           </span>
         </h2>
         <div className="mt-4 grid grid-cols-2 gap-5 md:grid-cols-3 lg:grid-cols-4">
-          {books.map((b) => (
+          {visibleBooks.map((b) => (
             <BookCard key={b.id} book={b} />
           ))}
         </div>
+        {visibleCount < books.length && (
+          <div className="mt-8 flex justify-center">
+            <button
+              onClick={() => setVisibleCount((v) => v + PAGE_SIZE)}
+              className="cursor-pointer rounded-xl border border-line bg-card px-8 py-3.5 font-display text-[15px] font-semibold hover:bg-muted"
+            >
+              Muat Lebih Banyak ({books.length - visibleCount} lagi)
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

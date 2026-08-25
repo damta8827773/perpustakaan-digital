@@ -40,6 +40,7 @@ export interface ChatSummary {
   unreadByStudent: boolean;
   lastReadByAdminAt: number | null;
   lastReadByStudentAt: number | null;
+  waitingSinceAt: number | null;
 }
 
 function chatDocRef(studentUid: string) {
@@ -64,6 +65,7 @@ function mapChatSummary(id: string, data: DocumentData): ChatSummary {
     unreadByStudent: !!data.unreadByStudent,
     lastReadByAdminAt: toMillis(data.lastReadByAdminAt),
     lastReadByStudentAt: toMillis(data.lastReadByStudentAt),
+    waitingSinceAt: toMillis(data.waitingSinceAt),
   };
 }
 
@@ -155,6 +157,7 @@ export async function sendChatMessage(
     senderUid, senderRole, senderName, text: clean, createdAt: serverTimestamp(),
   });
 
+  const startsNewWait = senderRole === "student" && lastRole !== "student";
   await updateChatSummaryAndQueue(
     studentUid,
     {
@@ -165,11 +168,15 @@ export async function sendChatMessage(
       lastSenderRole: senderRole,
       unreadByAdmin: senderRole === "student",
       unreadByStudent: senderRole === "admin",
+      // waitingSinceAt HANYA diset saat penantian baru dimulai, supaya balasan
+      // AI berikutnya (yang juga menulis lastMessageAt) tidak mereset acuan
+      // "sudah menunggu berapa lama" yang ditampilkan ke mahasiswa.
+      ...(startsNewWait ? { waitingSinceAt: serverTimestamp() } : {}),
     },
     // Antrean bertambah hanya saat mahasiswa MEMULAI penantian baru (pesan
     // sebelumnya bukan dari mahasiswa yang masih menunggu) -> mencegah
     // dobel hitung tiap kali mahasiswa mengirim beberapa pesan beruntun.
-    senderRole === "student" && lastRole !== "student" ? 1 : 0,
+    startsNewWait ? 1 : 0,
   );
 
   if (senderRole === "student" && lastRole !== "admin") {

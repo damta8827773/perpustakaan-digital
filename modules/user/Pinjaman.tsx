@@ -135,6 +135,9 @@ export default function Pinjaman() {
                       <div>
                         <h3 className="font-display text-xl font-bold">{book.title}</h3>
                         <p className="mt-0.5 text-muted-fg">{book.author}</p>
+                        <span className="mt-1.5 flex items-center gap-1 text-sm font-semibold text-muted-fg">
+                          <Star size={14} fill="#f59e0b" stroke="#f59e0b" /> {book.rating.toFixed(1)}
+                        </span>
                       </div>
                       <Badge tone={meta.badge}>{meta.label}</Badge>
                     </div>
@@ -188,6 +191,9 @@ export default function Pinjaman() {
                       <div>
                         <h3 className="font-display text-xl font-bold">{book.title}</h3>
                         <p className="mt-0.5 text-muted-fg">{book.author}</p>
+                        <span className="mt-1.5 flex items-center gap-1 text-sm font-semibold text-muted-fg">
+                          <Star size={14} fill="#f59e0b" stroke="#f59e0b" /> {book.rating.toFixed(1)}
+                        </span>
                         <span className="mt-2.5 inline-flex items-center gap-1.5 rounded-full bg-accent-light px-3 py-1 text-sm font-semibold text-accent">
                           <BookText size={13} /> Copy #{loan.copyNumber} dari {book.ebookTotal}
                         </span>

@@ -7,19 +7,21 @@ import { useCurrentStudent, clearCurrentStudent } from "@/services/sessionStore"
 import { NotificationBell, DropdownMenu } from "@/components/HeaderMenus";
 import { Avatar } from "@/components/ui";
 import { ChatWidget } from "@/components/ChatWidget";
+import { useTranslate } from "@/services/localeStore";
 
 const NAV = [
-  { to: "/app", label: "Beranda", icon: Home, end: true },
-  { to: "/app/cari", label: "Cari Buku", icon: Search, end: false },
-  { to: "/app/pinjaman", label: "Pinjaman Saya", icon: BookMarked, end: false },
-  { to: "/app/baca", label: "Baca", icon: Book, end: false },
-  { to: "/app/profil", label: "Profil", icon: User, end: false },
+  { to: "/app", key: "nav.home", icon: Home, end: true },
+  { to: "/app/cari", key: "nav.search", icon: Search, end: false },
+  { to: "/app/pinjaman", key: "nav.loans", icon: BookMarked, end: false },
+  { to: "/app/baca", key: "nav.read", icon: Book, end: false },
+  { to: "/app/profil", key: "nav.profile", icon: User, end: false },
 ];
 
 export default function UserShell() {
   const { logout } = useAuth();
   const navigate = useNavigate();
   const student = useCurrentStudent();
+  const t = useTranslate();
   const doLogout = useCallback(() => {
     clearCurrentStudent();
     void logout().then(() => navigate("/login"));
@@ -41,7 +43,7 @@ export default function UserShell() {
           </div>
 
           <nav className="ml-6 flex flex-1 items-center gap-1">
-            {NAV.map(({ to, label, icon: Icon, end }) => (
+            {NAV.map(({ to, key, icon: Icon, end }) => (
               <NavLink
                 key={to}
                 to={to}
@@ -55,7 +57,7 @@ export default function UserShell() {
                 }
               >
                 <Icon size={17} />
-                <span className="max-w-[84px] text-center leading-tight">{label}</span>
+                <span className="max-w-[84px] text-center leading-tight">{t(key)}</span>
               </NavLink>
             ))}
           </nav>
@@ -89,7 +91,7 @@ export default function UserShell() {
                     }}
                     className="flex w-full cursor-pointer items-center gap-3 px-4 py-2.5 text-left text-[15px] font-semibold hover:bg-muted"
                   >
-                    <User size={17} /> Profil Saya
+                    <User size={17} /> {t("nav.profile")}
                   </button>
                   <button
                     onClick={() => {
@@ -98,7 +100,7 @@ export default function UserShell() {
                     }}
                     className="flex w-full cursor-pointer items-center gap-3 px-4 py-2.5 text-left text-[15px] font-semibold text-destructive hover:bg-destructive-light/50"
                   >
-                    <LogOut size={17} /> Keluar
+                    <LogOut size={17} /> {t("action.logout")}
                   </button>
                 </>
               )}

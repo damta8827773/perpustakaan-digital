@@ -5,7 +5,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/services/auth";
 import { useIdleLogout } from "@/hooks/useIdleLogout";
-import { clearAdminSession, currentAdminEmail } from "@/services/admin";
+import { clearAdminSession } from "@/services/admin";
 import { NotificationBell, DropdownMenu } from "@/components/HeaderMenus";
 import { Avatar } from "@/components/ui";
 
@@ -106,7 +106,7 @@ export default function AdminShell() {
                   <div className="border-b border-line px-4 py-3">
                     <div className="font-display font-bold">Administrator</div>
                     <div className="truncate text-sm lowercase text-muted-fg">
-                      {currentAdminEmail() ?? ""}
+                      {user?.email ?? ""}
                     </div>
                   </div>
                   <button

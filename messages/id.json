@@ -12,5 +12,14 @@
   "action.borrow": "Reservasi Buku Fisik",
   "action.return": "Kembalikan",
   "book.available": "Tersedia",
-  "book.borrowedAll": "Dipinjam Semua"
+  "book.borrowedAll": "Dipinjam Semua",
+  "profile.title": "Profil Saya",
+  "profile.inbox": "Kotak Masuk",
+  "profile.wishlist": "Wishlist Saya",
+  "profile.history": "Riwayat Baca",
+  "profile.changePassword": "Ubah Password",
+  "profile.editProfile": "Edit Profil",
+  "profile.language": "Bahasa",
+  "profile.help": "Bantuan",
+  "profile.logout": "Keluar dari Akun"
 }

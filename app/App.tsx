@@ -38,8 +38,29 @@ function Guard({
   const { user, role, loading } = useAuth();
 
   // Panel admin SELALU dibatasi ke email dalam allowlist, termasuk mode demo.
+  //
+  // PENTING (perbaikan keamanan): sebelumnya jalur ini HANYA mengecek
+  // isAdminAuthed(), yaitu flag localStorage ("perpus.admin.session") yang
+  // sama sekali lepas dari status login Firebase yang sesungguhnya. Siapa
+  // pun yang bisa membuka DevTools bisa menjalankan
+  // `localStorage.setItem("perpus.admin.session","damtafaiz@gmail.com")`
+  // lalu reload, dan Guard ini akan meloloskannya ke /admin TANPA pernah
+  // benar-benar login sebagai admin di Firebase. Sekarang jalur non-demo
+  // WAJIB memverifikasi sesi Firebase asli (`user` + `role` dari
+  // useAuth(), yang dihitung dari email token, bukan dari localStorage).
   if (need === "admin") {
-    if (!isAdminAuthed()) return <Navigate to="/admin/login" replace />;
+    if (DEMO) {
+      if (!isAdminAuthed()) return <Navigate to="/admin/login" replace />;
+      return <>{children}</>;
+    }
+    if (loading) {
+      return (
+        <div className="flex min-h-screen items-center justify-center text-muted-fg">
+          Memuat...
+        </div>
+      );
+    }
+    if (!user || role !== "admin") return <Navigate to="/admin/login" replace />;
     return <>{children}</>;
   }
 

@@ -1,8 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
-import { MessageCircle, Clock } from "lucide-react";
+import { MessageCircle, Clock, ShieldQuestion, KeyRound, IdCard } from "lucide-react";
 import { Card } from "@/components/ui";
 import { ChatThread } from "@/components/ChatThread";
+import { ResetPasswordModal } from "@/components/ResetPasswordModal";
 import { useAuth } from "@/services/auth";
+import { useUserProfile } from "@/services/userDoc";
+import { isPasswordResetAvailable } from "@/services/passwordReset";
 import {
   isChatAvailable, markChatRead, useAdminChatInbox, formatFullTimestamp, type ChatSummary,
 } from "@/services/chatStore";
@@ -37,7 +40,10 @@ export default function Pesan() {
   const chats = useAdminChatInbox();
   const queue = useMemo(() => toQueue(chats), [chats]);
   const [selected, setSelected] = useState<string | null>(null);
+  const [showInfo, setShowInfo] = useState(true);
+  const [resetOpen, setResetOpen] = useState(false);
   const active = chats.find((c) => c.studentUid === selected) ?? queue[0]?.chat ?? null;
+  const profile = useUserProfile(active?.studentUid ?? null);
 
   useEffect(() => {
     if (active?.unreadByAdmin) void markChatRead(active.studentUid, "admin");
@@ -52,7 +58,7 @@ export default function Pesan() {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[340px_1fr]">
+    <div className={`grid grid-cols-1 gap-6 ${showInfo ? "xl:grid-cols-[300px_1fr_300px]" : "lg:grid-cols-[340px_1fr]"}`}>
       <Card className="divide-y divide-line overflow-hidden">
         {queue.length === 0 ? (
           <div className="p-8 text-center text-muted-fg">Belum ada percakapan.</div>
@@ -100,11 +106,21 @@ export default function Pesan() {
           </div>
         ) : (
           <>
-            <div className="shrink-0 border-b border-line px-5 py-4">
-              <div className="font-display font-bold">{active.studentName || "Mahasiswa"}</div>
-              <div className="text-xs text-muted-fg">
-                Aktivitas terakhir: {formatFullTimestamp(active.lastMessageAt)}
+            <div className="flex shrink-0 items-center justify-between border-b border-line px-5 py-4">
+              <div>
+                <div className="font-display font-bold">{active.studentName || "Mahasiswa"}</div>
+                <div className="text-xs text-muted-fg">
+                  Aktivitas terakhir: {formatFullTimestamp(active.lastMessageAt)}
+                </div>
               </div>
+              <button
+                onClick={() => setShowInfo((s) => !s)}
+                className={`flex cursor-pointer items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold ${
+                  showInfo ? "bg-primary-light text-primary" : "text-muted-fg hover:bg-muted"
+                }`}
+              >
+                <IdCard size={14} /> Info Akun
+              </button>
             </div>
             <ChatThread
               key={active.studentUid}
@@ -117,6 +133,64 @@ export default function Pesan() {
           </>
         )}
       </Card>
+
+      {showInfo && active && (
+        <Card className="flex h-[600px] flex-col overflow-hidden">
+          <div className="shrink-0 border-b border-line px-5 py-4">
+            <div className="flex items-center gap-2 font-display font-bold">
+              <ShieldQuestion size={17} className="text-warning" /> Verifikasi Identitas
+            </div>
+          </div>
+          <div className="flex-1 space-y-4 overflow-y-auto px-5 py-4">
+            <p className="text-xs leading-relaxed text-muted-fg">
+              Sebelum memproses reset password lewat pengakuan chat, cocokkan
+              dulu data di bawah dengan yang disebutkan mahasiswa (mis. tanya
+              NIM atau buku terakhir yang dipinjam) — supaya bukan orang lain
+              yang mengaku-ngaku.
+            </p>
+            {profile ? (
+              <div className="space-y-3">
+                {[
+                  ["Nama", profile.name || "-"],
+                  ["Email", profile.email || "-"],
+                  ["NIM", profile.nim || "Belum diisi"],
+                  ["Fakultas", profile.faculty || "Belum diisi"],
+                  ["Program Studi", profile.program || "Belum diisi"],
+                  ["Angkatan", profile.angkatan || "Belum diisi"],
+                ].map(([label, value]) => (
+                  <div key={label} className="rounded-lg bg-bg px-4 py-3">
+                    <div className="text-xs text-muted-fg">{label}</div>
+                    <div className="mt-0.5 text-[15px] font-semibold">{value}</div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-lg bg-bg px-4 py-3 text-sm text-muted-fg">
+                Profil terperinci belum tersedia untuk akun ini (mungkin belum
+                pernah melengkapi data di halaman Profil mahasiswa).
+              </div>
+            )}
+          </div>
+          <div className="shrink-0 border-t border-line p-4">
+            <button
+              onClick={() => setResetOpen(true)}
+              disabled={!isPasswordResetAvailable() || !profile?.email}
+              title={!profile?.email ? "Email akun ini tidak tercatat" : undefined}
+              className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-line py-3 text-[15px] font-semibold text-destructive hover:bg-destructive-light disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <KeyRound size={17} /> Reset Password (dengan alasan)
+            </button>
+          </div>
+        </Card>
+      )}
+
+      {resetOpen && profile?.email && (
+        <ResetPasswordModal
+          target={{ name: profile.name || active?.studentName || "Mahasiswa", email: profile.email }}
+          onClose={() => setResetOpen(false)}
+          onDone={() => setResetOpen(false)}
+        />
+      )}
     </div>
   );
 }

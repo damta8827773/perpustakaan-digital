@@ -2,6 +2,7 @@ import { useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   Heart, Clock, Lock, Globe, HelpCircle, LogOut, ChevronRight, BookOpen, Mail, ShieldCheck, Camera,
+  Pencil, Check,
 } from "lucide-react";
 import { bookById } from "@/common/constants/catalog";
 import { RemoteCover, Button, Card, Modal, Avatar } from "@/components/ui";
@@ -16,8 +17,14 @@ import { useFeedback, inboxFor } from "@/services/feedbackStore";
 import { PasswordField } from "@/components/PasswordField";
 import { uploadAvatar, isAvatarUploadAvailable } from "@/services/avatarStore";
 import { auth } from "@/common/libs/firebase";
+import { useLocale, setLocale, useTranslate } from "@/services/localeStore";
+import { LOCALES, LOCALE_META } from "@/i18n";
+import { syncStudentProfile } from "@/services/userDoc";
 
-type Sheet = "wishlist" | "password" | "bantuan" | "inbox" | null;
+type Sheet = "wishlist" | "password" | "bantuan" | "inbox" | "bahasa" | "editProfil" | null;
+
+const PLACEHOLDER_VALUES = new Set(["-", "umum", "uin jakarta"]);
+const isPlaceholder = (v: string) => !v || PLACEHOLDER_VALUES.has(v.trim().toLowerCase());
 
 export default function Profil() {
   const { logout } = useAuth();
@@ -27,7 +34,8 @@ export default function Profil() {
   const student = useCurrentStudent();
   useFeedback(); // berlangganan agar balasan admin langsung muncul
   const [sheet, setSheet] = useState<Sheet>(null);
-  const [lang, setLang] = useState("Indonesia");
+  const locale = useLocale();
+  const t = useTranslate();
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -63,12 +71,12 @@ export default function Profil() {
   ];
 
   const MENU = [
-    { key: "inbox", icon: Mail, title: "Kotak Masuk", sub: inbox.length > 0 ? `${inbox.length} balasan dari admin` : "Belum ada balasan" },
-    { key: "wishlist", icon: Heart, title: "Wishlist Saya", sub: `${lib.wishlist.length} buku tersimpan` },
-    { key: "riwayat", icon: Clock, title: "Riwayat Baca", sub: "Lihat aktivitas peminjaman" },
-    { key: "password", icon: Lock, title: "Ubah Password", sub: "" },
-    { key: "bahasa", icon: Globe, title: "Bahasa", sub: lang },
-    { key: "bantuan", icon: HelpCircle, title: "Bantuan", sub: "Kirim pesan ke admin" },
+    { key: "inbox", icon: Mail, title: t("profile.inbox"), sub: inbox.length > 0 ? `${inbox.length} balasan dari admin` : "Belum ada balasan" },
+    { key: "wishlist", icon: Heart, title: t("profile.wishlist"), sub: `${lib.wishlist.length} buku tersimpan` },
+    { key: "riwayat", icon: Clock, title: t("profile.history"), sub: "Lihat aktivitas peminjaman" },
+    { key: "password", icon: Lock, title: t("profile.changePassword"), sub: "" },
+    { key: "bahasa", icon: Globe, title: t("profile.language"), sub: `${LOCALE_META[locale].flag} ${LOCALE_META[locale].label}` },
+    { key: "bantuan", icon: HelpCircle, title: t("profile.help"), sub: "Kirim pesan ke admin" },
   ];
 
   function onMenu(key: string) {
@@ -77,16 +85,12 @@ export default function Profil() {
     else if (key === "riwayat") navigate("/app/pinjaman");
     else if (key === "password") setSheet("password");
     else if (key === "bantuan") setSheet("bantuan");
-    else if (key === "bahasa") {
-      const next = lang === "Indonesia" ? "English" : "Indonesia";
-      setLang(next);
-      notify(`Bahasa diubah ke ${next}.`);
-    }
+    else if (key === "bahasa") setSheet("bahasa");
   }
 
   return (
     <div>
-      <h1 className="font-display text-[32px] font-bold">Profil Saya</h1>
+      <h1 className="font-display text-[32px] font-bold">{t("profile.title")}</h1>
 
       <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-[380px_1fr]">
         <div>
@@ -115,12 +119,33 @@ export default function Profil() {
                 onChange={handlePhotoChange}
               />
             </div>
-            <h2 className="mt-6 font-display text-[26px] font-bold uppercase">{student.name}</h2>
-            <p className="mt-1 text-lg uppercase text-muted-fg">{student.nim}</p>
-            <span className="mt-4 rounded-full bg-primary-light px-5 py-2 text-sm font-semibold uppercase text-primary">
-              {student.faculty} · {student.program}
-            </span>
-            {student.angkatan && (
+            <div className="mt-6 flex items-center gap-2">
+              <h2 className="font-display text-[26px] font-bold uppercase">{student.name}</h2>
+              <button
+                onClick={() => setSheet("editProfil")}
+                className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full bg-muted text-muted-fg hover:bg-primary-light hover:text-primary"
+                aria-label="Edit profil"
+                title="Edit profil"
+              >
+                <Pencil size={14} />
+              </button>
+            </div>
+            {isPlaceholder(student.nim) ? (
+              <button
+                onClick={() => setSheet("editProfil")}
+                className="mt-1 cursor-pointer text-[15px] font-semibold text-primary hover:underline"
+              >
+                Lengkapi NIM &amp; data akademik
+              </button>
+            ) : (
+              <p className="mt-1 text-lg uppercase text-muted-fg">{student.nim}</p>
+            )}
+            {!isPlaceholder(student.faculty) && !isPlaceholder(student.program) && (
+              <span className="mt-4 rounded-full bg-primary-light px-5 py-2 text-sm font-semibold uppercase text-primary">
+                {student.faculty} · {student.program}
+              </span>
+            )}
+            {student.angkatan && !isPlaceholder(student.angkatan) && (
               <span className="mt-2 text-sm text-muted-fg">Angkatan {student.angkatan}</span>
             )}
             {student.email && (
@@ -251,6 +276,32 @@ export default function Profil() {
         />
       )}
 
+      {sheet === "bahasa" && (
+        <LanguageModal
+          current={locale}
+          onClose={() => setSheet(null)}
+          onSelect={(next) => {
+            setLocale(next);
+            setSheet(null);
+            notify(`${LOCALE_META[next].flag} Bahasa diubah ke ${LOCALE_META[next].label}.`);
+          }}
+        />
+      )}
+
+      {sheet === "editProfil" && (
+        <EditProfileModal
+          student={student}
+          onClose={() => setSheet(null)}
+          onSave={(patch) => {
+            updateCurrentStudent(patch);
+            const uid = auth.currentUser?.uid;
+            if (uid) void syncStudentProfile(uid, patch);
+            setSheet(null);
+            notify("Profil berhasil diperbarui.");
+          }}
+        />
+      )}
+
       {sheet === "bantuan" && (
         <BantuanModal
           onClose={() => setSheet(null)}
@@ -307,6 +358,94 @@ function ChangePasswordModal({
           <Button type="submit" className="py-3.5" disabled={busy}>{busy ? "Menyimpan..." : "Simpan"}</Button>
         </div>
       </form>
+    </Modal>
+  );
+}
+
+function LanguageModal({
+  current, onClose, onSelect,
+}: { current: (typeof LOCALES)[number]; onClose: () => void; onSelect: (locale: (typeof LOCALES)[number]) => void }) {
+  return (
+    <Modal title="Pilih Bahasa" onClose={onClose}>
+      <div className="space-y-2.5">
+        {LOCALES.map((loc) => (
+          <button
+            key={loc}
+            onClick={() => onSelect(loc)}
+            className={`flex w-full cursor-pointer items-center gap-4 rounded-xl border px-5 py-4 text-left transition-colors ${
+              current === loc ? "border-primary bg-primary-light/60" : "border-line hover:bg-muted"
+            }`}
+          >
+            <span className="text-2xl">{LOCALE_META[loc].flag}</span>
+            <span className="flex-1 font-display text-[16px] font-bold">{LOCALE_META[loc].label}</span>
+            {current === loc && <Check size={18} className="text-primary" />}
+          </button>
+        ))}
+      </div>
+      <p className="mt-4 text-sm text-muted-fg">
+        Navigasi utama dan halaman profil akan mengikuti bahasa pilihan. Sebagian
+        konten (judul buku, obrolan, panel admin) masih dalam Bahasa Indonesia.
+      </p>
+    </Modal>
+  );
+}
+
+function EditProfileModal({
+  student, onClose, onSave,
+}: {
+  student: { name: string; nim: string; faculty: string; program: string; angkatan: string };
+  onClose: () => void;
+  onSave: (patch: { name: string; nim: string; faculty: string; program: string; angkatan: string }) => void;
+}) {
+  const clean = (v: string) => (isPlaceholder(v) ? "" : v);
+  const [name, setName] = useState(student.name);
+  const [nim, setNim] = useState(clean(student.nim));
+  const [faculty, setFaculty] = useState(clean(student.faculty));
+  const [program, setProgram] = useState(clean(student.program));
+  const [angkatan, setAngkatan] = useState(clean(student.angkatan));
+  const input =
+    "mt-2 w-full rounded-xl border border-line px-4 py-3 text-[15px] outline-none focus:border-primary";
+
+  return (
+    <Modal title="Edit Profil" onClose={onClose}>
+      <p className="text-sm text-muted-fg">
+        Lengkapi data akademik kamu supaya identitas sebagai mahasiswa kampus ini
+        tercatat benar di sistem — termasuk untuk verifikasi saat menghubungi admin.
+      </p>
+      <label className="mt-4 block font-display text-[15px] font-semibold">Nama Lengkap</label>
+      <input value={name} onChange={(e) => setName(e.target.value)} className={input} />
+      <label className="mt-4 block font-display text-[15px] font-semibold">NIM</label>
+      <input value={nim} onChange={(e) => setNim(e.target.value)} placeholder="Nomor Induk Mahasiswa" className={input} />
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="mt-4 block font-display text-[15px] font-semibold">Fakultas</label>
+          <input value={faculty} onChange={(e) => setFaculty(e.target.value)} className={input} />
+        </div>
+        <div>
+          <label className="mt-4 block font-display text-[15px] font-semibold">Program Studi</label>
+          <input value={program} onChange={(e) => setProgram(e.target.value)} className={input} />
+        </div>
+      </div>
+      <label className="mt-4 block font-display text-[15px] font-semibold">Angkatan</label>
+      <input value={angkatan} onChange={(e) => setAngkatan(e.target.value)} className={input} />
+      <div className="mt-6 grid grid-cols-2 gap-4">
+        <Button variant="outline" className="py-3.5" onClick={onClose}>Batal</Button>
+        <Button
+          className="py-3.5"
+          disabled={name.trim().length < 3}
+          onClick={() =>
+            onSave({
+              name: name.trim(),
+              nim: nim.trim() || "-",
+              faculty: faculty.trim() || "UIN Jakarta",
+              program: program.trim() || "Umum",
+              angkatan: angkatan.trim(),
+            })
+          }
+        >
+          Simpan
+        </Button>
+      </div>
     </Modal>
   );
 }

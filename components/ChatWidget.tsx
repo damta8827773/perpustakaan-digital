@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { MessageCircle, X, Clock } from "lucide-react";
 import { auth } from "@/common/libs/firebase";
 import { ChatThread } from "@/components/ChatThread";
@@ -6,6 +6,17 @@ import { useCurrentStudent } from "@/services/sessionStore";
 import {
   isChatAvailable, markChatRead, useChatSummary, useWaitingQueueCount,
 } from "@/services/chatStore";
+
+function useElapsedMinutes(sinceMs: number | null): number | null {
+  const [, tick] = useState(0);
+  useEffect(() => {
+    if (sinceMs == null) return;
+    const id = window.setInterval(() => tick((n) => n + 1), 15_000);
+    return () => window.clearInterval(id);
+  }, [sinceMs]);
+  if (sinceMs == null) return null;
+  return Math.max(0, Math.floor((Date.now() - sinceMs) / 60000));
+}
 
 /** Tombol chat mengambang untuk portal mahasiswa, dipasang sekali di UserShell. */
 export function ChatWidget() {
@@ -16,6 +27,7 @@ export function ChatWidget() {
   const available = isChatAvailable() && !!uid;
   const isWaiting = !!summary?.unreadByAdmin;
   const queueCount = useWaitingQueueCount(isWaiting);
+  const waitedMinutes = useElapsedMinutes(isWaiting ? summary?.waitingSinceAt ?? null : null);
 
   function toggle() {
     setOpen((o) => {
@@ -30,7 +42,12 @@ export function ChatWidget() {
       {open && (
         <div className="mb-3 flex h-[520px] w-[340px] flex-col overflow-hidden rounded-2xl border border-line bg-card shadow-2xl">
           <div className="flex shrink-0 items-center justify-between border-b border-line px-4 py-3">
-            <span className="font-display font-bold">Live Chat Admin</span>
+            <span className="flex items-center gap-2 font-display font-bold">
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary-light text-primary">
+                <MessageCircle size={15} />
+              </span>
+              Live Chat Admin
+            </span>
             <button
               onClick={() => setOpen(false)}
               className="cursor-pointer rounded-md p-1 text-muted-fg hover:bg-muted"
@@ -39,9 +56,13 @@ export function ChatWidget() {
               <X size={18} />
             </button>
           </div>
-          {isWaiting && queueCount > 1 && (
+          {isWaiting && (
             <div className="flex shrink-0 items-center gap-2 border-b border-line bg-warning-light/60 px-4 py-2 text-xs font-semibold text-warning">
-              <Clock size={13} /> Sekitar {queueCount - 1} mahasiswa lain juga sedang menunggu balasan admin.
+              <Clock size={13} />
+              {waitedMinutes !== null && waitedMinutes > 0
+                ? `Sudah menunggu ${waitedMinutes} menit`
+                : "Menunggu balasan admin"}
+              {queueCount > 1 && ` · ${queueCount - 1} mahasiswa lain juga menunggu`}
             </div>
           )}
           {available && uid ? (
