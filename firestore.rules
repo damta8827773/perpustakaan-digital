@@ -108,6 +108,7 @@ service cloud.firestore {
         && request.resource.data.requestedByUid == request.auth.uid
         && request.resource.data.reason is string
         && request.resource.data.reason.size() >= 20
+        && request.resource.data.reason.size() <= 1000
         && request.resource.data.createdAt == request.time;
       allow update, delete: if false;
     }
@@ -118,6 +119,7 @@ service cloud.firestore {
     match /passwordResetHelpTickets/{id} {
       allow create: if request.resource.data.nimOrEmail is string
         && request.resource.data.nimOrEmail.size() > 0
+        && request.resource.data.nimOrEmail.size() <= 100
         && request.resource.data.message is string
         && request.resource.data.message.size() <= 500
         && request.resource.data.status == 'open'
