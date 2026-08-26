@@ -224,7 +224,13 @@ export async function sendResetPassword(email: string): Promise<void> {
 
   if (!DEMO) {
     try {
-      await sendPasswordResetEmail(auth, clean);
+      // handleCodeInApp: true -> tautan di email mengarah ke halaman kita
+      // sendiri (/reset-password), bukan halaman generik bawaan Firebase,
+      // supaya tampilannya konsisten dengan brand & pesan errornya jelas.
+      await sendPasswordResetEmail(auth, clean, {
+        url: `${window.location.origin}/reset-password`,
+        handleCodeInApp: true,
+      });
       return;
     } catch (err) {
       const code = (err as { code?: string })?.code ?? "";

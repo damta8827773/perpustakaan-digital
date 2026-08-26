@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { Card } from "@/components/ui";
 import { CountUp } from "@/components/CountUp";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 const FEATURES = [
   "Pinjam & kembalikan buku online",
@@ -83,7 +84,10 @@ export default function Landing() {
               <div className="text-sm text-muted-fg">UIN Syarif Hidayatullah Jakarta</div>
             </div>
           </div>
-          <span className="text-[15px] text-muted-fg">© 2026 UIN Jakarta</span>
+          <div className="flex items-center gap-3">
+            <LanguageSwitcher />
+            <span className="text-[15px] text-muted-fg">© 2026 UIN Jakarta</span>
+          </div>
         </div>
       </header>
 

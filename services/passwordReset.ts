@@ -55,7 +55,10 @@ export async function adminTriggerPasswordReset(
   });
 
   try {
-    await sendPasswordResetEmail(auth, target.email);
+    await sendPasswordResetEmail(auth, target.email, {
+      url: `${window.location.origin}/reset-password`,
+      handleCodeInApp: true,
+    });
   } catch (err) {
     const code = (err as { code?: string })?.code ?? "";
     throw new Error(

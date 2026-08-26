@@ -5,6 +5,7 @@ import { isAdminAuthed } from "@/services/admin";
 import Landing from "@/modules/auth/Landing";
 import LoginMahasiswa from "@/modules/auth/LoginMahasiswa";
 import Daftar from "@/modules/auth/Daftar";
+import ResetPassword from "@/modules/auth/ResetPassword";
 import SsoLogin from "@/modules/auth/SsoLogin";
 import AdminLogin from "@/modules/auth/AdminLogin";
 import UserShell from "@/components/UserShell";
@@ -90,6 +91,7 @@ export default function App() {
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<LoginMahasiswa />} />
           <Route path="/daftar" element={<Daftar />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/sso" element={<SsoLogin />} />
           <Route path="/sso/callback" element={<SsoLogin />} />
           <Route path="/admin/login" element={<AdminLogin />} />

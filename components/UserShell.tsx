@@ -7,6 +7,7 @@ import { useCurrentStudent, clearCurrentStudent } from "@/services/sessionStore"
 import { NotificationBell, DropdownMenu } from "@/components/HeaderMenus";
 import { Avatar } from "@/components/ui";
 import { ChatWidget } from "@/components/ChatWidget";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useTranslate } from "@/services/localeStore";
 
 const NAV = [
@@ -62,6 +63,7 @@ export default function UserShell() {
             ))}
           </nav>
 
+          <LanguageSwitcher />
           <NotificationBell role="user" />
 
           <div className="ml-2 border-l border-line pl-4">
