@@ -1,0 +1,9 @@
+# Normalisasi akhir baris: simpan sebagai LF di repo, biarkan Git yang
+# menyesuaikan ke gaya lokal saat checkout. Menghilangkan peringatan
+# "LF will be replaced by CRLF" yang muncul di Windows.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.svg text eol=lf
