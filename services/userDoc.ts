@@ -1,5 +1,5 @@
 // Dokumen `users/{uid}` di Firestore: satu sumber kebenaran untuk role
-// (student/admin) yang bisa diverifikasi di Security Rules sisi server —
+// (student/admin) yang bisa diverifikasi di Security Rules sisi server -
 // dipakai fitur foto profil, live chat, dan audit reset password oleh admin.
 //
 // Role TETAP dihitung dari allowlist (isAdminEmail / roleHint), dokumen ini
@@ -29,7 +29,7 @@ export interface UserDoc {
 
 /**
  * Sinkronkan field profil mahasiswa (NIM/fakultas/prodi/angkatan) ke
- * users/{uid} — dipakai admin di panel verifikasi identitas live chat
+ * users/{uid} - dipakai admin di panel verifikasi identitas live chat
  * (lihat modules/admin/Pesan.tsx) untuk mencocokkan klaim identitas
  * sebelum memproses reset password. Gagal secara diam-diam kalau
  * Firestore belum aktif, konsisten dengan pola di seluruh services/.
@@ -47,7 +47,7 @@ export async function syncStudentProfile(
 }
 
 /**
- * Baca profil users/{uid} secara real-time — dipakai panel "Info Akun" admin
+ * Baca profil users/{uid} secara real-time - dipakai panel "Info Akun" admin
  * di live chat (modules/admin/Pesan.tsx) untuk verifikasi identitas sebelum
  * memproses reset password.
  */
@@ -113,7 +113,7 @@ export async function ensureUserDoc(
     return data;
   } catch {
     // Firestore belum aktif/di-deploy, atau rules belum sinkron dengan
-    // allowlist admin — jangan blokir login, cukup pakai role hasil hitungan.
+    // allowlist admin - jangan blokir login, cukup pakai role hasil hitungan.
     return { uid: identity.uid, email, name: identity.name, role: computedRole };
   }
 }

@@ -36,7 +36,7 @@ export function NotificationBell({
   const items = useNotifications(role);
 
   // Live chat masuk (Firestore, real-time) digabung ke daftar notifikasi
-  // admin yang sudah ada (localStorage) — bentuk datanya sama persis supaya
+  // admin yang sudah ada (localStorage) - bentuk datanya sama persis supaya
   // tidak perlu pola tampilan baru.
   const chatInbox = useAdminChatInbox(role === "admin");
   const unreadChats = role === "admin" ? chatInbox.filter((c) => c.unreadByAdmin) : [];

@@ -102,7 +102,7 @@ export default function Pesan() {
           </div>
         ) : !user ? (
           <div className="flex flex-1 items-center justify-center px-6 text-center text-sm text-muted-fg">
-            Sesi admin tidak terdeteksi di Firebase Auth — coba masuk ulang.
+            Sesi admin tidak terdeteksi di Firebase Auth - coba masuk ulang.
           </div>
         ) : (
           <>
@@ -145,7 +145,7 @@ export default function Pesan() {
             <p className="text-xs leading-relaxed text-muted-fg">
               Sebelum memproses reset password lewat pengakuan chat, cocokkan
               dulu data di bawah dengan yang disebutkan mahasiswa (mis. tanya
-              NIM atau buku terakhir yang dipinjam) — supaya bukan orang lain
+              NIM atau buku terakhir yang dipinjam) - supaya bukan orang lain
               yang mengaku-ngaku.
             </p>
             {profile ? (

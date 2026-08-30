@@ -1,4 +1,4 @@
-// Bahasa aktif aplikasi — persisten (localStorage) dan reaktif di semua
+// Bahasa aktif aplikasi - persisten (localStorage) dan reaktif di semua
 // komponen lewat useSyncExternalStore, menggantikan toggle "Bahasa" lama di
 // Profil.tsx yang cuma useState lokal (makanya sebelumnya tidak benar-benar
 // mengubah apa pun). Juga mengatur `dir="rtl"` otomatis untuk bahasa Arab.

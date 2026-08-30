@@ -35,11 +35,11 @@ export function ResetPasswordModal({
       <form onSubmit={submit}>
         <p className="text-[15px] text-muted-fg">
           Tautan reset akan dikirim ke <strong className="text-fg">{target.email}</strong>.
-          Ini hanya memicu tautan reset resmi Firebase — admin tidak pernah
+          Ini hanya memicu tautan reset resmi Firebase - admin tidak pernah
           melihat atau menyentuh password asli anggota.
         </p>
         <label className="mt-4 block font-display text-[15px] font-semibold">
-          Alasan (wajib, minimal {MIN_LEN} karakter) — jelaskan juga bagaimana
+          Alasan (wajib, minimal {MIN_LEN} karakter) - jelaskan juga bagaimana
           identitas mahasiswa sudah diverifikasi
         </label>
         <textarea

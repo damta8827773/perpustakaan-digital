@@ -53,7 +53,8 @@ anggota, membalas komentar pengguna, dan menyusun laporan.
 ## Fitur
 
 **Portal Mahasiswa**
-- Beranda dengan koleksi buku, filter kategori, dan ringkasan pinjaman aktif.
+- Beranda dengan koleksi ~1.000 buku, filter kategori, dan ringkasan pinjaman
+  aktif yang bisa langsung diklik untuk mengembalikan buku.
 - Pencarian berdasarkan judul, penulis, atau ISBN dengan filter ketersediaan.
 - Detail buku dengan rating, stok, ketersediaan e-book, tombol Suka/Favorit,
   dan kolom komentar dengan balasan admin.
@@ -64,7 +65,14 @@ anggota, membalas komentar pengguna, dan menyusun laporan.
   mode gelap, dan penanda bab.
 - Antrean untuk buku yang sedang habis, dengan perkiraan tanggal tersedia.
 - Pinjaman Saya (Buku Fisik / E-book / Riwayat), kotak masuk balasan admin,
-  dan profil dengan statistik yang dihitung dari aktivitas nyata.
+  dan profil dengan statistik yang dihitung dari aktivitas nyata, foto
+  profil, dan data akademik (NIM/fakultas/prodi) yang bisa diedit sendiri.
+- **Live chat** ke admin lewat tombol mengambang: pertanyaan umum (jam
+  operasional, cara pinjam, e-book, lupa sandi, dll.) langsung dijawab
+  otomatis, dengan label jelas mana balasan otomatis dan mana admin
+  sungguhan; menampilkan status terkirim/dibaca dan posisi antrean.
+- Bahasa antarmuka (navigasi & profil): Indonesia, English, dan العربية
+  (RTL), bisa diganti dari bendera di header.
 
 **Panel Admin**
 - Dashboard dengan statistik dan aktivitas peminjaman terkini.
@@ -74,14 +82,28 @@ anggota, membalas komentar pengguna, dan menyusun laporan.
   yang benar-benar mendaftar, tanpa data contoh).
 - Umpan Balik: seluruh komentar, suka, dan favorit pengguna terkumpul di satu
   tempat; admin membalas dan balasannya diteruskan ke pengguna terkait.
+- **Live Chat**: kotak masuk percakapan real-time dengan antrean bernomor
+  (yang belum dijawab didahulukan), dan panel "Info Akun" untuk mencocokkan
+  identitas mahasiswa sebelum memproses permintaan reset password.
+- **Reset password beralasan wajib**: admin tidak pernah melihat password
+  asli (mustahil secara teknis di Firebase) — admin memicu tautan reset
+  resmi, wajib mengisi alasan/bukti verifikasi identitas (≥20 karakter) yang
+  dicatat sebagai audit log dan ditegakkan lewat Security Rules, bukan cuma
+  validasi UI.
 - Laporan: peminjaman bulanan, buku terpopuler, keterlambatan, dan kategori
-  favorit, dengan opsi ekspor data.
+  favorit, dengan grafik interaktif dan opsi ekspor data.
 
-**Autentikasi**
+**Autentikasi & Keamanan**
 - Mahasiswa: SSO UIN, Google, email tanpa kata sandi, atau NIM. Tersedia
-  pendaftaran mandiri dan pemulihan kata sandi.
+  pendaftaran mandiri, indikator kekuatan sandi saat mendaftar, dan halaman
+  reset password bermerek sendiri (bukan halaman generik Firebase).
 - Admin: hanya akun Google yang terdaftar pada allowlist (`VITE_ADMIN_EMAILS`)
-  yang bisa masuk, sehingga akses tidak bisa ditebak lewat email saja.
+  yang bisa masuk — diverifikasi lewat sesi Firebase asli, bukan flag lokal
+  yang bisa dipalsukan dari DevTools.
+- Firestore Security Rules memvalidasi peran pengirim di setiap pesan chat
+  (mencegah pemalsuan pesan "admin"), membatasi panjang field yang bisa
+  ditulis publik, dan sudah melalui tinjauan keamanan (`npm audit` bersih,
+  tanpa kerentanan dependensi).
 
 ---
 
@@ -90,11 +112,11 @@ anggota, membalas komentar pengguna, dan menyusun laporan.
 Katalog dan formulir admin tersambung ke [Google Books API](https://developers.google.com/books)
 agar data buku sesuai dengan data yang benar-benar ada, bukan contoh karangan:
 
-- **Sampul asli** — komponen `RemoteCover` (`components/ui.tsx`) mengambil
+- **Sampul asli** - komponen `RemoteCover` (`components/ui.tsx`) mengambil
   gambar sampul dari Google Books saat buku ditampilkan, dan kembali ke blok
   warna berinisial bila API tidak menemukan hasil atau sedang tidak dapat
   dihubungi.
-- **Pencarian di formulir admin** — saat menambah atau mengubah buku
+- **Pencarian di formulir admin** - saat menambah atau mengubah buku
   (`modules/admin/Koleksi.tsx`), admin bisa mencari judul di Google Books lalu
   klik salah satu hasil untuk mengisi otomatis penulis, penerbit, tahun terbit,
   ISBN, dan deskripsi.
@@ -106,12 +128,17 @@ agar data buku sesuai dengan data yang benar-benar ada, bukan contoh karangan:
 
 ## Tangkapan Layar
 
-Referensi rancangan tersedia di [`referensi-desain/`](referensi-desain/).
+Tangkapan layar di bawah diambil langsung dari aplikasi yang berjalan (mode
+demo), bukan mockup. Referensi rancangan Figma asli tersedia di
+[`referensi-desain/`](referensi-desain/).
 
-| Portal Mahasiswa | Panel Admin |
+| Landing Page | Beranda Mahasiswa |
 | :---: | :---: |
-| Beranda, Pencarian, Detail Buku | Dashboard, Koleksi, Laporan |
-| Reservasi, Pembaca E-book, Profil | Peminjaman, Data Anggota, Umpan Balik |
+| ![Landing Page](docs/screenshots/01-landing.png) | ![Beranda Mahasiswa](docs/screenshots/02-beranda-mahasiswa.png) |
+
+| Profil Mahasiswa | Dashboard Admin |
+| :---: | :---: |
+| ![Profil Mahasiswa](docs/screenshots/03-profil-mahasiswa.png) | ![Dashboard Admin](docs/screenshots/04-dashboard-admin.png) |
 
 ---
 
@@ -259,11 +286,25 @@ Rincian lengkap ada di [`SECURITY.md`](SECURITY.md).
 
 ## Peta Jalan
 
-- [ ] Menghubungkan koleksi dan peminjaman ke Cloud Firestore.
+**Sudah selesai**
+- [x] Live chat mahasiswa-admin di Cloud Firestore (real-time, lintas
+      perangkat), dengan balasan otomatis berbasis kata kunci.
+- [x] Identitas pengguna (`users/{uid}`) di Firestore untuk deteksi peran
+      admin/mahasiswa yang aman di sisi server (Security Rules).
+- [x] Foto profil (disimpan sebagai gambar terkompresi di Firestore, tanpa
+      perlu Firebase Storage/paket berbayar).
+- [x] Reset password oleh admin dengan audit log wajib beralasan.
+
+**Belum selesai**
+- [ ] Menghubungkan koleksi buku, peminjaman, dan data anggota ke Cloud
+      Firestore (saat ini masih di `localStorage` per-browser, bukan
+      basis data bersama — lihat [`services/libraryStore.ts`](services/libraryStore.ts)).
 - [ ] Penyimpanan berkas e-book pada Firebase Storage.
 - [ ] Integrasi SSO OIDC/CAS resmi dengan penukaran token di sisi server.
 - [ ] Notifikasi tenggat pengembalian lewat email/push, bukan hanya in-app.
 - [ ] Ekspor laporan ke format PDF dan Excel yang sesungguhnya.
+- [ ] Terjemahan penuh seluruh konten halaman (saat ini baru navigasi utama
+      & halaman profil yang benar-benar berganti bahasa).
 
 ---
 

@@ -185,7 +185,7 @@ export default function Anggota() {
               </button>
             ) : (
               <p className="text-center text-sm text-muted-fg">
-                Email anggota ini tidak tercatat — reset password tidak bisa dikirim.
+                Email anggota ini tidak tercatat - reset password tidak bisa dikirim.
               </p>
             )}
           </div>

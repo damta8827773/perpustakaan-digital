@@ -35,7 +35,7 @@ export function isAdminAuthed(): boolean {
 /**
  * Tandai sesi admin aktif di localStorage (dibaca oleh Guard need="admin" di
  * app/App.tsx). Diekspor supaya bisa dipanggil dari jalur login mana pun yang
- * berhasil mengonfirmasi role admin — bukan cuma dari halaman /admin/login.
+ * berhasil mengonfirmasi role admin - bukan cuma dari halaman /admin/login.
  */
 export function setAdminSession(email: string): void {
   localStorage.setItem(KEY, email.trim().toLowerCase());

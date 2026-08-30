@@ -12,7 +12,7 @@ const DEMO = import.meta.env.VITE_DEMO === "1";
 
 /**
  * `demoIdentity` dipakai saat VITE_DEMO=1 ATAU provider Google belum
- * diaktifkan di Firebase Console — tiap halaman (mahasiswa/admin) memberi
+ * diaktifkan di Firebase Console - tiap halaman (mahasiswa/admin) memberi
  * identitas contoh sendiri karena role yang mau dipratinjau berbeda.
  */
 export async function signInWithGooglePopup(demoIdentity: BasicIdentity): Promise<BasicIdentity> {

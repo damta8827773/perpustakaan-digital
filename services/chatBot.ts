@@ -1,4 +1,4 @@
-// Balasan otomatis berbasis kata kunci (BUKAN LLM sungguhan — dipilih agar
+// Balasan otomatis berbasis kata kunci (BUKAN LLM sungguhan - dipilih agar
 // gratis dan tidak butuh server/API key yang bisa bocor ke browser). Kalau
 // topiknya dikenali di sini, AI menjawab spesifik; kalau tidak, chatStore.ts
 // tetap mengirim pengakuan umum (bukan diam) supaya mahasiswa tahu pesannya
@@ -32,7 +32,7 @@ const FAQ: FaqEntry[] = [
   {
     keywords: ["kembalikan", "pengembalian", "denda", "telat", "terlambat"],
     answer:
-      "Buku fisik dikembalikan langsung ke perpustakaan sebelum tanggal jatuh tempo. Keterlambatan bisa dikenakan denda sesuai kebijakan kampus — cek detail di menu Pinjaman Saya untuk tanggal jatuh tempo tiap buku.",
+      "Buku fisik dikembalikan langsung ke perpustakaan sebelum tanggal jatuh tempo. Keterlambatan bisa dikenakan denda sesuai kebijakan kampus - cek detail di menu Pinjaman Saya untuk tanggal jatuh tempo tiap buku.",
   },
   {
     keywords: ["daftar", "cara daftar", "buat akun", "registrasi"],
@@ -62,7 +62,7 @@ const FAQ: FaqEntry[] = [
   {
     keywords: ["wishlist", "favorit", "simpan buku"],
     answer:
-      "Klik ikon hati/favorit pada halaman detail buku untuk menyimpannya ke Wishlist — bisa dilihat lagi lewat menu Profil → Wishlist Saya.",
+      "Klik ikon hati/favorit pada halaman detail buku untuk menyimpannya ke Wishlist - bisa dilihat lagi lewat menu Profil → Wishlist Saya.",
   },
   {
     keywords: ["rating", "ulasan", "review", "beri nilai"],

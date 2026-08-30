@@ -160,7 +160,7 @@ export async function loginWithEmailOnly(email: string): Promise<MemberProfile> 
 //
 // Satu popup Google (lewat signInWithGooglePopup) dipakai baik dari halaman
 // mahasiswa maupun admin, lalu role ditentukan dari allowlist admin
-// (ensureUserDoc) SEBELUM profil mahasiswa dibuat — supaya akun Google yang
+// (ensureUserDoc) SEBELUM profil mahasiswa dibuat - supaya akun Google yang
 // terdaftar sebagai admin tidak pernah salah dianggap mahasiswa, apa pun
 // tombol yang dipencet untuk masuk.
 
@@ -269,7 +269,7 @@ function changePasswordLocal(
 
 /**
  * Ganti kata sandi memakai Firebase Auth asli (reauthenticate + updatePassword)
- * untuk akun email/password sungguhan — bukan sekadar menimpa cadangan lokal
+ * untuk akun email/password sungguhan - bukan sekadar menimpa cadangan lokal
  * seperti sebelumnya. Akun Google tidak memiliki kata sandi untuk diubah.
  */
 export async function changePasswordSecure(

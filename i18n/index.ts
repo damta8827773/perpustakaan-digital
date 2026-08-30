@@ -9,10 +9,12 @@ export type Locale = "id" | "en" | "ar";
 export const LOCALES: Locale[] = ["id", "en", "ar"];
 export const DEFAULT_LOCALE: Locale = "id";
 
-export const LOCALE_META: Record<Locale, { label: string; flag: string; dir: "ltr" | "rtl" }> = {
-  id: { label: "Indonesia", flag: "🇮🇩", dir: "ltr" },
-  en: { label: "English", flag: "🇬🇧", dir: "ltr" },
-  ar: { label: "العربية", flag: "🇸🇦", dir: "rtl" },
+// Bendera bahasa dirender lewat komponen <FlagIcon locale=.../> (SVG asli,
+// bukan emoji) - lihat components/FlagIcon.tsx untuk alasannya.
+export const LOCALE_META: Record<Locale, { label: string; dir: "ltr" | "rtl" }> = {
+  id: { label: "Indonesia", dir: "ltr" },
+  en: { label: "English", dir: "ltr" },
+  ar: { label: "العربية", dir: "rtl" },
 };
 
 const DICTIONARIES: Record<Locale, Record<string, string>> = { id, en, ar };

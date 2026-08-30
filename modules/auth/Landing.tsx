@@ -20,6 +20,7 @@ interface FeatureDetail {
   title: string;
   summary: string;
   detail: string;
+  steps: string[];
 }
 
 const FEATURE_DETAILS: FeatureDetail[] = [
@@ -28,35 +29,63 @@ const FEATURE_DETAILS: FeatureDetail[] = [
     title: "Pinjam & Kembalikan Buku Online",
     summary: "Reservasi buku fisik tanpa antre di tempat.",
     detail:
-      "Cari buku yang tersedia lewat halaman Cari Buku, pilih durasi pinjam sesuai kebutuhan, lalu konfirmasi reservasi — kamu langsung dapat bukti peminjaman digital. Tanggal jatuh tempo bisa dipantau kapan saja dari menu Pinjaman Saya. Pengembalian dilakukan langsung ke perpustakaan sebelum tenggat waktu berakhir.",
+      "Cari buku yang tersedia lewat halaman Cari Buku, pilih durasi pinjam sesuai kebutuhan, lalu konfirmasi reservasi - kamu langsung dapat bukti peminjaman digital.",
+    steps: [
+      "Cari buku yang tersedia di halaman Cari Buku",
+      "Pilih durasi pinjam, lalu konfirmasi reservasi",
+      "Ambil buku fisik di perpustakaan sesuai jadwal",
+      "Kembalikan sebelum tanggal jatuh tempo",
+    ],
   },
   {
     icon: Tablet,
     title: "Baca E-book Langsung di Browser",
     summary: "Tanpa aplikasi tambahan, tanpa perlu ke perpustakaan.",
     detail:
-      "Buku berlabel E-book bisa dibaca langsung dari browser, kapan saja. Pembaca dilengkapi pengatur ukuran huruf, mode gelap untuk membaca malam hari, penanda bab, dan daftar pustaka per judul. Masa pinjam e-book berakhir otomatis sesuai durasi yang dipilih — tidak perlu mengembalikan secara manual.",
+      "Buku berlabel E-book bisa dibaca langsung dari browser, kapan saja, lengkap dengan pengatur kenyamanan baca.",
+    steps: [
+      "Buka menu Baca, pilih e-book yang sedang dipinjam",
+      "Atur ukuran huruf & mode gelap sesuai selera",
+      "Tandai bab yang sedang dibaca, lanjut kapan saja",
+      "Akses berakhir otomatis sesuai durasi pinjam",
+    ],
   },
   {
     icon: History,
     title: "Pantau Riwayat Peminjaman",
     summary: "Semua aktivitas tercatat rapi di satu tempat.",
     detail:
-      "Setiap peminjaman — baik buku fisik maupun e-book — tercatat di menu Pinjaman Saya, lengkap dengan status aktif, sisa waktu, dan riwayat yang sudah selesai. Kamu juga bisa memberi rating dan ulasan untuk buku yang pernah dipinjam, membantu mahasiswa lain memilih bacaan.",
+      "Setiap peminjaman, baik buku fisik maupun e-book, tercatat di menu Pinjaman Saya dengan status yang selalu jelas.",
+    steps: [
+      "Lihat status pinjaman aktif & tanggal jatuh tempo",
+      "Cek riwayat peminjaman yang sudah selesai",
+      "Beri rating & ulasan untuk buku yang pernah dibaca",
+    ],
   },
   {
     icon: BellRing,
     title: "Notifikasi Jatuh Tempo Otomatis",
     summary: "Tidak akan lagi lupa tenggat pengembalian.",
     detail:
-      "Sistem mengirim pengingat dalam aplikasi menjelang tanggal jatuh tempo buku fisik, dan memberi tahu saat masa pinjam e-book akan berakhir. Semua notifikasi terkumpul di ikon lonceng pada header, tidak akan tenggelam di antara aktivitas lain.",
+      "Sistem mengingatkan lewat notifikasi dalam aplikasi, jauh sebelum tenggat waktu terlewat.",
+    steps: [
+      "Pengingat otomatis menjelang jatuh tempo buku fisik",
+      "Pemberitahuan saat masa pinjam e-book akan berakhir",
+      "Semua terkumpul rapi di ikon lonceng pada header",
+    ],
   },
   {
     icon: MessageCircle,
     title: "Live Chat dengan Admin",
     summary: "Bertanya langsung, dijawab cepat.",
     detail:
-      "Punya pertanyaan seputar jam operasional, cara pinjam, atau kendala akun? Chat langsung dari tombol mengambang di pojok layar. Pertanyaan umum dijawab otomatis dalam hitungan detik; untuk hal yang lebih spesifik, admin perpustakaan akan menindaklanjuti secara langsung — dan kamu akan selalu tahu mana balasan otomatis, mana balasan admin sungguhan.",
+      "Punya pertanyaan seputar jam operasional, cara pinjam, atau kendala akun? Chat langsung dari tombol mengambang di pojok layar.",
+    steps: [
+      "Klik tombol chat mengambang di pojok layar",
+      "Pertanyaan umum dijawab otomatis dalam hitungan detik",
+      "Admin perpustakaan menindaklanjuti hal yang lebih spesifik",
+      "Selalu jelas mana balasan otomatis, mana admin sungguhan",
+    ],
   },
 ];
 
@@ -138,7 +167,7 @@ export default function Landing() {
             Apa yang Bisa Kamu Lakukan di Sini?
           </h2>
           <p className="mx-auto mt-2 max-w-[560px] text-center text-muted-fg">
-            Sebelum masuk, kenali dulu fitur-fitur yang tersedia — klik salah satu
+            Sebelum masuk, kenali dulu fitur-fitur yang tersedia - klik salah satu
             di sebelah kiri untuk membaca penjelasan lengkapnya.
           </p>
 
@@ -176,6 +205,17 @@ export default function Landing() {
               </div>
               <h3 className="mt-5 font-display text-2xl font-bold">{active.title}</h3>
               <p className="mt-4 text-[15px] leading-relaxed text-muted-fg">{active.detail}</p>
+
+              <div className="mt-6 space-y-3.5 border-t border-line pt-6">
+                {active.steps.map((step, i) => (
+                  <div key={step} className="flex items-start gap-3.5">
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary-light font-display text-xs font-bold text-primary">
+                      {i + 1}
+                    </span>
+                    <span className="text-[15px] leading-relaxed">{step}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>

@@ -20,6 +20,7 @@ import { auth } from "@/common/libs/firebase";
 import { useLocale, setLocale, useTranslate } from "@/services/localeStore";
 import { LOCALES, LOCALE_META } from "@/i18n";
 import { syncStudentProfile } from "@/services/userDoc";
+import { FlagIcon } from "@/components/FlagIcon";
 
 type Sheet = "wishlist" | "password" | "bantuan" | "inbox" | "bahasa" | "editProfil" | null;
 
@@ -75,7 +76,7 @@ export default function Profil() {
     { key: "wishlist", icon: Heart, title: t("profile.wishlist"), sub: `${lib.wishlist.length} buku tersimpan` },
     { key: "riwayat", icon: Clock, title: t("profile.history"), sub: "Lihat aktivitas peminjaman" },
     { key: "password", icon: Lock, title: t("profile.changePassword"), sub: "" },
-    { key: "bahasa", icon: Globe, title: t("profile.language"), sub: `${LOCALE_META[locale].flag} ${LOCALE_META[locale].label}` },
+    { key: "bahasa", icon: Globe, title: t("profile.language"), sub: LOCALE_META[locale].label },
     { key: "bantuan", icon: HelpCircle, title: t("profile.help"), sub: "Kirim pesan ke admin" },
   ];
 
@@ -283,7 +284,7 @@ export default function Profil() {
           onSelect={(next) => {
             setLocale(next);
             setSheet(null);
-            notify(`${LOCALE_META[next].flag} Bahasa diubah ke ${LOCALE_META[next].label}.`);
+            notify(`Bahasa diubah ke ${LOCALE_META[next].label}.`);
           }}
         />
       )}
@@ -376,7 +377,7 @@ function LanguageModal({
               current === loc ? "border-primary bg-primary-light/60" : "border-line hover:bg-muted"
             }`}
           >
-            <span className="text-2xl">{LOCALE_META[loc].flag}</span>
+            <FlagIcon locale={loc} className="h-5 w-7" />
             <span className="flex-1 font-display text-[16px] font-bold">{LOCALE_META[loc].label}</span>
             {current === loc && <Check size={18} className="text-primary" />}
           </button>
@@ -410,7 +411,7 @@ function EditProfileModal({
     <Modal title="Edit Profil" onClose={onClose}>
       <p className="text-sm text-muted-fg">
         Lengkapi data akademik kamu supaya identitas sebagai mahasiswa kampus ini
-        tercatat benar di sistem — termasuk untuk verifikasi saat menghubungi admin.
+        tercatat benar di sistem - termasuk untuk verifikasi saat menghubungi admin.
       </p>
       <label className="mt-4 block font-display text-[15px] font-semibold">Nama Lengkap</label>
       <input value={name} onChange={(e) => setName(e.target.value)} className={input} />

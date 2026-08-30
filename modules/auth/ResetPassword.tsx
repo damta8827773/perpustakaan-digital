@@ -42,7 +42,7 @@ export default function ResetPassword() {
 
   useEffect(() => {
     if (mode !== "resetPassword" || !oobCode) {
-      setError("Tautan tidak lengkap — pastikan kamu membuka tautan dari email apa adanya, tanpa memotong bagian mana pun.");
+      setError("Tautan tidak lengkap - pastikan kamu membuka tautan dari email apa adanya, tanpa memotong bagian mana pun.");
       setStatus("invalid");
       return;
     }

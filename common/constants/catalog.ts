@@ -134,7 +134,7 @@ const CURATED_BOOKS: Book[] = [
 
 // ---------------------------------------------------------------------------
 // Koleksi tambahan (dibangkitkan otomatis, bukan data sungguhan) supaya
-// katalog terasa seperti perpustakaan kampus asli dengan ribuan judul —
+// katalog terasa seperti perpustakaan kampus asli dengan ribuan judul -
 // bukan direktori 12 buku. Dibuat sekali saat modul dimuat (PRNG dengan
 // seed tetap, bukan Math.random) supaya hasilnya stabil di setiap reload,
 // bukan berubah-ubah acak.

@@ -1,11 +1,11 @@
 // Live chat mahasiswa <-> admin lewat Firestore (real-time, lintas
 // perangkat). Satu thread bersama per mahasiswa (chats/{studentUid}) yang
-// bisa dijawab admin mana pun — konsisten dengan pola "Admin Perpustakaan"
+// bisa dijawab admin mana pun - konsisten dengan pola "Admin Perpustakaan"
 // generik yang sudah dipakai di komentar/balasan (lihat feedbackStore.ts).
 //
 // "AI" di sini adalah balasan otomatis berbasis kata kunci (lihat
 // chatBot.ts), ditulis dari sesi mahasiswa sendiri (senderUid == uid
-// mahasiswa) supaya tidak butuh server/API key — hanya senderRole yang
+// mahasiswa) supaya tidak butuh server/API key - hanya senderRole yang
 // berbeda ("ai") untuk membedakan tampilannya dari pesan mahasiswa asli.
 import {
   collection, doc, getDocs, limit, onSnapshot, orderBy, query,
@@ -87,7 +87,7 @@ export function isChatAvailable(): boolean {
   return !DEMO;
 }
 
-/** "24 Agustus 2026 19:27:45" — tanggal, bulan, tahun, jam, menit, detik lengkap. */
+/** "24 Agustus 2026 19:27:45" - tanggal, bulan, tahun, jam, menit, detik lengkap. */
 export function formatFullTimestamp(ms: number | null): string {
   if (ms == null) return "Mengirim...";
   return new Date(ms).toLocaleString("id-ID", {
@@ -183,7 +183,7 @@ export async function sendChatMessage(
 
   if (senderRole === "student" && lastRole !== "admin") {
     // AI selalu membalas SETIAP pesan mahasiswa (sesuai permintaan) selama
-    // admin manusia belum turun tangan — jawaban spesifik kalau topiknya
+    // admin manusia belum turun tangan - jawaban spesifik kalau topiknya
     // dikenali, kalau tidak tetap pakai pengakuan umum (bukan diam).
     const reply = matchFaqAnswer(clean) ?? GENERIC_ACK;
     if (reply) {
@@ -277,7 +277,7 @@ export function useWaitingQueueCount(enabled: boolean): number {
 
 /**
  * `enabled=false` (mis. dipanggil dari NotificationBell peran "user") tidak
- * membuat query Firestore sama sekali — hook tetap dipanggil tanpa syarat
+ * membuat query Firestore sama sekali - hook tetap dipanggil tanpa syarat
  * untuk mematuhi Rules of Hooks, hanya langganannya yang dilewati.
  */
 export function useAdminChatInbox(enabled = true): ChatSummary[] {

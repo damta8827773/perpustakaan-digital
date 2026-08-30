@@ -3,11 +3,11 @@ rules_version = '2';
 // Aturan keamanan Firestore: default tolak semua, akses berbasis role.
 //
 // PENTING: isAllowlistedAdminEmail() di bawah HARUS disalin manual dari
-// VITE_ADMIN_EMAILS (.env.local) setiap kali daftar admin berubah — Security
+// VITE_ADMIN_EMAILS (.env.local) setiap kali daftar admin berubah - Security
 // Rules tidak bisa membaca environment variable milik aplikasi. Kalau daftar
 // ini tidak disinkronkan, users/{uid} milik admin baru akan gagal dibuat
 // dengan role "admin" (fallback aman: login tetap jalan, tapi fitur yang
-// butuh status admin di Firestore — chat, reset password, dst — tidak
+// butuh status admin di Firestore - chat, reset password, dst - tidak
 // mengenali admin tsb sampai daftar ini diperbarui).
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -23,7 +23,7 @@ service cloud.firestore {
 
     // Admin sekarang dikenali dari dokumen users/{uid}.role (ditulis oleh
     // services/userDoc.ts saat login), BUKAN lagi dari pola domain email
-    // sintetis — itu tidak pernah cocok untuk admin yang login via Google.
+    // sintetis - itu tidak pernah cocok untuk admin yang login via Google.
     function isAdmin() {
       return isSignedIn()
         && exists(/databases/$(database)/documents/users/$(request.auth.uid))
@@ -68,7 +68,7 @@ service cloud.firestore {
 
       match /messages/{messageId} {
         allow read: if request.auth.uid == studentUid || isAdmin();
-        // senderRole DIPAKSA cocok dengan siapa yang benar-benar login —
+        // senderRole DIPAKSA cocok dengan siapa yang benar-benar login -
         // sebelumnya field ini tidak divalidasi sama sekali, artinya
         // mahasiswa bisa memalsukan pesan "admin" di thread miliknya
         // sendiri (mis. pura-pura sudah dijawab admin). "ai" tetap boleh
@@ -87,7 +87,7 @@ service cloud.firestore {
       }
     }
 
-    // Hitungan antrean (berapa percakapan yang masih menunggu admin) —
+    // Hitungan antrean (berapa percakapan yang masih menunggu admin) -
     // agregat tanpa identitas, aman dibaca siapa pun yang sudah masuk.
     // Ditulis lewat transaksi client (lihat chatStore.ts); validasi longgar
     // (cukup bilangan bulat >= 0) karena ini cuma angka informatif, bukan
@@ -114,7 +114,7 @@ service cloud.firestore {
     }
 
     // Form "hubungi admin" untuk akun yang emailnya tidak bisa menerima
-    // tautan reset (mis. akun NIM dengan email sintetis) — bisa diisi
+    // tautan reset (mis. akun NIM dengan email sintetis) - bisa diisi
     // sebelum login, tapi hanya admin yang bisa membacanya kembali.
     match /passwordResetHelpTickets/{id} {
       allow create: if request.resource.data.nimOrEmail is string

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-// Dengarkan teks bab lewat Web Speech API bawaan browser — tanpa server,
+// Dengarkan teks bab lewat Web Speech API bawaan browser - tanpa server,
 // tanpa API key, tanpa biaya. Berhenti otomatis kalau teksnya berganti
 // (pindah bab) atau komponennya di-unmount.
 export type SpeechStatus = "idle" | "speaking" | "paused";

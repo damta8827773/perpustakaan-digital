@@ -1,5 +1,5 @@
 // Foto profil disimpan LANGSUNG sebagai gambar terkompresi di dokumen
-// users/{uid} (Firestore) — bukan Firebase Storage. Ini sengaja dipilih
+// users/{uid} (Firestore) - bukan Firebase Storage. Ini sengaja dipilih
 // supaya fitur ini tidak butuh paket Blaze (Storage mewajibkan upgrade
 // billing project sejak kebijakan terbaru Firebase, meski pemakaian ringan
 // biasanya tetap gratis). Firestore Spark/gratis sudah cukup untuk gambar

@@ -37,7 +37,7 @@ function roleFromEmail(email: string | null): Role {
   if (!email) return null;
   const clean = email.trim().toLowerCase();
   // Email Google asli yang terdaftar di allowlist admin harus tetap dikenali
-  // sebagai admin di sini juga — bukan cuma di jalur login Google — supaya
+  // sebagai admin di sini juga - bukan cuma di jalur login Google - supaya
   // sesi admin yang nyasar ke area /app tidak dianggap mahasiswa biasa.
   if (isAdminEmail(clean) || clean.endsWith(`@${ADMIN_EMAIL_DOMAIN}`)) return "admin";
   if (clean.endsWith(`@${STUDENT_EMAIL_DOMAIN}`)) return "student";

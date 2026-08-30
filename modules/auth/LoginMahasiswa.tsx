@@ -66,7 +66,7 @@ export default function LoginMahasiswa() {
     try {
       const { profile, role } = await loginWithGoogle();
       if (role === "admin") {
-        // Email ini terdaftar di allowlist admin — arahkan ke panel admin
+        // Email ini terdaftar di allowlist admin - arahkan ke panel admin
         // meskipun masuknya lewat tombol Google di halaman mahasiswa.
         navigate("/admin", { replace: true });
         return;
