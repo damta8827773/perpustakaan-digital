@@ -104,11 +104,19 @@ async function updateChatSummaryAndQueue(
 ): Promise<void> {
   await runTransaction(db, async (tx) => {
     const chatRef = chatDocRef(studentUid);
+    const qRef = queueDocRef();
+    // Firestore mewajibkan SEMUA baca dilakukan sebelum tulis apa pun dalam
+    // satu transaksi - baca antrean dulu di sini, baru tulis keduanya di
+    // bawah (urutan sebaliknya bikin runTransaction melempar error setiap
+    // kali startsNewWait true, alias pesan pertama tiap percakapan gagal
+    // terkirim).
+    let current = 0;
+    if (queueDelta !== 0) {
+      const qSnap = await tx.get(qRef);
+      current = qSnap.exists() ? Number(qSnap.data().waitingCount) || 0 : 0;
+    }
     tx.set(chatRef, patch, { merge: true });
     if (queueDelta !== 0) {
-      const qRef = queueDocRef();
-      const qSnap = await tx.get(qRef);
-      const current = qSnap.exists() ? Number(qSnap.data().waitingCount) || 0 : 0;
       tx.set(qRef, { waitingCount: Math.max(0, current + queueDelta) }, { merge: true });
     }
   });
@@ -198,13 +206,19 @@ export async function markChatRead(studentUid: string, role: ChatSenderRole): Pr
     if (role === "admin") {
       await runTransaction(db, async (tx) => {
         const chatRef = chatDocRef(studentUid);
+        const qRef = queueDocRef();
         const chatSnap = await tx.get(chatRef);
         const wasWaiting = chatSnap.exists() && chatSnap.data().unreadByAdmin === true;
+        // Sama seperti di updateChatSummaryAndQueue: baca qRef dulu (kalau
+        // perlu) sebelum tulis apa pun, supaya tidak melanggar aturan
+        // "semua baca sebelum semua tulis" pada transaksi Firestore.
+        let current = 0;
+        if (wasWaiting) {
+          const qSnap = await tx.get(qRef);
+          current = qSnap.exists() ? Number(qSnap.data().waitingCount) || 0 : 0;
+        }
         tx.set(chatRef, { unreadByAdmin: false, lastReadByAdminAt: serverTimestamp() }, { merge: true });
         if (wasWaiting) {
-          const qRef = queueDocRef();
-          const qSnap = await tx.get(qRef);
-          const current = qSnap.exists() ? Number(qSnap.data().waitingCount) || 0 : 0;
           tx.set(qRef, { waitingCount: Math.max(0, current - 1) }, { merge: true });
         }
       });

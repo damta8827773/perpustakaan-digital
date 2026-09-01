@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   BookOpen, GraduationCap, ArrowRight, Copy, Users, Star, Shield,
@@ -7,13 +7,7 @@ import {
 import { Card } from "@/components/ui";
 import { CountUp } from "@/components/CountUp";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
-
-const FEATURES = [
-  "Pinjam & kembalikan buku online",
-  "Baca e-book langsung di browser",
-  "Pantau riwayat peminjaman",
-  "Notifikasi jatuh tempo otomatis",
-];
+import { useTranslate, type Translate } from "@/services/localeStore";
 
 interface FeatureDetail {
   icon: typeof BookMarked;
@@ -23,81 +17,82 @@ interface FeatureDetail {
   steps: string[];
 }
 
-const FEATURE_DETAILS: FeatureDetail[] = [
-  {
-    icon: BookMarked,
-    title: "Pinjam & Kembalikan Buku Online",
-    summary: "Reservasi buku fisik tanpa antre di tempat.",
-    detail:
-      "Cari buku yang tersedia lewat halaman Cari Buku, pilih durasi pinjam sesuai kebutuhan, lalu konfirmasi reservasi - kamu langsung dapat bukti peminjaman digital.",
-    steps: [
-      "Cari buku yang tersedia di halaman Cari Buku",
-      "Pilih durasi pinjam, lalu konfirmasi reservasi",
-      "Ambil buku fisik di perpustakaan sesuai jadwal",
-      "Kembalikan sebelum tanggal jatuh tempo",
-    ],
-  },
-  {
-    icon: Tablet,
-    title: "Baca E-book Langsung di Browser",
-    summary: "Tanpa aplikasi tambahan, tanpa perlu ke perpustakaan.",
-    detail:
-      "Buku berlabel E-book bisa dibaca langsung dari browser, kapan saja, lengkap dengan pengatur kenyamanan baca.",
-    steps: [
-      "Buka menu Baca, pilih e-book yang sedang dipinjam",
-      "Atur ukuran huruf & mode gelap sesuai selera",
-      "Tandai bab yang sedang dibaca, lanjut kapan saja",
-      "Akses berakhir otomatis sesuai durasi pinjam",
-    ],
-  },
-  {
-    icon: History,
-    title: "Pantau Riwayat Peminjaman",
-    summary: "Semua aktivitas tercatat rapi di satu tempat.",
-    detail:
-      "Setiap peminjaman, baik buku fisik maupun e-book, tercatat di menu Pinjaman Saya dengan status yang selalu jelas.",
-    steps: [
-      "Lihat status pinjaman aktif & tanggal jatuh tempo",
-      "Cek riwayat peminjaman yang sudah selesai",
-      "Beri rating & ulasan untuk buku yang pernah dibaca",
-    ],
-  },
-  {
-    icon: BellRing,
-    title: "Notifikasi Jatuh Tempo Otomatis",
-    summary: "Tidak akan lagi lupa tenggat pengembalian.",
-    detail:
-      "Sistem mengingatkan lewat notifikasi dalam aplikasi, jauh sebelum tenggat waktu terlewat.",
-    steps: [
-      "Pengingat otomatis menjelang jatuh tempo buku fisik",
-      "Pemberitahuan saat masa pinjam e-book akan berakhir",
-      "Semua terkumpul rapi di ikon lonceng pada header",
-    ],
-  },
-  {
-    icon: MessageCircle,
-    title: "Live Chat dengan Admin",
-    summary: "Bertanya langsung, dijawab cepat.",
-    detail:
-      "Punya pertanyaan seputar jam operasional, cara pinjam, atau kendala akun? Chat langsung dari tombol mengambang di pojok layar.",
-    steps: [
-      "Klik tombol chat mengambang di pojok layar",
-      "Pertanyaan umum dijawab otomatis dalam hitungan detik",
-      "Admin perpustakaan menindaklanjuti hal yang lebih spesifik",
-      "Selalu jelas mana balasan otomatis, mana admin sungguhan",
-    ],
-  },
-];
-
-const STATS = [
-  { icon: Copy, value: 12000, suffix: "+", label: "Koleksi", desc: "Buku, jurnal, dan e-book akademik" },
-  { icon: Users, value: 5800, suffix: "+", label: "Mahasiswa", desc: "Terdaftar aktif di sistem" },
-  { icon: Star, value: 4.8, decimals: 1, suffix: "", label: "Rating", desc: "Kepuasan pengguna" },
-  { icon: Shield, value: 0, suffix: "", label: "SSO UIN", desc: "Login aman terintegrasi" },
-];
+function buildFeatureDetails(t: Translate): FeatureDetail[] {
+  return [
+    {
+      icon: BookMarked,
+      title: t("landing.f.borrow.title"),
+      summary: t("landing.f.borrow.summary"),
+      detail: t("landing.f.borrow.detail"),
+      steps: [
+        t("landing.f.borrow.step1"),
+        t("landing.f.borrow.step2"),
+        t("landing.f.borrow.step3"),
+        t("landing.f.borrow.step4"),
+      ],
+    },
+    {
+      icon: Tablet,
+      title: t("landing.f.ebook.title"),
+      summary: t("landing.f.ebook.summary"),
+      detail: t("landing.f.ebook.detail"),
+      steps: [
+        t("landing.f.ebook.step1"),
+        t("landing.f.ebook.step2"),
+        t("landing.f.ebook.step3"),
+        t("landing.f.ebook.step4"),
+      ],
+    },
+    {
+      icon: History,
+      title: t("landing.f.history.title"),
+      summary: t("landing.f.history.summary"),
+      detail: t("landing.f.history.detail"),
+      steps: [
+        t("landing.f.history.step1"),
+        t("landing.f.history.step2"),
+        t("landing.f.history.step3"),
+      ],
+    },
+    {
+      icon: BellRing,
+      title: t("landing.f.notif.title"),
+      summary: t("landing.f.notif.summary"),
+      detail: t("landing.f.notif.detail"),
+      steps: [
+        t("landing.f.notif.step1"),
+        t("landing.f.notif.step2"),
+        t("landing.f.notif.step3"),
+      ],
+    },
+    {
+      icon: MessageCircle,
+      title: t("landing.f.chat.title"),
+      summary: t("landing.f.chat.summary"),
+      detail: t("landing.f.chat.detail"),
+      steps: [
+        t("landing.f.chat.step1"),
+        t("landing.f.chat.step2"),
+        t("landing.f.chat.step3"),
+        t("landing.f.chat.step4"),
+      ],
+    },
+  ];
+}
 
 export default function Landing() {
+  const t = useTranslate();
   const [activeFeature, setActiveFeature] = useState(0);
+  const FEATURES = [
+    t("landing.feature1"), t("landing.feature2"), t("landing.feature3"), t("landing.feature4"),
+  ];
+  const FEATURE_DETAILS = useMemo(() => buildFeatureDetails(t), [t]);
+  const STATS = [
+    { icon: Copy, value: 12000, suffix: "+", label: t("landing.stat.collection.label"), desc: t("landing.stat.collection.desc") },
+    { icon: Users, value: 5800, suffix: "+", label: t("landing.stat.students.label"), desc: t("landing.stat.students.desc") },
+    { icon: Star, value: 4.8, decimals: 1, suffix: "", label: t("landing.stat.rating.label"), desc: t("landing.stat.rating.desc") },
+    { icon: Shield, value: 0, suffix: "", label: t("landing.stat.sso.label"), desc: t("landing.stat.sso.desc") },
+  ];
   const active = FEATURE_DETAILS[activeFeature];
 
   return (
@@ -109,8 +104,8 @@ export default function Landing() {
               <BookOpen size={22} />
             </div>
             <div>
-              <div className="font-display text-lg font-bold">Perpustakaan Digital</div>
-              <div className="text-sm text-muted-fg">UIN Syarif Hidayatullah Jakarta</div>
+              <div className="font-display text-lg font-bold">{t("app.name")}</div>
+              <div className="text-sm text-muted-fg">{t("app.institution")}</div>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -123,13 +118,12 @@ export default function Landing() {
       <main className="mx-auto max-w-[1140px] px-6 pb-16">
         <div className="pt-20 text-center">
           <h1 className="font-display text-[44px] font-bold leading-[1.25]">
-            Akses Ribuan Koleksi Buku
+            {t("landing.heroTitle1")}
             <br />
-            <span className="text-primary">UIN Jakarta</span> dari Mana Saja
+            <span className="text-primary">{t("landing.heroHighlight")}</span> {t("landing.heroTitle2")}
           </h1>
           <p className="mx-auto mt-6 max-w-[640px] text-lg leading-relaxed text-muted-fg">
-            Portal perpustakaan digital untuk mahasiswa UIN Syarif Hidayatullah
-            Jakarta. Pinjam, baca, dan pantau koleksi dengan mudah.
+            {t("landing.heroSubtitle")}
           </p>
         </div>
 
@@ -139,16 +133,13 @@ export default function Landing() {
               <GraduationCap size={26} />
             </div>
             <div className="flex-1">
-              <h2 className="font-display text-2xl font-bold">Portal Mahasiswa</h2>
-              <p className="mt-3 leading-relaxed text-muted-fg">
-                Akses koleksi buku, pinjam secara online, baca e-book, dan pantau
-                status pengembalian kapan saja.
-              </p>
+              <h2 className="font-display text-2xl font-bold">{t("landing.portalTitle")}</h2>
+              <p className="mt-3 leading-relaxed text-muted-fg">{t("landing.portalDesc")}</p>
               <ul className="mt-5 space-y-3 text-[15px] text-muted-fg">
-                {FEATURES.map((t) => (
-                  <li key={t} className="flex items-center gap-3">
+                {FEATURES.map((feature) => (
+                  <li key={feature} className="flex items-center gap-3">
                     <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-                    {t}
+                    {feature}
                   </li>
                 ))}
               </ul>
@@ -156,7 +147,7 @@ export default function Landing() {
                 to="/login"
                 className="mt-8 inline-flex items-center gap-2.5 rounded-xl bg-primary px-8 py-4 font-display text-[17px] font-bold text-white hover:bg-primary-dark"
               >
-                Masuk sebagai Mahasiswa <ArrowRight size={18} />
+                {t("landing.portalCta")} <ArrowRight size={18} />
               </Link>
             </div>
           </div>
@@ -164,11 +155,10 @@ export default function Landing() {
 
         <div className="mt-14">
           <h2 className="text-center font-display text-[28px] font-bold">
-            Apa yang Bisa Kamu Lakukan di Sini?
+            {t("landing.sectionTitle")}
           </h2>
           <p className="mx-auto mt-2 max-w-[560px] text-center text-muted-fg">
-            Sebelum masuk, kenali dulu fitur-fitur yang tersedia - klik salah satu
-            di sebelah kiri untuk membaca penjelasan lengkapnya.
+            {t("landing.sectionSubtitle")}
           </p>
 
           <div className="mt-8 grid grid-cols-1 gap-0 overflow-hidden rounded-2xl border border-line bg-card md:grid-cols-[280px_1fr]">

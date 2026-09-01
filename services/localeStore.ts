@@ -61,8 +61,10 @@ export function useLocale(): Locale {
   return useSyncExternalStore(subscribe, getLocale);
 }
 
+export type Translate = (key: string) => string;
+
 /** Pintasan terjemahan yang otomatis ikut bahasa aktif saat ini. */
-export function useTranslate(): (key: string) => string {
+export function useTranslate(): Translate {
   const locale = useLocale();
   return (key: string) => translate(key, locale);
 }

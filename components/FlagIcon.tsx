@@ -4,9 +4,12 @@ import type { Locale } from "@/i18n";
 // kode huruf polos (mis. "ID", "GB") di Windows karena keterbatasan font
 // bawaan, bukan gambar bendera berwarna. SVG tampil konsisten di semua OS.
 //
-// Bahasa Arab diwakili bendera Uni Emirat Arab (bukan Arab Saudi) supaya
-// tidak perlu mereproduksi kaligrafi Syahadat pada bendera Arab Saudi di
-// ikon kecil - berisiko salah/tidak hormat kalau digambar tidak presisi.
+// Bahasa Arab diwakili bendera Arab Saudi (bendera negara paling identik
+// dengan Bahasa Arab). Teks Syahadat ditulis lewat elemen SVG <text> dengan
+// karakter Unicode Arab asli - dirender oleh mesin font Arab milik browser
+// sendiri (sama seperti label "العربية" yang sudah tampil benar di menu
+// bahasa), BUKAN digambar ulang manual sebagai jalur vektor - jadi bentuk
+// hurufnya tetap akurat meski ukurannya kecil.
 export function FlagIcon({ locale, className = "h-4 w-6" }: { locale: Locale; className?: string }) {
   const common = `overflow-hidden rounded-[2px] ${className}`;
 
@@ -32,11 +35,26 @@ export function FlagIcon({ locale, className = "h-4 w-6" }: { locale: Locale; cl
   }
 
   return (
-    <svg viewBox="0 0 3 2" className={common} aria-hidden>
-      <rect x="1" width="2" height="0.6667" fill="#00732F" />
-      <rect x="1" y="0.6667" width="2" height="0.6667" fill="#FFFFFF" />
-      <rect x="1" y="1.3333" width="2" height="0.6667" fill="#000000" />
-      <rect width="1" height="2" fill="#EF3340" />
+    <svg viewBox="0 0 300 200" className={common} aria-hidden>
+      <rect width="300" height="200" fill="#006C35" />
+      <text
+        x="150"
+        y="95"
+        textAnchor="middle"
+        dominantBaseline="middle"
+        direction="rtl"
+        fontFamily="'Traditional Arabic','Arial Unicode MS',Tahoma,sans-serif"
+        fontSize="24"
+        textLength="230"
+        lengthAdjust="spacingAndGlyphs"
+        fill="#FFFFFF"
+      >
+        لا إله إلا الله محمد رسول الله
+      </text>
+      <g stroke="#FFFFFF" strokeWidth="7" strokeLinecap="round">
+        <line x1="85" y1="132" x2="205" y2="132" />
+      </g>
+      <path d="M85,132 L102,124 L102,140 Z" fill="#FFFFFF" />
     </svg>
   );
 }

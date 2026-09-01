@@ -294,11 +294,15 @@ export default function Profil() {
           student={student}
           onClose={() => setSheet(null)}
           onSave={(patch) => {
-            updateCurrentStudent(patch);
-            const uid = auth.currentUser?.uid;
-            if (uid) void syncStudentProfile(uid, patch);
-            setSheet(null);
-            notify("Profil berhasil diperbarui.");
+            try {
+              updateCurrentStudent(patch);
+              const uid = auth.currentUser?.uid;
+              if (uid) void syncStudentProfile(uid, patch);
+              setSheet(null);
+              notify("Profil berhasil diperbarui.");
+            } catch (err) {
+              notify((err as Error).message || "Gagal menyimpan profil.");
+            }
           }}
         />
       )}
