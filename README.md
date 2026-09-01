@@ -71,8 +71,12 @@ anggota, membalas komentar pengguna, dan menyusun laporan.
   operasional, cara pinjam, e-book, lupa sandi, dll.) langsung dijawab
   otomatis, dengan label jelas mana balasan otomatis dan mana admin
   sungguhan; menampilkan status terkirim/dibaca dan posisi antrean.
-- Bahasa antarmuka (navigasi & profil): Indonesia, English, dan العربية
-  (RTL), bisa diganti dari bendera di header.
+- Bahasa antarmuka: Indonesia, English, dan العربية (RTL penuh, termasuk
+  bendera Arab Saudi yang dirender dari teks Arab asli), bisa diganti dari
+  bendera di header. Mencakup seluruh halaman portal mahasiswa (beranda,
+  cari, detail buku, reservasi, pinjaman, baca, profil, live chat); judul
+  dan isi buku tetap Bahasa Indonesia karena itu data katalog, bukan teks
+  antarmuka.
 
 **Panel Admin**
 - Dashboard dengan statistik dan aktivitas peminjaman terkini.
@@ -86,7 +90,7 @@ anggota, membalas komentar pengguna, dan menyusun laporan.
   (yang belum dijawab didahulukan), dan panel "Info Akun" untuk mencocokkan
   identitas mahasiswa sebelum memproses permintaan reset password.
 - **Reset password beralasan wajib**: admin tidak pernah melihat password
-  asli (mustahil secara teknis di Firebase) — admin memicu tautan reset
+  asli (mustahil secara teknis di Firebase) - admin memicu tautan reset
   resmi, wajib mengisi alasan/bukti verifikasi identitas (≥20 karakter) yang
   dicatat sebagai audit log dan ditegakkan lewat Security Rules, bukan cuma
   validasi UI.
@@ -98,7 +102,7 @@ anggota, membalas komentar pengguna, dan menyusun laporan.
   pendaftaran mandiri, indikator kekuatan sandi saat mendaftar, dan halaman
   reset password bermerek sendiri (bukan halaman generik Firebase).
 - Admin: hanya akun Google yang terdaftar pada allowlist (`VITE_ADMIN_EMAILS`)
-  yang bisa masuk — diverifikasi lewat sesi Firebase asli, bukan flag lokal
+  yang bisa masuk - diverifikasi lewat sesi Firebase asli, bukan flag lokal
   yang bisa dipalsukan dari DevTools.
 - Firestore Security Rules memvalidasi peran pengirim di setiap pesan chat
   (mencegah pemalsuan pesan "admin"), membatasi panjang field yang bisa
@@ -238,6 +242,21 @@ npm run preview
    ```
 
 4. Hapus baris `VITE_DEMO=1` untuk mengaktifkan login sungguhan.
+5. Aktifkan **Firestore Database** (mode production) di Firebase Console,
+   lalu deploy Security Rules dan indeksnya:
+
+   ```bash
+   npx firebase-tools login
+   npx firebase-tools deploy --project <id-proyek-anda> --only firestore:rules,firestore:indexes
+   ```
+
+   Tanpa langkah ini, fitur yang memakai Firestore (foto profil, live chat,
+   reset password oleh admin) akan gagal dengan error izin ditolak - rules
+   dan indeks harus di-deploy ulang setiap kali file `firestore.rules` atau
+   `firestore.indexes.json` berubah.
+6. Salin manual daftar email di `isAllowlistedAdminEmail()` pada
+   `firestore.rules` supaya persis sama dengan `VITE_ADMIN_EMAILS` - Security
+   Rules tidak bisa membaca environment variable aplikasi.
 
 > `.env.local` sudah tercantum di `.gitignore` dan tidak pernah ikut ter-commit.
 
@@ -288,23 +307,31 @@ Rincian lengkap ada di [`SECURITY.md`](SECURITY.md).
 
 **Sudah selesai**
 - [x] Live chat mahasiswa-admin di Cloud Firestore (real-time, lintas
-      perangkat), dengan balasan otomatis berbasis kata kunci.
+      perangkat), dengan balasan otomatis berbasis kata kunci yang ikut
+      bahasa antarmuka aktif (id/en/ar).
 - [x] Identitas pengguna (`users/{uid}`) di Firestore untuk deteksi peran
       admin/mahasiswa yang aman di sisi server (Security Rules).
 - [x] Foto profil (disimpan sebagai gambar terkompresi di Firestore, tanpa
-      perlu Firebase Storage/paket berbayar).
+      perlu Firebase Storage/paket berbayar), dengan pengecualian indeks
+      otomatis Firestore (`firestore.indexes.json`) supaya field gambar
+      yang besar tidak ditolak oleh batas indeks bawaan.
 - [x] Reset password oleh admin dengan audit log wajib beralasan.
+- [x] Terjemahan penuh seluruh halaman portal mahasiswa (beranda, cari,
+      detail buku, reservasi, konfirmasi, pinjaman, baca, profil, live
+      chat) ke Indonesia/English/العربية, termasuk format tanggal dan waktu
+      yang ikut bahasa aktif.
 
 **Belum selesai**
 - [ ] Menghubungkan koleksi buku, peminjaman, dan data anggota ke Cloud
       Firestore (saat ini masih di `localStorage` per-browser, bukan
-      basis data bersama — lihat [`services/libraryStore.ts`](services/libraryStore.ts)).
+      basis data bersama - lihat [`services/libraryStore.ts`](services/libraryStore.ts)).
 - [ ] Penyimpanan berkas e-book pada Firebase Storage.
 - [ ] Integrasi SSO OIDC/CAS resmi dengan penukaran token di sisi server.
 - [ ] Notifikasi tenggat pengembalian lewat email/push, bukan hanya in-app.
 - [ ] Ekspor laporan ke format PDF dan Excel yang sesungguhnya.
-- [ ] Terjemahan penuh seluruh konten halaman (saat ini baru navigasi utama
-      & halaman profil yang benar-benar berganti bahasa).
+- [ ] Terjemahan konten katalog (judul, deskripsi, isi bab e-book) dan panel
+      admin - saat ini tetap Bahasa Indonesia karena berupa data konten,
+      bukan teks antarmuka.
 
 ---
 
