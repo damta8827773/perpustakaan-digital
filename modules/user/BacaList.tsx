@@ -2,14 +2,14 @@ import { Link } from "react-router-dom";
 import { BookText, ChevronRight, Star } from "lucide-react";
 import { EBOOK_LOANS, bookById } from "@/common/constants/catalog";
 import { Badge, RemoteCover, Card, Progress } from "@/components/ui";
+import { useTranslate } from "@/services/localeStore";
 
 export default function BacaList() {
+  const t = useTranslate();
   return (
     <div>
-      <h1 className="font-display text-[32px] font-bold">Baca E-book</h1>
-      <p className="mt-2 text-lg text-muted-fg">
-        Daftar copy e-book yang sedang Anda pinjam. Klik untuk mulai membaca.
-      </p>
+      <h1 className="font-display text-[32px] font-bold">{t("bacalist.title")}</h1>
+      <p className="mt-2 text-lg text-muted-fg">{t("bacalist.subtitle")}</p>
 
       <div className="mt-8 space-y-5">
         {EBOOK_LOANS.map((loan) => {
@@ -30,23 +30,23 @@ export default function BacaList() {
                         <Star size={14} fill="#f59e0b" stroke="#f59e0b" /> {book.rating.toFixed(1)}
                       </span>
                       <span className="mt-2.5 inline-flex items-center gap-1.5 rounded-full bg-accent-light px-3 py-1 text-sm font-semibold text-accent">
-                        <BookText size={13} /> Copy #{loan.copyNumber} dari {book.ebookTotal}
+                        <BookText size={13} /> {t("pinjaman.copyPrefix")}{loan.copyNumber} {t("pinjaman.ofSuffix")} {book.ebookTotal}
                       </span>
                     </div>
-                    <Badge tone="accent">Aktif</Badge>
+                    <Badge tone="accent">{t("pinjaman.statusActive")}</Badge>
                   </div>
                   <div className="mt-4 flex gap-14">
                     <div>
-                      <div className="text-[15px] text-muted-fg">Dipinjam sejak</div>
+                      <div className="text-[15px] text-muted-fg">{t("pinjaman.borrowedSince")}</div>
                       <div className="mt-0.5 font-display font-bold">{loan.borrowDate}</div>
                     </div>
                     <div>
-                      <div className="text-[15px] text-muted-fg">Akses berakhir</div>
+                      <div className="text-[15px] text-muted-fg">{t("bookdetail.labelAccessEnds")}</div>
                       <div className="mt-0.5 font-display font-bold text-accent">{loan.dueDate}</div>
                     </div>
                     <div>
-                      <div className="text-[15px] text-muted-fg">Sisa waktu</div>
-                      <div className="mt-0.5 font-display font-bold">{loan.daysLeft} hari</div>
+                      <div className="text-[15px] text-muted-fg">{t("pinjaman.timeLeft")}</div>
+                      <div className="mt-0.5 font-display font-bold">{loan.daysLeft} {t("home.daysSuffix")}</div>
                     </div>
                   </div>
                   <Progress value={loan.progress} color="#7c3aed" className="mt-4 h-2" />
@@ -54,7 +54,7 @@ export default function BacaList() {
                     to={`/app/baca/${book.id}`}
                     className="mt-5 inline-flex items-center gap-2 font-display text-[17px] font-bold text-accent hover:underline"
                   >
-                    <BookText size={19} /> Baca Sekarang <ChevronRight size={18} />
+                    <BookText size={19} /> {t("bookdetail.readNow")} <ChevronRight size={18} />
                   </Link>
                 </div>
               </div>

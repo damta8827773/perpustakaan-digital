@@ -11,14 +11,17 @@ import {
 } from "@/services/libraryStore";
 import { useCurrentStudent } from "@/services/sessionStore";
 import { addComment } from "@/services/feedbackStore";
+import { useTranslate, type Translate } from "@/services/localeStore";
 
 type Tab = "fisik" | "ebook" | "riwayat";
 
-const LOAN_META = {
-  aktif: { color: "#1a73c8", badge: "primary" as const, label: "Aktif" },
-  hampir: { color: "#ea580c", badge: "warning" as const, label: "Hampir Jatuh Tempo" },
-  terlambat: { color: "#dc2626", badge: "destructive" as const, label: "Terlambat +7 hari" },
-};
+const LOAN_COLOR = { aktif: "#1a73c8", hampir: "#ea580c", terlambat: "#dc2626" } as const;
+const LOAN_BADGE = { aktif: "primary", hampir: "warning", terlambat: "destructive" } as const;
+function loanStatusLabel(t: Translate, status: keyof typeof LOAN_COLOR): string {
+  if (status === "aktif") return t("pinjaman.statusActive");
+  if (status === "hampir") return t("pinjaman.statusAlmostDue");
+  return t("pinjaman.statusLate7");
+}
 
 function RatingModal({
   title, onSubmit, onClose,
@@ -27,11 +30,12 @@ function RatingModal({
   onSubmit: (value: number, comment: string) => void;
   onClose: () => void;
 }) {
+  const t = useTranslate();
   const [stars, setStars] = useState(0);
   const [review, setReview] = useState("");
   return (
-    <Modal title="Beri Rating" onClose={onClose}>
-      <p className="text-lg text-muted-fg">Bagaimana penilaian Anda untuk buku:</p>
+    <Modal title={t("pinjaman.rateTitle")} onClose={onClose}>
+      <p className="text-lg text-muted-fg">{t("pinjaman.rateQuestion")}</p>
       <p className="mt-3 font-display text-2xl font-bold">"{title}"</p>
       <div className="mt-6 flex justify-center gap-3">
         {[1, 2, 3, 4, 5].map((i) => (
@@ -39,7 +43,7 @@ function RatingModal({
             key={i}
             onClick={() => setStars(i)}
             className="cursor-pointer transition-transform hover:scale-110"
-            aria-label={`${i} bintang`}
+            aria-label={`${i} ${t("pinjaman.starsAriaSuffix")}`}
           >
             <Star
               size={44}
@@ -50,24 +54,24 @@ function RatingModal({
           </button>
         ))}
       </div>
-      <label className="mt-8 block font-display font-semibold">Ulasan (opsional)</label>
+      <label className="mt-8 block font-display font-semibold">{t("pinjaman.reviewLabel")}</label>
       <textarea
         value={review}
         onChange={(e) => setReview(e.target.value)}
         rows={4}
-        placeholder="Ceritakan pengalaman membaca Anda..."
+        placeholder={t("pinjaman.reviewPlaceholder")}
         className="mt-2.5 w-full resize-none rounded-xl border border-line px-4 py-3.5 text-[15px] outline-none placeholder:text-muted-fg/70 focus:border-primary"
       />
       <div className="mt-6 grid grid-cols-2 gap-4">
         <Button variant="outline" className="py-3.5" onClick={onClose}>
-          Batal
+          {t("action.cancel")}
         </Button>
         <Button
           className="py-3.5"
           disabled={stars === 0}
           onClick={() => onSubmit(stars, review)}
         >
-          Kirim Rating
+          {t("pinjaman.sendRating")}
         </Button>
       </div>
     </Modal>
@@ -75,6 +79,7 @@ function RatingModal({
 }
 
 export default function Pinjaman() {
+  const t = useTranslate();
   const [tab, setTab] = useState<Tab>("fisik");
   const [ratingFor, setRatingFor] = useState<{ bookId: string; title: string } | null>(null);
   const [returnFor, setReturnFor] = useState<{ bookId: string; title: string } | null>(null);
@@ -87,27 +92,27 @@ export default function Pinjaman() {
   const returnedHistory = getReturnedHistory();
 
   const tabs: { key: Tab; label: string }[] = [
-    { key: "fisik", label: `Buku Fisik (${physicalLoans.length})` },
-    { key: "ebook", label: `E-book (${EBOOK_LOANS.length})` },
-    { key: "riwayat", label: `Riwayat (${returnedHistory.length + HISTORY_PHYSICAL.length + HISTORY_EBOOK.length})` },
+    { key: "fisik", label: `${t("pinjaman.tabPhysical")} (${physicalLoans.length})` },
+    { key: "ebook", label: `${t("pinjaman.tabEbook")} (${EBOOK_LOANS.length})` },
+    { key: "riwayat", label: `${t("pinjaman.tabHistory")} (${returnedHistory.length + HISTORY_PHYSICAL.length + HISTORY_EBOOK.length})` },
   ];
 
   return (
     <div>
-      <h1 className="font-display text-[32px] font-bold">Pinjaman Saya</h1>
+      <h1 className="font-display text-[32px] font-bold">{t("nav.loans")}</h1>
 
       <div className="mt-7 flex gap-2.5">
-        {tabs.map((t) => (
+        {tabs.map((tabItem) => (
           <button
-            key={t.key}
-            onClick={() => setTab(t.key)}
+            key={tabItem.key}
+            onClick={() => setTab(tabItem.key)}
             className={`cursor-pointer rounded-xl px-6 py-3 font-display text-[15px] font-semibold transition-colors ${
-              tab === t.key
+              tab === tabItem.key
                 ? "bg-card text-primary shadow-sm"
                 : "text-muted-fg hover:bg-muted"
             }`}
           >
-            {t.label}
+            {tabItem.label}
           </button>
         ))}
       </div>
@@ -116,13 +121,13 @@ export default function Pinjaman() {
         <div className="mt-7 space-y-5">
           {physicalLoans.length === 0 && (
             <Card className="p-10 text-center text-muted-fg">
-              Belum ada buku fisik yang dipinjam. Pinjam buku dari halaman detail
-              untuk melihatnya di sini.
+              {t("pinjaman.emptyPhysical")}
             </Card>
           )}
           {physicalLoans.map((loan) => {
             const book = bookById(loan.bookId)!;
-            const meta = LOAN_META[loan.status];
+            const color = LOAN_COLOR[loan.status];
+            const badge = LOAN_BADGE[loan.status];
             return (
               <Card key={loan.bookId} className="p-6">
                 <div className="flex items-start gap-5">
@@ -139,32 +144,32 @@ export default function Pinjaman() {
                           <Star size={14} fill="#f59e0b" stroke="#f59e0b" /> {book.rating.toFixed(1)}
                         </span>
                       </div>
-                      <Badge tone={meta.badge}>{meta.label}</Badge>
+                      <Badge tone={badge}>{loanStatusLabel(t, loan.status)}</Badge>
                     </div>
                     <div className="mt-4 flex gap-14">
                       <div>
-                        <div className="text-[15px] text-muted-fg">Tanggal Pinjam</div>
+                        <div className="text-[15px] text-muted-fg">{t("pinjaman.borrowDate")}</div>
                         <div className="mt-0.5 font-display font-bold">{loan.borrowDate}</div>
                       </div>
                       <div>
-                        <div className="text-[15px] text-muted-fg">Tanggal Kembali</div>
-                        <div className="mt-0.5 font-display font-bold" style={{ color: meta.color }}>
+                        <div className="text-[15px] text-muted-fg">{t("pinjaman.returnDate")}</div>
+                        <div className="mt-0.5 font-display font-bold" style={{ color }}>
                           {loan.dueDate}
                         </div>
                       </div>
                     </div>
-                    <Progress value={loan.progress} color={meta.color} className="mt-4 h-2" />
+                    <Progress value={loan.progress} color={color} className="mt-4 h-2" />
                     <div className="mt-2.5 flex items-center justify-between">
-                      <span className="text-[15px] font-semibold" style={{ color: meta.color }}>
+                      <span className="text-[15px] font-semibold" style={{ color }}>
                         {loan.daysLeft >= 0
-                          ? `${loan.daysLeft} hari tersisa`
-                          : `Terlambat ${-loan.daysLeft} hari`}
+                          ? `${loan.daysLeft} ${t("pinjaman.daysRemainingSuffix")}`
+                          : `${t("home.latePrefix")} ${-loan.daysLeft} ${t("home.daysSuffix")}`}
                       </span>
                       <button
                         onClick={() => setReturnFor({ bookId: loan.bookId, title: book.title })}
                         className="flex cursor-pointer items-center gap-2 rounded-lg bg-success-light px-4 py-2 text-sm font-semibold text-success hover:bg-[#c6f0d4]"
                       >
-                        <RotateCcw size={15} /> Kembalikan
+                        <RotateCcw size={15} /> {t("action.return")}
                       </button>
                     </div>
                   </div>
@@ -195,23 +200,23 @@ export default function Pinjaman() {
                           <Star size={14} fill="#f59e0b" stroke="#f59e0b" /> {book.rating.toFixed(1)}
                         </span>
                         <span className="mt-2.5 inline-flex items-center gap-1.5 rounded-full bg-accent-light px-3 py-1 text-sm font-semibold text-accent">
-                          <BookText size={13} /> Copy #{loan.copyNumber} dari {book.ebookTotal}
+                          <BookText size={13} /> {t("pinjaman.copyPrefix")}{loan.copyNumber} {t("pinjaman.ofSuffix")} {book.ebookTotal}
                         </span>
                       </div>
-                      <Badge tone="accent">Aktif Dibaca</Badge>
+                      <Badge tone="accent">{t("pinjaman.currentlyReading")}</Badge>
                     </div>
                     <div className="mt-4 flex gap-14">
                       <div>
-                        <div className="text-[15px] text-muted-fg">Dipinjam sejak</div>
+                        <div className="text-[15px] text-muted-fg">{t("pinjaman.borrowedSince")}</div>
                         <div className="mt-0.5 font-display font-bold">{loan.borrowDate}</div>
                       </div>
                       <div>
-                        <div className="text-[15px] text-muted-fg">Otomatis kembali</div>
+                        <div className="text-[15px] text-muted-fg">{t("pinjaman.autoReturn")}</div>
                         <div className="mt-0.5 font-display font-bold text-accent">{loan.dueDate}</div>
                       </div>
                       <div>
-                        <div className="text-[15px] text-muted-fg">Sisa waktu</div>
-                        <div className="mt-0.5 font-display font-bold">{loan.daysLeft} hari</div>
+                        <div className="text-[15px] text-muted-fg">{t("pinjaman.timeLeft")}</div>
+                        <div className="mt-0.5 font-display font-bold">{loan.daysLeft} {t("home.daysSuffix")}</div>
                       </div>
                     </div>
                     <Progress value={loan.progress} color="#7c3aed" className="mt-4 h-2" />
@@ -219,7 +224,7 @@ export default function Pinjaman() {
                       onClick={() => navigate(`/app/baca/${book.id}`)}
                       className="mt-5 cursor-pointer rounded-xl bg-accent px-6 py-3 font-display text-[15px] font-bold text-white hover:bg-accent-dark"
                     >
-                      Baca E-book Sekarang
+                      {t("pinjaman.readEbookNow")}
                     </button>
                   </div>
                 </div>
@@ -235,8 +240,8 @@ export default function Pinjaman() {
             <section>
               <div className="flex items-center gap-3">
                 <RotateCcw size={20} className="text-success" />
-                <h2 className="font-display text-xl font-bold">Buku Dikembalikan</h2>
-                <Badge tone="success">{returnedHistory.length} catatan</Badge>
+                <h2 className="font-display text-xl font-bold">{t("pinjaman.returnedBooks")}</h2>
+                <Badge tone="success">{returnedHistory.length} {t("pinjaman.recordsSuffix")}</Badge>
               </div>
               <Card className="mt-4 divide-y divide-line">
                 {returnedHistory.map((h) => {
@@ -250,10 +255,10 @@ export default function Pinjaman() {
                         <div className="text-sm text-muted-fg">{book.author}</div>
                       </div>
                       <div className="text-right text-sm">
-                        <div className="text-muted-fg">Dipinjam {h.borrowDate}</div>
-                        <div className="font-semibold text-success">Dikembalikan {h.returnDate}</div>
+                        <div className="text-muted-fg">{t("pinjaman.borrowedPrefix")} {h.borrowDate}</div>
+                        <div className="font-semibold text-success">{t("pinjaman.returnedPrefix")} {h.returnDate}</div>
                       </div>
-                      <Badge tone="success">Selesai</Badge>
+                      <Badge tone="success">{t("pinjaman.done")}</Badge>
                     </div>
                   );
                 })}
@@ -264,18 +269,18 @@ export default function Pinjaman() {
           <section>
             <div className="flex items-center gap-3">
               <BookOpen size={20} className="text-primary" />
-              <h2 className="font-display text-xl font-bold">Riwayat Buku Fisik</h2>
-              <Badge tone="primary">{HISTORY_PHYSICAL.length} catatan</Badge>
+              <h2 className="font-display text-xl font-bold">{t("pinjaman.historyPhysical")}</h2>
+              <Badge tone="primary">{HISTORY_PHYSICAL.length} {t("pinjaman.recordsSuffix")}</Badge>
             </div>
             <Card className="mt-4 overflow-hidden">
               <table className="w-full text-left">
                 <thead>
                   <tr className="border-b border-line text-sm uppercase tracking-wider text-muted-fg">
-                    <th className="px-6 py-4 font-semibold">Buku</th>
-                    <th className="px-6 py-4 font-semibold">Tanggal Pinjam</th>
-                    <th className="px-6 py-4 font-semibold">Tanggal Kembali</th>
-                    <th className="px-6 py-4 font-semibold">Status</th>
-                    <th className="px-6 py-4 font-semibold">Rating</th>
+                    <th className="px-6 py-4 font-semibold">{t("pinjaman.colBook")}</th>
+                    <th className="px-6 py-4 font-semibold">{t("pinjaman.borrowDate")}</th>
+                    <th className="px-6 py-4 font-semibold">{t("pinjaman.returnDate")}</th>
+                    <th className="px-6 py-4 font-semibold">{t("pinjaman.colStatus")}</th>
+                    <th className="px-6 py-4 font-semibold">{t("pinjaman.colRating")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-line">
@@ -299,9 +304,9 @@ export default function Pinjaman() {
                         <td className="px-6 py-4 text-muted-fg">{h.returnDate}</td>
                         <td className="px-6 py-4">
                           {h.status === "dikembalikan" ? (
-                            <Badge tone="success">Dikembalikan</Badge>
+                            <Badge tone="success">{t("pinjaman.returnedStatus")}</Badge>
                           ) : (
-                            <Badge tone="destructive">Terlambat +{h.lateDays} hari</Badge>
+                            <Badge tone="destructive">{t("home.latePrefix")} +{h.lateDays} {t("pinjaman.lateBySuffix")}</Badge>
                           )}
                         </td>
                         <td className="px-6 py-4">
@@ -315,7 +320,7 @@ export default function Pinjaman() {
                               onClick={() => setRatingFor({ bookId: book.id, title: book.title })}
                               className="cursor-pointer rounded-lg bg-primary-light px-4 py-2 text-sm font-semibold text-primary hover:bg-primary-light-hover"
                             >
-                              + Beri Rating
+                              + {t("pinjaman.addRating")}
                             </button>
                           )}
                         </td>
@@ -330,19 +335,19 @@ export default function Pinjaman() {
           <section>
             <div className="flex items-center gap-3">
               <BookText size={20} className="text-accent" />
-              <h2 className="font-display text-xl font-bold">Riwayat E-book</h2>
-              <Badge tone="accent">{HISTORY_EBOOK.length} catatan</Badge>
+              <h2 className="font-display text-xl font-bold">{t("pinjaman.historyEbook")}</h2>
+              <Badge tone="accent">{HISTORY_EBOOK.length} {t("pinjaman.recordsSuffix")}</Badge>
             </div>
             <Card className="mt-4 overflow-hidden">
               <table className="w-full text-left">
                 <thead>
                   <tr className="border-b border-line text-sm uppercase tracking-wider text-muted-fg">
-                    <th className="px-6 py-4 font-semibold">Buku</th>
-                    <th className="px-6 py-4 font-semibold">Copy</th>
-                    <th className="px-6 py-4 font-semibold">Tanggal Pinjam</th>
-                    <th className="px-6 py-4 font-semibold">Akses Berakhir</th>
-                    <th className="px-6 py-4 font-semibold">Status</th>
-                    <th className="px-6 py-4 font-semibold">Rating</th>
+                    <th className="px-6 py-4 font-semibold">{t("pinjaman.colBook")}</th>
+                    <th className="px-6 py-4 font-semibold">{t("pinjaman.colCopy")}</th>
+                    <th className="px-6 py-4 font-semibold">{t("pinjaman.borrowDate")}</th>
+                    <th className="px-6 py-4 font-semibold">{t("pinjaman.colAccessEnds")}</th>
+                    <th className="px-6 py-4 font-semibold">{t("pinjaman.colStatus")}</th>
+                    <th className="px-6 py-4 font-semibold">{t("pinjaman.colRating")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-line">
@@ -364,16 +369,16 @@ export default function Pinjaman() {
                         </td>
                         <td className="px-6 py-4">
                           <Badge tone="accent">
-                            <BookText size={12} /> Copy #{h.copyNumber} dari {h.copyTotal}
+                            <BookText size={12} /> {t("pinjaman.copyPrefix")}{h.copyNumber} {t("pinjaman.ofSuffix")} {h.copyTotal}
                           </Badge>
                         </td>
                         <td className="px-6 py-4 text-muted-fg">{h.borrowDate}</td>
                         <td className="px-6 py-4 text-muted-fg">{h.endDate}</td>
                         <td className="px-6 py-4">
                           {h.status === "selesai" ? (
-                            <Badge tone="success">Selesai Dibaca</Badge>
+                            <Badge tone="success">{t("pinjaman.finishedReading")}</Badge>
                           ) : (
-                            <Badge tone="muted">Kadaluarsa</Badge>
+                            <Badge tone="muted">{t("pinjaman.expired")}</Badge>
                           )}
                         </td>
                         <td className="px-6 py-4">
@@ -387,7 +392,7 @@ export default function Pinjaman() {
                               onClick={() => setRatingFor({ bookId: book.id, title: book.title })}
                               className="cursor-pointer rounded-lg bg-accent-light px-4 py-2 text-sm font-semibold text-accent hover:bg-[#ddd3fb]"
                             >
-                              + Beri Rating
+                              + {t("pinjaman.addRating")}
                             </button>
                           ) : (
                             <span className="text-muted-fg">-</span>
@@ -404,30 +409,25 @@ export default function Pinjaman() {
       )}
 
       {returnFor && (
-        <Modal title="Kembalikan Buku" onClose={() => { setReturnFor(null); setReturnComment(""); }}>
-          <p className="text-lg text-muted-fg">
-            Kembalikan buku berikut ke perpustakaan?
-          </p>
+        <Modal title={t("pinjaman.returnModalTitle")} onClose={() => { setReturnFor(null); setReturnComment(""); }}>
+          <p className="text-lg text-muted-fg">{t("pinjaman.returnConfirm")}</p>
           <p className="mt-3 font-display text-2xl font-bold">"{returnFor.title}"</p>
-          <p className="mt-3 text-[15px] text-muted-fg">
-            Setelah dikembalikan, buku ini pindah ke tab Riwayat dan stoknya
-            tersedia kembali untuk peminjam lain.
-          </p>
+          <p className="mt-3 text-[15px] text-muted-fg">{t("pinjaman.returnNote")}</p>
 
           <label className="mt-5 block font-display font-semibold">
-            Komentar untuk perpustakaan (opsional)
+            {t("pinjaman.returnCommentLabel")}
           </label>
           <textarea
             value={returnComment}
             onChange={(e) => setReturnComment(e.target.value)}
             rows={3}
-            placeholder="Bagaimana kondisi buku atau pengalaman Anda? Komentar dikirim ke admin."
+            placeholder={t("pinjaman.returnCommentPlaceholder")}
             className="mt-2 w-full resize-none rounded-xl border border-line px-4 py-3 text-[15px] outline-none focus:border-primary"
           />
 
           <div className="mt-6 grid grid-cols-2 gap-4">
             <Button variant="outline" className="py-3.5" onClick={() => { setReturnFor(null); setReturnComment(""); }}>
-              Batal
+              {t("action.cancel")}
             </Button>
             <Button
               className="py-3.5"
@@ -442,12 +442,12 @@ export default function Pinjaman() {
                     angkatan: student.angkatan,
                   }, returnComment);
                 }
-                notify(`"${returnFor.title}" berhasil dikembalikan.`);
+                notify(`"${returnFor.title}" ${t("pinjaman.returnedToastSuffix")}`);
                 setReturnFor(null);
                 setReturnComment("");
               }}
             >
-              Ya, Kembalikan
+              {t("pinjaman.confirmReturn")}
             </Button>
           </div>
         </Modal>
@@ -463,7 +463,7 @@ export default function Pinjaman() {
               faculty: student.faculty,
               angkatan: student.angkatan,
             });
-            notify(`Ulasan ${value} bintang untuk "${ratingFor.title}" terkirim.`);
+            notify(`${t("pinjaman.reviewToastPrefix")} ${value} ${t("pinjaman.reviewToastMiddle")} "${ratingFor.title}" ${t("pinjaman.reviewToastSuffix")}`);
             setRatingFor(null);
           }}
           onClose={() => setRatingFor(null)}

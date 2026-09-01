@@ -4,6 +4,7 @@ import type { Book } from "@/common/constants/catalog";
 import { Button, Card } from "@/components/ui";
 import { useToast } from "@/components/Toast";
 import { useCurrentStudent } from "@/services/sessionStore";
+import { useTranslate } from "@/services/localeStore";
 import {
   useFeedback, addComment, toggleCommentLike, commentsFor,
   toggleBookLike, isBookLiked, bookLikeCount,
@@ -14,6 +15,7 @@ import {
 export function BookFeedback({ book }: { book: Book }) {
   const { notify } = useToast();
   const student = useCurrentStudent();
+  const t = useTranslate();
   useFeedback(); // berlangganan perubahan
   const [text, setText] = useState("");
 
@@ -36,31 +38,31 @@ export function BookFeedback({ book }: { book: Book }) {
         <button
           onClick={() => {
             const now = toggleBookLike(book.id, book.title, author);
-            notify(now ? "Anda menyukai buku ini." : "Suka dibatalkan.");
+            notify(now ? t("feedback.likedToast") : t("feedback.unlikedToast"));
           }}
           className={`flex cursor-pointer items-center gap-2 rounded-xl border px-5 py-2.5 font-display text-sm font-semibold ${
             liked ? "border-primary bg-primary-light text-primary" : "border-line hover:bg-muted"
           }`}
         >
-          <ThumbsUp size={17} fill={liked ? "currentColor" : "none"} /> Suka
+          <ThumbsUp size={17} fill={liked ? "currentColor" : "none"} /> {t("feedback.like")}
           <span className="rounded-full bg-muted px-2 py-0.5 text-xs">{bookLikeCount(book.id)}</span>
         </button>
         <button
           onClick={() => {
             const now = toggleFavorite(book.id, book.title, author);
-            notify(now ? "Ditambahkan ke favorit." : "Dihapus dari favorit.");
+            notify(now ? t("feedback.favAddedToast") : t("feedback.favRemovedToast"));
           }}
           className={`flex cursor-pointer items-center gap-2 rounded-xl border px-5 py-2.5 font-display text-sm font-semibold ${
             fav ? "border-warning bg-warning-light text-warning" : "border-line hover:bg-muted"
           }`}
         >
-          <Star size={17} fill={fav ? "currentColor" : "none"} /> Favorit
+          <Star size={17} fill={fav ? "currentColor" : "none"} /> {t("feedback.favorite")}
           <span className="rounded-full bg-muted px-2 py-0.5 text-xs">{favoriteCount(book.id)}</span>
         </button>
       </div>
 
       <h2 className="mt-8 font-display text-xl font-bold">
-        Komentar
+        {t("feedback.comments")}
         <span className="ml-2 text-base font-normal text-muted-fg">({comments.length})</span>
       </h2>
 
@@ -69,7 +71,7 @@ export function BookFeedback({ book }: { book: Book }) {
           value={text}
           onChange={(e) => setText(e.target.value)}
           rows={3}
-          placeholder="Tulis komentar Anda tentang buku ini..."
+          placeholder={t("feedback.commentPlaceholder")}
           className="w-full resize-none rounded-xl border border-line px-4 py-3 text-[15px] outline-none focus:border-primary"
         />
         <div className="mt-3 flex justify-end">
@@ -79,17 +81,17 @@ export function BookFeedback({ book }: { book: Book }) {
             onClick={() => {
               addComment(book.id, book.title, author, text);
               setText("");
-              notify("Komentar terkirim.");
+              notify(t("feedback.commentSentToast"));
             }}
           >
-            <Send size={16} /> Kirim Komentar
+            <Send size={16} /> {t("feedback.sendComment")}
           </Button>
         </div>
       </Card>
 
       <div className="mt-5 space-y-4">
         {comments.length === 0 && (
-          <p className="text-muted-fg">Belum ada komentar. Jadilah yang pertama berkomentar.</p>
+          <p className="text-muted-fg">{t("feedback.noComments")}</p>
         )}
         {comments.map((c) => (
           <Card key={c.id} className="p-5">
@@ -114,13 +116,13 @@ export function BookFeedback({ book }: { book: Book }) {
                   }`}
                 >
                   <ThumbsUp size={14} fill={c.likes.includes(email) ? "currentColor" : "none"} />
-                  {c.likes.length} Suka
+                  {c.likes.length} {t("feedback.like")}
                 </button>
 
                 {c.reply && (
                   <div className="mt-4 rounded-xl bg-primary-light/60 p-4">
                     <div className="flex items-center gap-2 font-display text-sm font-bold text-primary">
-                      <ShieldCheck size={15} /> Balasan Admin Perpustakaan
+                      <ShieldCheck size={15} /> {t("feedback.adminReplyLabel")}
                     </div>
                     <p className="mt-1.5 text-[15px] leading-relaxed">{c.reply.text}</p>
                     <div className="mt-1 text-xs text-muted-fg">{c.reply.date} · {c.reply.time}</div>

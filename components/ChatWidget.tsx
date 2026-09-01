@@ -3,6 +3,7 @@ import { MessageCircle, X, Clock } from "lucide-react";
 import { auth } from "@/common/libs/firebase";
 import { ChatThread } from "@/components/ChatThread";
 import { useCurrentStudent } from "@/services/sessionStore";
+import { useTranslate } from "@/services/localeStore";
 import {
   isChatAvailable, markChatRead, useChatSummary, useWaitingQueueCount,
 } from "@/services/chatStore";
@@ -22,6 +23,7 @@ function useElapsedMinutes(sinceMs: number | null): number | null {
 export function ChatWidget() {
   const [open, setOpen] = useState(false);
   const student = useCurrentStudent();
+  const t = useTranslate();
   const uid = auth.currentUser?.uid ?? null;
   const summary = useChatSummary(uid);
   const available = isChatAvailable() && !!uid;
@@ -46,12 +48,12 @@ export function ChatWidget() {
               <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary-light text-primary">
                 <MessageCircle size={15} />
               </span>
-              Live Chat Admin
+              {t("chat.title")}
             </span>
             <button
               onClick={() => setOpen(false)}
               className="cursor-pointer rounded-md p-1 text-muted-fg hover:bg-muted"
-              aria-label="Tutup"
+              aria-label={t("chat.close")}
             >
               <X size={18} />
             </button>
@@ -60,9 +62,9 @@ export function ChatWidget() {
             <div className="flex shrink-0 items-center gap-2 border-b border-line bg-warning-light/60 px-4 py-2 text-xs font-semibold text-warning">
               <Clock size={13} />
               {waitedMinutes !== null && waitedMinutes > 0
-                ? `Sudah menunggu ${waitedMinutes} menit`
-                : "Menunggu balasan admin"}
-              {queueCount > 1 && ` · ${queueCount - 1} mahasiswa lain juga menunggu`}
+                ? `${t("chat.waitingSincePrefix")} ${waitedMinutes} ${t("chat.minutesSuffix")}`
+                : t("chat.waitingForReply")}
+              {queueCount > 1 && ` · ${queueCount - 1} ${t("chat.othersWaitingSuffix")}`}
             </div>
           )}
           {available && uid ? (
@@ -75,9 +77,7 @@ export function ChatWidget() {
             />
           ) : (
             <div className="flex flex-1 items-center justify-center px-6 text-center text-sm text-muted-fg">
-              {isChatAvailable()
-                ? "Masuk dengan akun (Google atau kata sandi) untuk memakai live chat."
-                : "Fitur chat memerlukan konfigurasi Firebase (nonaktif di mode demo)."}
+              {isChatAvailable() ? t("chat.needLogin") : t("chat.needFirebaseConfig")}
             </div>
           )}
         </div>
@@ -85,7 +85,7 @@ export function ChatWidget() {
       <button
         onClick={toggle}
         className="fixed bottom-6 right-6 z-40 flex h-14 w-14 cursor-pointer items-center justify-center rounded-full bg-primary text-white shadow-lg transition-colors hover:bg-primary-dark"
-        aria-label="Live chat admin"
+        aria-label={t("chat.launcherAriaLabel")}
       >
         {open ? <X size={22} /> : <MessageCircle size={22} />}
         {!open && summary?.unreadByStudent && (

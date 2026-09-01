@@ -4,9 +4,11 @@ import { PartyPopper, CheckCircle2 } from "lucide-react";
 import { bookById, STUDENT } from "@/common/constants/catalog";
 import { RemoteCover, Card } from "@/components/ui";
 import { addLoan } from "@/services/libraryStore";
+import { useTranslate } from "@/services/localeStore";
 
 export default function Berhasil() {
   const { id } = useParams();
+  const t = useTranslate();
   const { state } = useLocation() as {
     state?: { duration: number; start: string; end: string };
   };
@@ -25,7 +27,7 @@ export default function Berhasil() {
     }
   }, [book, end]);
 
-  if (!book) return <p>Buku tidak ditemukan.</p>;
+  if (!book) return <p>{t("bookdetail.notFound")}</p>;
 
   return (
     <div className="mx-auto max-w-[820px] pt-6 text-center">
@@ -33,18 +35,18 @@ export default function Berhasil() {
         <PartyPopper size={48} className="text-success" />
       </div>
 
-      <h1 className="mt-9 font-display text-[36px] font-bold">Reservasi Berhasil!</h1>
+      <h1 className="mt-9 font-display text-[36px] font-bold">{t("berhasil.title")}</h1>
       <p className="mt-4 text-lg text-muted-fg">
-        Peminjaman buku <strong className="text-fg">{book.title}</strong> telah dicatat.
+        {t("berhasil.loanRecordedPrefix")} <strong className="text-fg">{book.title}</strong> {t("berhasil.loanRecordedSuffix")}
       </p>
       <p className="mx-auto mt-2 max-w-[560px] text-lg leading-relaxed text-muted-fg">
-        Silakan ambil buku di meja layanan perpustakaan dengan menunjukkan NIM Anda.
+        {t("berhasil.pickupNote")}
       </p>
 
       <Card className="mt-10 p-7 text-left">
         <div className="flex items-center justify-between border-b border-line pb-5">
           <span className="flex items-center gap-2.5 font-display text-lg font-bold text-success">
-            <CheckCircle2 size={22} /> Konfirmasi Peminjaman
+            <CheckCircle2 size={22} /> {t("berhasil.confirmationLabel")}
           </span>
           <span className="rounded-full bg-primary-light px-4 py-1.5 font-mono text-sm font-semibold text-primary">
             #64649
@@ -64,10 +66,10 @@ export default function Berhasil() {
 
         <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
           {[
-            ["Peminjam", `${STUDENT.name} (${STUDENT.nim})`],
-            ["Durasi", `${duration} hari`],
-            ["Mulai", start],
-            ["Kembali", end],
+            [t("konfirmasi.borrower"), `${STUDENT.name} (${STUDENT.nim})`],
+            [t("konfirmasi.duration"), `${duration} ${t("home.daysSuffix")}`],
+            [t("berhasil.startLabel"), start],
+            [t("berhasil.returnLabel"), end],
           ].map(([label, value]) => (
             <div key={label} className="rounded-xl bg-bg px-6 py-5">
               <div className="text-[15px] text-muted-fg">{label}</div>
@@ -82,13 +84,13 @@ export default function Berhasil() {
           to={`/app/buku/${book.id}`}
           className="rounded-xl border border-line bg-card py-4 font-display text-[17px] font-bold hover:bg-muted"
         >
-          Kembali ke Detail
+          {t("berhasil.backToDetail")}
         </Link>
         <Link
           to="/app/pinjaman"
           className="rounded-xl bg-primary py-4 font-display text-[17px] font-bold text-white hover:bg-primary-dark"
         >
-          Lihat Pinjaman Saya
+          {t("berhasil.viewMyLoans")}
         </Link>
       </div>
     </div>

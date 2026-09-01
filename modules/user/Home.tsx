@@ -6,13 +6,28 @@ import { RemoteCover, Card, Progress } from "@/components/ui";
 import { useToast } from "@/components/Toast";
 import { useLibrary, getActiveLoans } from "@/services/libraryStore";
 import { useCurrentStudent } from "@/services/sessionStore";
+import { useTranslate, type Translate } from "@/services/localeStore";
 
+// Nilai kategori TETAP Bahasa Indonesia (harus cocok persis dengan field
+// `category` pada data 1000 buku di catalog.ts - itu sendiri di luar cakupan
+// terjemahan, sama seperti judul buku). Hanya LABEL tombolnya yang mengikuti
+// bahasa aktif, lewat categoryLabel() di bawah.
 const CATEGORIES = ["Semua", "Agama", "Sains", "Hukum", "Teknik", "Ekonomi", "Bahasa", "Psikologi", "Pendidikan"];
+const CATEGORY_KEYS: Record<string, string> = {
+  Semua: "category.all", Agama: "category.agama", Sains: "category.sains", Hukum: "category.hukum",
+  Teknik: "category.teknik", Ekonomi: "category.ekonomi", Bahasa: "category.bahasa",
+  Psikologi: "category.psikologi", Pendidikan: "category.pendidikan",
+};
+export function categoryLabel(t: Translate, raw: string): string {
+  const key = CATEGORY_KEYS[raw];
+  return key ? t(key) : raw;
+}
 const PAGE_SIZE = 24;
 
 const LOAN_COLORS = { aktif: "#1a73c8", hampir: "#ea580c", terlambat: "#dc2626" } as const;
 
 export function BookCard({ book }: { book: (typeof BOOKS)[number] }) {
+  const t = useTranslate();
   const soldOut = book.stockAvailable === 0;
   return (
     <Link to={`/app/buku/${book.id}`} className="group">
@@ -29,11 +44,11 @@ export function BookCard({ book }: { book: (typeof BOOKS)[number] }) {
           <div className="mt-3 flex items-center justify-between">
             {soldOut ? (
               <span className="rounded-full bg-destructive-light px-2.5 py-1 text-xs font-semibold text-destructive">
-                Dipinjam Semua
+                {t("book.borrowedAll")}
               </span>
             ) : (
               <span className="rounded-full bg-success-light px-2.5 py-1 text-xs font-semibold text-success">
-                {book.stockAvailable}/{book.stockTotal} Tersedia
+                {book.stockAvailable}/{book.stockTotal} {t("book.available")}
               </span>
             )}
             <span className="flex items-center gap-1 text-sm font-semibold">
@@ -48,8 +63,8 @@ export function BookCard({ book }: { book: (typeof BOOKS)[number] }) {
               <span className="inline-flex items-center gap-1.5 rounded-full bg-accent-light px-2.5 py-1 text-xs font-semibold text-accent">
                 <BookText size={12} />
                 {book.ebookAvailable > 0
-                  ? `E-book · ${book.ebookAvailable}/${book.ebookTotal} copy`
-                  : "E-book · Antrean"}
+                  ? `E-book · ${book.ebookAvailable}/${book.ebookTotal} ${t("home.ebookCopiesSuffix")}`
+                  : t("home.ebookQueue")}
               </span>
             </div>
           )}
@@ -65,6 +80,7 @@ export default function Home() {
   const { notify } = useToast();
   const navigate = useNavigate();
   const student = useCurrentStudent();
+  const t = useTranslate();
   useLibrary(); // berlangganan perubahan agar pinjaman baru langsung tampil
   const loans = getActiveLoans();
   const books =
@@ -74,23 +90,22 @@ export default function Home() {
   return (
     <div>
       <h1 className="font-display text-[32px] font-bold">
-        Halo, <span className="uppercase">{student.name}</span>! 👋
+        {t("home.greeting")}, <span className="uppercase">{student.name}</span>! 👋
       </h1>
       <p className="mt-1.5 text-muted-fg">
-        {BOOKS.filter((b) => b.stockAvailable > 0).length} buku tersedia untuk
-        dipinjam hari ini.
+        {BOOKS.filter((b) => b.stockAvailable > 0).length} {t("home.booksAvailableSuffix")}
       </p>
 
       <div className="mt-7 rounded-xl bg-primary-light/60 p-6">
         <div className="flex items-center justify-between">
           <h2 className="font-display text-lg font-bold text-primary">
-            Pinjaman Aktif ({loans.length})
+            {t("home.activeLoans")} ({loans.length})
           </h2>
           <Link
             to="/app/pinjaman"
             className="flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
           >
-            Lihat Semua <ArrowRight size={15} />
+            {t("home.viewAll")} <ArrowRight size={15} />
           </Link>
         </div>
         <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
@@ -127,17 +142,17 @@ export default function Home() {
                 <div className="mt-3 flex items-center justify-between">
                   <span className="text-sm font-semibold" style={{ color }}>
                     {loan.daysLeft >= 0
-                      ? `${loan.daysLeft} hari lagi`
-                      : `Terlambat ${-loan.daysLeft} hari`}
+                      ? `${loan.daysLeft} ${t("home.daysLeftSuffix")}`
+                      : `${t("home.latePrefix")} ${-loan.daysLeft} ${t("home.daysSuffix")}`}
                   </span>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      notify(`Peminjaman "${book.title}" diperpanjang 7 hari.`);
+                      notify(`${t("home.extendedPrefix")} "${book.title}" ${t("home.extendedSuffix")}`);
                     }}
                     className="cursor-pointer rounded-lg bg-primary-light px-3.5 py-1.5 text-sm font-semibold text-primary hover:bg-primary-light-hover"
                   >
-                    Perpanjang
+                    {t("home.extend")}
                   </button>
                 </div>
               </Card>
@@ -160,16 +175,16 @@ export default function Home() {
                 : "border border-line bg-card text-fg hover:bg-muted"
             }`}
           >
-            {c}
+            {categoryLabel(t, c)}
           </button>
         ))}
       </div>
 
       <div className="mt-7">
         <h2 className="font-display text-xl font-bold">
-          Semua Koleksi
+          {t("home.allCollection")}
           <span className="ml-1 text-base font-normal text-muted-fg">
-            ({books.length} buku)
+            ({books.length} {t("home.booksCountSuffix")})
           </span>
         </h2>
         <div className="mt-4 grid grid-cols-2 gap-5 md:grid-cols-3 lg:grid-cols-4">
@@ -183,7 +198,7 @@ export default function Home() {
               onClick={() => setVisibleCount((v) => v + PAGE_SIZE)}
               className="cursor-pointer rounded-xl border border-line bg-card px-8 py-3.5 font-display text-[15px] font-semibold hover:bg-muted"
             >
-              Muat Lebih Banyak ({books.length - visibleCount} lagi)
+              {t("home.loadMore")} ({books.length - visibleCount} {t("home.moreSuffix")})
             </button>
           </div>
         )}

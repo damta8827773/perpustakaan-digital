@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Send, ShieldCheck, Check, CheckCheck, Bot } from "lucide-react";
 import { Button, Avatar } from "@/components/ui";
+import { useLocale, useTranslate } from "@/services/localeStore";
 import {
   sendChatMessage, useChatMessages, useChatSummary, formatFullTimestamp, type ChatSenderRole,
 } from "@/services/chatStore";
@@ -35,6 +36,8 @@ export function ChatThread({
 }) {
   const messages = useChatMessages(studentUid);
   const summary = useChatSummary(studentUid);
+  const t = useTranslate();
+  const locale = useLocale();
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -61,9 +64,7 @@ export function ChatThread({
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 py-4">
         {messages.length === 0 && (
-          <p className="py-6 text-center text-sm text-muted-fg">
-            Belum ada pesan. Mulai percakapan di bawah.
-          </p>
+          <p className="py-6 text-center text-sm text-muted-fg">{t("chat.empty")}</p>
         )}
         {messages.map((m) => {
           const mine = m.senderRole === viewerRole;
@@ -86,22 +87,22 @@ export function ChatThread({
                 >
                   {!mine && m.senderRole === "admin" && (
                     <div className="mb-1 flex items-center gap-1.5 text-xs font-bold text-primary">
-                      <ShieldCheck size={13} /> Admin Perpustakaan
+                      <ShieldCheck size={13} /> {t("chat.adminLabel")}
                     </div>
                   )}
                   {m.senderRole === "ai" && (
                     <div className="mb-1 flex items-center gap-1.5 text-xs font-bold text-accent">
-                      <Bot size={13} /> Balasan Otomatis (bukan admin manusia)
+                      <Bot size={13} /> {t("chat.aiLabel")}
                     </div>
                   )}
                   <p className="whitespace-pre-wrap break-words">{m.text}</p>
                 </div>
                 <div className="mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 px-1 text-[11px] text-muted-fg">
-                  <span>{formatFullTimestamp(m.createdAt)}</span>
+                  <span>{formatFullTimestamp(m.createdAt, locale)}</span>
                   {mine && (
                     <span className="flex items-center gap-1">
                       {isRead ? <CheckCheck size={13} className="text-primary" /> : <Check size={13} />}
-                      {isRead ? "Dibaca" : "Terkirim"}
+                      {isRead ? t("chat.read") : t("chat.sent")}
                     </span>
                   )}
                 </div>
@@ -118,7 +119,7 @@ export function ChatThread({
           onKeyDown={(e) => {
             if (e.key === "Enter") submit();
           }}
-          placeholder="Tulis pesan..."
+          placeholder={t("chat.placeholder")}
           className="flex-1 rounded-xl border border-line px-4 py-2.5 text-[14px] outline-none focus:border-primary"
         />
         <Button className="px-3.5 py-2.5" onClick={submit} disabled={busy || !text.trim()}>

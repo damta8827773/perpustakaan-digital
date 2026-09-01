@@ -3,28 +3,33 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, ArrowRight, Calendar, FileText, CheckCircle2 } from "lucide-react";
 import { bookById } from "@/common/constants/catalog";
 import { RemoteCover, Card } from "@/components/ui";
+import { useLocale, useTranslate } from "@/services/localeStore";
 
-const DURATIONS = [
-  { days: 7, label: "7 Hari", sub: "1 minggu" },
-  { days: 14, label: "14 Hari", sub: "2 minggu" },
-  { days: 21, label: "21 Hari", sub: "3 minggu" },
-];
+const INTL_LOCALE = { id: "id-ID", en: "en-US", ar: "ar" } as const;
 
 export default function Reservasi() {
   const { id } = useParams();
   const navigate = useNavigate();
   const book = bookById(id ?? "");
+  const t = useTranslate();
+  const locale = useLocale();
   const [duration, setDuration] = useState(14);
   const [startDate, setStartDate] = useState("2026-07-01");
   const [note, setNote] = useState("");
 
-  if (!book) return <p>Buku tidak ditemukan.</p>;
+  const DURATIONS = [
+    { days: 7, label: t("reservasi.days7"), sub: t("reservasi.days7Sub") },
+    { days: 14, label: t("reservasi.days14"), sub: t("reservasi.days14Sub") },
+    { days: 21, label: t("reservasi.days21"), sub: t("reservasi.days21Sub") },
+  ];
+
+  if (!book) return <p>{t("bookdetail.notFound")}</p>;
 
   const start = new Date(startDate + "T00:00:00");
   const end = new Date(start);
   end.setDate(end.getDate() + duration);
   const fmt = (d: Date) =>
-    d.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
+    d.toLocaleDateString(INTL_LOCALE[locale], { day: "numeric", month: "long", year: "numeric" });
 
   return (
     <div>
@@ -32,18 +37,16 @@ export default function Reservasi() {
         to={`/app/buku/${book.id}`}
         className="inline-flex items-center gap-2 font-semibold text-primary hover:underline"
       >
-        <ArrowLeft size={18} /> Kembali ke Detail Buku
+        <ArrowLeft size={18} /> {t("reservasi.backToDetail")}
       </Link>
 
       <div className="mt-8 grid grid-cols-1 gap-12 lg:grid-cols-[1fr_400px]">
         <div>
-          <h1 className="font-display text-[36px] font-bold">Reservasi Peminjaman</h1>
-          <p className="mt-2 text-lg text-muted-fg">
-            Isi detail peminjaman buku fisik di bawah ini.
-          </p>
+          <h1 className="font-display text-[36px] font-bold">{t("reservasi.title")}</h1>
+          <p className="mt-2 text-lg text-muted-fg">{t("reservasi.subtitle")}</p>
 
           <h3 className="mt-9 font-display text-lg font-bold">
-            Durasi Peminjaman <span className="text-destructive">*</span>
+            {t("reservasi.durationLabel")} <span className="text-destructive">*</span>
           </h3>
           <div className="mt-4 grid grid-cols-3 gap-4">
             {DURATIONS.map((d) => (
@@ -67,11 +70,9 @@ export default function Reservasi() {
           </div>
 
           <h3 className="mt-9 font-display text-lg font-bold">
-            Tanggal Mulai Pinjam <span className="text-destructive">*</span>
+            {t("reservasi.startDateLabel")} <span className="text-destructive">*</span>
           </h3>
-          <p className="mt-1.5 text-muted-fg">
-            Pilih tanggal Anda akan mengambil buku di perpustakaan.
-          </p>
+          <p className="mt-1.5 text-muted-fg">{t("reservasi.startDateHint")}</p>
           <div className="relative mt-4 max-w-[420px]">
             <Calendar
               size={18}
@@ -89,20 +90,20 @@ export default function Reservasi() {
             <Calendar size={20} className="shrink-0 text-primary" />
             <div>
               <div className="font-display font-bold text-primary">
-                Estimasi Tanggal Kembali
+                {t("reservasi.estimatedReturnLabel")}
               </div>
               <div className="mt-0.5 text-[15px] text-muted-fg">{fmt(end)}</div>
             </div>
           </div>
 
-          <h3 className="mt-9 font-display text-lg font-bold">Catatan (opsional)</h3>
+          <h3 className="mt-9 font-display text-lg font-bold">{t("reservasi.noteLabel")}</h3>
           <div className="relative mt-4">
             <FileText size={18} className="absolute left-4 top-4 text-muted-fg" />
             <textarea
               value={note}
               onChange={(e) => setNote(e.target.value)}
               rows={4}
-              placeholder="Contoh: mohon siapkan kondisi buku yang baik..."
+              placeholder={t("reservasi.notePlaceholder")}
               className="w-full resize-none rounded-xl border border-line bg-card py-3.5 pl-12 pr-4 text-[15px] outline-none placeholder:text-muted-fg/70 focus:border-primary"
             />
           </div>
@@ -115,7 +116,7 @@ export default function Reservasi() {
             }
             className="mt-8 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-primary py-4 font-display text-[17px] font-bold text-white hover:bg-primary-dark"
           >
-            Lanjut ke Konfirmasi <ArrowRight size={19} />
+            {t("reservasi.continueToConfirm")} <ArrowRight size={19} />
           </button>
         </div>
 
@@ -130,10 +131,10 @@ export default function Reservasi() {
               <p className="mt-1 text-muted-fg">{book.author}</p>
               <div className="mt-5 divide-y divide-line border-t border-line">
                 {[
-                  ["Stok tersedia", `${book.stockAvailable} dari ${book.stockTotal}`],
-                  ["Durasi pinjam", `${duration} hari`],
-                  ["Tanggal mulai", fmt(start)],
-                  ["Tanggal kembali", fmt(end)],
+                  [t("reservasi.stockAvailable"), `${book.stockAvailable} ${t("pinjaman.ofSuffix")} ${book.stockTotal}`],
+                  [t("bookdetail.labelDuration"), `${duration} ${t("home.daysSuffix")}`],
+                  [t("reservasi.startDateValueLabel"), fmt(start)],
+                  [t("reservasi.returnDateValueLabel"), fmt(end)],
                 ].map(([label, value]) => (
                   <div key={label} className="flex items-center justify-between py-3.5">
                     <span className="text-[15px] text-muted-fg">{label}</span>
@@ -143,7 +144,7 @@ export default function Reservasi() {
               </div>
               <div className="mt-4 flex items-center gap-2.5 rounded-xl bg-success-light px-4 py-3.5 text-sm font-semibold text-success">
                 <CheckCircle2 size={17} className="shrink-0" />
-                Buku fisik tersedia untuk dipinjam
+                {t("reservasi.physicalAvailableNote")}
               </div>
             </div>
           </Card>

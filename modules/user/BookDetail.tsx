@@ -13,6 +13,7 @@ import {
 } from "@/services/waitlistStore";
 import type { Book } from "@/common/constants/catalog";
 import { Sparkles, BellRing, Users2 } from "lucide-react";
+import { useTranslate } from "@/services/localeStore";
 
 export default function BookDetail() {
   const { id } = useParams();
@@ -20,11 +21,12 @@ export default function BookDetail() {
   const { notify } = useToast();
   const lib = useLibrary();
   const book = bookById(id ?? "");
+  const t = useTranslate();
   const [showEbookModal, setShowEbookModal] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showReview, setShowReview] = useState(false);
 
-  if (!book) return <p>Buku tidak ditemukan.</p>;
+  if (!book) return <p>{t("bookdetail.notFound")}</p>;
   const wishlisted = lib.wishlist.includes(book.id);
   const reviews = reviewsFor(book.id);
   const related = book.relatedId ? bookById(book.relatedId) : undefined;
@@ -35,7 +37,7 @@ export default function BookDetail() {
         to="/app"
         className="inline-flex items-center gap-2 font-semibold text-primary hover:underline"
       >
-        <ArrowLeft size={18} /> Kembali
+        <ArrowLeft size={18} /> {t("bookdetail.back")}
       </Link>
 
       <div className="mt-6 grid grid-cols-1 gap-10 lg:grid-cols-[340px_1fr]">
@@ -49,7 +51,7 @@ export default function BookDetail() {
             disabled={book.stockAvailable === 0}
             className="mt-5 w-full cursor-pointer rounded-xl bg-primary py-4 font-display text-[17px] font-bold text-white hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60"
           >
-            Reservasi Buku Fisik
+            {t("action.borrow")}
           </button>
 
           {book.ebookTotal > 0 ? (
@@ -60,12 +62,12 @@ export default function BookDetail() {
             >
               <BookText size={19} />
               {book.ebookAvailable > 0
-                ? `Pinjam E-book · ${book.ebookAvailable}/${book.ebookTotal} copy`
-                : "E-book · Antrean"}
+                ? `${t("bookdetail.borrowEbookPrefix")} · ${book.ebookAvailable}/${book.ebookTotal} ${t("home.ebookCopiesSuffix")}`
+                : t("home.ebookQueue")}
             </button>
           ) : (
             <div className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-line py-4 text-[15px] text-muted-fg">
-              <BookText size={18} /> E-book tidak tersedia (hanya edisi cetak)
+              <BookText size={18} /> {t("bookdetail.ebookUnavailable")}
             </div>
           )}
 
@@ -74,8 +76,8 @@ export default function BookDetail() {
               const active = toggleWishlist(book.id);
               notify(
                 active
-                  ? `"${book.title}" disimpan ke wishlist.`
-                  : `"${book.title}" dihapus dari wishlist.`,
+                  ? `"${book.title}" ${t("bookdetail.wishlistAddedSuffix")}`
+                  : `"${book.title}" ${t("bookdetail.wishlistRemovedSuffix")}`,
               );
             }}
             className={`mt-3 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border py-4 font-display text-[16px] font-semibold ${
@@ -85,7 +87,7 @@ export default function BookDetail() {
             }`}
           >
             <Bookmark size={18} fill={wishlisted ? "currentColor" : "none"} />
-            {wishlisted ? "Tersimpan di Wishlist" : "Simpan ke Wishlist"}
+            {wishlisted ? t("bookdetail.inWishlist") : t("bookdetail.addToWishlist")}
           </button>
         </div>
 
@@ -104,16 +106,16 @@ export default function BookDetail() {
               <span className="font-display text-lg font-bold">{book.rating.toFixed(1)}</span>
             </span>
             <span className="text-line">|</span>
-            <span className="text-lg text-muted-fg">Tahun {book.year}</span>
+            <span className="text-lg text-muted-fg">{t("bookdetail.yearPrefix")} {book.year}</span>
             <span className="text-line">|</span>
             {book.stockAvailable > 0 ? (
               <span className="flex items-center gap-2 text-lg font-semibold text-success">
                 <CheckCircle2 size={20} />
-                {book.stockAvailable} dari {book.stockTotal} eksemplar tersedia
+                {book.stockAvailable} {t("pinjaman.ofSuffix")} {book.stockTotal} {t("bookdetail.copiesAvailableSuffix")}
               </span>
             ) : (
               <span className="text-lg font-semibold text-destructive">
-                Semua eksemplar sedang dipinjam
+                {t("bookdetail.allBorrowed")}
               </span>
             )}
           </div>
@@ -123,7 +125,7 @@ export default function BookDetail() {
           )}
 
           <Card className="mt-7 p-7">
-            <h2 className="font-display text-xl font-bold">Deskripsi</h2>
+            <h2 className="font-display text-xl font-bold">{t("bookdetail.description")}</h2>
             <p className="mt-3 text-lg leading-relaxed text-muted-fg">
               {book.description}
             </p>
@@ -131,10 +133,10 @@ export default function BookDetail() {
 
           <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
             {[
-              ["Kategori", book.category],
-              ["Tahun Terbit", String(book.year)],
-              ["Stok Fisik", `${book.stockTotal} eksemplar`],
-              ["Copy E-book", book.ebookTotal > 0 ? `${book.ebookTotal} copy` : "Tidak tersedia"],
+              [t("bookdetail.labelCategory"), book.category],
+              [t("bookdetail.labelYearPublished"), String(book.year)],
+              [t("bookdetail.labelPhysicalStock"), `${book.stockTotal} ${t("bookdetail.copiesSuffix")}`],
+              [t("bookdetail.labelEbookCopy"), book.ebookTotal > 0 ? `${book.ebookTotal} ${t("home.ebookCopiesSuffix")}` : t("bookdetail.notAvailable")],
             ].map(([label, value]) => (
               <Card key={label} className="p-5">
                 <div className="text-[15px] text-muted-fg">{label}</div>
@@ -148,10 +150,10 @@ export default function BookDetail() {
               <BookText size={22} className="shrink-0 text-accent" />
               <div>
                 <div className="font-display text-[17px] font-bold text-accent">
-                  {book.ebookAvailable} dari {book.ebookTotal} copy e-book tersedia
+                  {book.ebookAvailable} {t("pinjaman.ofSuffix")} {book.ebookTotal} {t("bookdetail.ebookCopiesAvailableSuffix")}
                 </div>
                 <div className="mt-0.5 text-[15px] text-muted-fg">
-                  Pinjam copy digital · otomatis kembali dalam 14 hari
+                  {t("bookdetail.digitalCopyNote")}
                 </div>
               </div>
             </div>
@@ -162,7 +164,7 @@ export default function BookDetail() {
           <div className="mt-8">
             <div className="flex items-center justify-between">
               <h2 className="font-display text-xl font-bold">
-                Ulasan Pembaca
+                {t("bookdetail.readerReviews")}
                 <span className="ml-2 text-base font-normal text-muted-fg">
                   ({reviews.length})
                 </span>
@@ -171,13 +173,11 @@ export default function BookDetail() {
                 onClick={() => setShowReview(true)}
                 className="cursor-pointer rounded-lg bg-primary-light px-4 py-2 text-sm font-semibold text-primary hover:bg-primary-light-hover"
               >
-                + Tulis Ulasan
+                + {t("bookdetail.writeReview")}
               </button>
             </div>
             {reviews.length === 0 ? (
-              <p className="mt-3 text-muted-fg">
-                Belum ada ulasan. Jadilah yang pertama memberi ulasan setelah membaca.
-              </p>
+              <p className="mt-3 text-muted-fg">{t("bookdetail.noReviews")}</p>
             ) : (
               <div className="mt-4 space-y-4">
                 {reviews.map((rv) => (
@@ -190,7 +190,7 @@ export default function BookDetail() {
                         <div>
                           <div className="font-display font-bold uppercase">{rv.name}</div>
                           <div className="text-sm text-muted-fg">
-                            {rv.program} · {rv.faculty} · Angkatan {rv.angkatan}
+                            {rv.program} · {rv.faculty} · {t("profile.batch")} {rv.angkatan}
                           </div>
                         </div>
                       </div>
@@ -212,7 +212,7 @@ export default function BookDetail() {
 
           {related && (
             <div className="mt-8">
-              <h2 className="font-display text-xl font-bold">Buku Terkait</h2>
+              <h2 className="font-display text-xl font-bold">{t("bookdetail.relatedBook")}</h2>
               <Link to={`/app/buku/${related.id}`} className="mt-4 inline-block w-[132px]">
                 <Card className="overflow-hidden transition-shadow hover:shadow-md">
                   <RemoteCover title={related.title} author={related.author} initials={related.initials} color={related.color}
@@ -230,7 +230,7 @@ export default function BookDetail() {
       </div>
 
       {showEbookModal && (
-        <Modal title="Pinjam Copy E-book" onClose={() => setShowEbookModal(false)}>
+        <Modal title={t("bookdetail.borrowEbookCopy")} onClose={() => setShowEbookModal(false)}>
           <div className="flex items-center gap-4 rounded-xl bg-bg p-5">
             <RemoteCover title={book.title} author={book.author} initials={book.initials} color={book.color}
               className="h-[72px] w-[60px] rounded-lg"
@@ -241,17 +241,17 @@ export default function BookDetail() {
               <div className="text-[15px] text-muted-fg">{book.author}</div>
               <span className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-accent-light px-3 py-1 text-sm font-semibold text-accent">
                 <BookText size={13} />
-                {book.ebookAvailable} dari {book.ebookTotal} copy tersedia
+                {book.ebookAvailable} {t("pinjaman.ofSuffix")} {book.ebookTotal} {t("bookdetail.ebookCopiesAvailableSuffix")}
               </span>
             </div>
           </div>
 
           <div className="mt-5 overflow-hidden rounded-xl border border-line">
             {[
-              ["Peminjam", "Ahmad Fauzi (11200000001)"],
-              ["Durasi pinjam", "14 hari (otomatis dikembalikan)"],
-              ["Akses berakhir", "14 Juli 2026"],
-              ["Format akses", "Baca di browser, tanpa unduh"],
+              [t("bookdetail.labelBorrower"), "Ahmad Fauzi (11200000001)"],
+              [t("bookdetail.labelDuration"), t("bookdetail.durationValue")],
+              [t("bookdetail.labelAccessEnds"), t("bookdetail.accessEndDate")],
+              [t("bookdetail.labelAccessFormat"), t("bookdetail.accessFormatValue")],
             ].map(([label, value], i) => (
               <div
                 key={label}
@@ -266,14 +266,13 @@ export default function BookDetail() {
           <div className="mt-5 flex items-start gap-3 rounded-xl bg-accent-light/60 px-5 py-4">
             <BookText size={19} className="mt-0.5 shrink-0 text-accent" />
             <p className="text-[15px] leading-relaxed text-accent">
-              Copy e-book otomatis dikembalikan setelah 14 hari. Baca kapan saja di
-              browser tanpa perlu datang ke perpustakaan.
+              {t("bookdetail.ebookAutoReturnNote")}
             </p>
           </div>
 
           <div className="mt-7 grid grid-cols-2 gap-4">
             <Button variant="outline" className="py-3.5" onClick={() => setShowEbookModal(false)}>
-              Batal
+              {t("action.cancel")}
             </Button>
             <Button
               variant="accent"
@@ -283,38 +282,38 @@ export default function BookDetail() {
                 setShowSuccess(true);
               }}
             >
-              Pinjam Copy E-book
+              {t("bookdetail.borrowEbookCopy")}
             </Button>
           </div>
         </Modal>
       )}
 
       {showSuccess && (
-        <Modal title="Peminjaman Berhasil!" onClose={() => setShowSuccess(false)}>
+        <Modal title={t("bookdetail.loanSuccessTitle")} onClose={() => setShowSuccess(false)}>
           <div className="flex flex-col items-center py-2 text-center">
             <div className="flex h-24 w-24 items-center justify-center rounded-full bg-accent-light">
               <Check size={44} className="text-accent" strokeWidth={2.5} />
             </div>
             <h4 className="mt-7 font-display text-2xl font-bold">
-              Copy E-book Berhasil Dipinjam!
+              {t("bookdetail.ebookBorrowedHeading")}
             </h4>
             <p className="mt-3 text-lg text-muted-fg">
-              Anda dapat membaca <strong className="text-fg">{book.title}</strong>
+              {t("bookdetail.youCanReadPrefix")} <strong className="text-fg">{book.title}</strong>
             </p>
             <p className="mt-1.5 text-[15px] text-muted-fg">
-              Akses berakhir otomatis: <strong className="text-fg">14 Juli 2026</strong>
+              {t("bookdetail.autoAccessEndsPrefix")} <strong className="text-fg">{t("bookdetail.accessEndDate")}</strong>
             </p>
           </div>
           <div className="mt-6 grid grid-cols-2 gap-4">
             <Button variant="outline" className="py-3.5" onClick={() => setShowSuccess(false)}>
-              Nanti Saja
+              {t("bookdetail.later")}
             </Button>
             <Button
               variant="accent"
               className="py-3.5"
               onClick={() => navigate(`/app/baca/${book.id}`)}
             >
-              Baca Sekarang
+              {t("bookdetail.readNow")}
             </Button>
           </div>
         </Modal>
@@ -327,7 +326,7 @@ export default function BookDetail() {
           onClose={() => setShowReview(false)}
           onDone={(stars) => {
             setShowReview(false);
-            notify(`Ulasan ${stars} bintang untuk "${book.title}" terkirim.`);
+            notify(`${t("pinjaman.reviewToastPrefix")} ${stars} ${t("pinjaman.reviewToastMiddle")} "${book.title}" ${t("pinjaman.reviewToastSuffix")}`);
           }}
         />
       )}
@@ -338,6 +337,7 @@ export default function BookDetail() {
 // Antrean Cerdas: muncul untuk buku yang seluruh eksemplarnya sedang dipinjam.
 function SmartWaitlist({ book }: { book: Book }) {
   const { notify } = useToast();
+  const t = useTranslate();
   useWaitlist(); // berlangganan perubahan
   const entry = entryFor(book.id);
   const position = entry?.position ?? 0;
@@ -347,7 +347,7 @@ function SmartWaitlist({ book }: { book: Book }) {
     <Card className="mt-7 overflow-hidden border-accent/30">
       <div className="flex items-center gap-2.5 bg-accent-light px-6 py-3.5">
         <Sparkles size={18} className="text-accent" />
-        <span className="font-display font-bold text-accent">Antrean Cerdas</span>
+        <span className="font-display font-bold text-accent">{t("bookdetail.smartWaitlist")}</span>
       </div>
       <div className="p-6">
         {entry ? (
@@ -358,53 +358,51 @@ function SmartWaitlist({ book }: { book: Book }) {
               </div>
               <div>
                 <div className="font-display text-lg font-bold">
-                  Anda berada di antrean posisi {position}
+                  {t("bookdetail.waitlistPositionPrefix")} {position}
                 </div>
                 <div className="mt-0.5 text-[15px] text-muted-fg">
-                  Kami akan memberi tahu Anda saat buku tersedia.
+                  {t("bookdetail.waitlistNotifyNote")}
                 </div>
               </div>
             </div>
             <div className="mt-4 flex items-center gap-2.5 rounded-xl bg-bg px-5 py-4">
               <BellRing size={18} className="shrink-0 text-accent" />
               <span className="text-[15px]">
-                Perkiraan tersedia sekitar{" "}
+                {t("bookdetail.estimatedAvailablePrefix")}{" "}
                 <strong className="font-display">{formatDate(date)}</strong>
               </span>
             </div>
             <button
               onClick={() => {
                 leaveWaitlist(book.id);
-                notify("Anda keluar dari antrean.");
+                notify(t("bookdetail.leftWaitlistToast"));
               }}
               className="mt-4 w-full cursor-pointer rounded-xl border border-line py-3 font-display text-[15px] font-semibold hover:bg-muted"
             >
-              Keluar dari Antrean
+              {t("bookdetail.leaveWaitlist")}
             </button>
           </>
         ) : (
           <>
             <p className="text-[15px] leading-relaxed text-muted-fg">
-              Semua eksemplar sedang dipinjam. Masuk antrean untuk diberi tahu
-              secara otomatis begitu buku dikembalikan, tanpa perlu memeriksa
-              berulang kali.
+              {t("bookdetail.waitlistJoinNote")}
             </p>
             <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 text-[15px]">
               <span className="flex items-center gap-2 text-muted-fg">
-                <Users2 size={17} /> {(book.stockTotal + book.title.length) % 4} orang menunggu
+                <Users2 size={17} /> {(book.stockTotal + book.title.length) % 4} {t("bookdetail.peopleWaitingSuffix")}
               </span>
               <span className="flex items-center gap-2 text-muted-fg">
-                <BellRing size={17} /> Perkiraan: {formatDate(date)}
+                <BellRing size={17} /> {t("bookdetail.estimatePrefix")} {formatDate(date)}
               </span>
             </div>
             <button
               onClick={() => {
                 const pos = joinWaitlist(book);
-                notify(`Anda masuk antrean pada posisi ${pos}.`);
+                notify(`${t("bookdetail.joinedWaitlistPrefix")} ${pos}.`);
               }}
               className="mt-5 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-accent py-3.5 font-display text-[16px] font-bold text-white hover:bg-accent-dark"
             >
-              <BellRing size={18} /> Masuk Antrean & Beri Tahu Saya
+              <BellRing size={18} /> {t("bookdetail.joinWaitlistBtn")}
             </button>
           </>
         )}

@@ -17,7 +17,7 @@ import { useFeedback, inboxFor } from "@/services/feedbackStore";
 import { PasswordField } from "@/components/PasswordField";
 import { uploadAvatar, isAvatarUploadAvailable } from "@/services/avatarStore";
 import { auth } from "@/common/libs/firebase";
-import { useLocale, setLocale, useTranslate } from "@/services/localeStore";
+import { useLocale, setLocale, useTranslate, type Translate } from "@/services/localeStore";
 import { LOCALES, LOCALE_META } from "@/i18n";
 import { syncStudentProfile } from "@/services/userDoc";
 import { FlagIcon } from "@/components/FlagIcon";
@@ -46,16 +46,16 @@ export default function Profil() {
     if (!file) return;
     const uid = auth.currentUser?.uid;
     if (!uid) {
-      notify("Tidak bisa mengganti foto: sesi tidak ditemukan.");
+      notify(t("profile.photoNoSession"));
       return;
     }
     setUploadingPhoto(true);
     try {
       const photoURL = await uploadAvatar(uid, file);
       updateCurrentStudent({ photoURL });
-      notify("Foto profil berhasil diperbarui.");
+      notify(t("profile.photoUpdated"));
     } catch (err) {
-      notify((err as Error).message || "Gagal mengunggah foto.");
+      notify((err as Error).message || t("profile.photoUploadFailed"));
     } finally {
       setUploadingPhoto(false);
     }
@@ -66,18 +66,18 @@ export default function Profil() {
 
   const activeLoans = getActiveLoans();
   const stats: [number, string][] = [
-    [activeLoans.length, "Total Pinjaman"],
-    [activeLoans.length, "Sedang Dipinjam"],
-    [lib.wishlist.length, "Favorit"],
+    [activeLoans.length, t("profile.stat.totalLoans")],
+    [activeLoans.length, t("profile.stat.currentlyBorrowed")],
+    [lib.wishlist.length, t("profile.stat.favorites")],
   ];
 
   const MENU = [
-    { key: "inbox", icon: Mail, title: t("profile.inbox"), sub: inbox.length > 0 ? `${inbox.length} balasan dari admin` : "Belum ada balasan" },
-    { key: "wishlist", icon: Heart, title: t("profile.wishlist"), sub: `${lib.wishlist.length} buku tersimpan` },
-    { key: "riwayat", icon: Clock, title: t("profile.history"), sub: "Lihat aktivitas peminjaman" },
+    { key: "inbox", icon: Mail, title: t("profile.inbox"), sub: inbox.length > 0 ? `${inbox.length} ${t("profile.repliesFromAdminSuffix")}` : t("profile.noReply") },
+    { key: "wishlist", icon: Heart, title: t("profile.wishlist"), sub: `${lib.wishlist.length} ${t("profile.booksSavedSuffix")}` },
+    { key: "riwayat", icon: Clock, title: t("profile.history"), sub: t("profile.viewLoanActivity") },
     { key: "password", icon: Lock, title: t("profile.changePassword"), sub: "" },
     { key: "bahasa", icon: Globe, title: t("profile.language"), sub: LOCALE_META[locale].label },
-    { key: "bantuan", icon: HelpCircle, title: t("profile.help"), sub: "Kirim pesan ke admin" },
+    { key: "bantuan", icon: HelpCircle, title: t("profile.help"), sub: t("profile.sendMessageToAdmin") },
   ];
 
   function onMenu(key: string) {
@@ -136,7 +136,7 @@ export default function Profil() {
                 onClick={() => setSheet("editProfil")}
                 className="mt-1 cursor-pointer text-[15px] font-semibold text-primary hover:underline"
               >
-                Lengkapi NIM &amp; data akademik
+                {t("profile.completeProfile")}
               </button>
             ) : (
               <p className="mt-1 text-lg uppercase text-muted-fg">{student.nim}</p>
@@ -147,7 +147,7 @@ export default function Profil() {
               </span>
             )}
             {student.angkatan && !isPlaceholder(student.angkatan) && (
-              <span className="mt-2 text-sm text-muted-fg">Angkatan {student.angkatan}</span>
+              <span className="mt-2 text-sm text-muted-fg">{t("profile.batch")} {student.angkatan}</span>
             )}
             {student.email && (
               <span className="mt-1 text-sm lowercase text-muted-fg">{student.email}</span>
@@ -199,7 +199,7 @@ export default function Profil() {
                 <LogOut size={20} />
               </div>
               <span className="font-display text-[17px] font-bold text-destructive">
-                Keluar dari Akun
+                {t("profile.logout")}
               </span>
             </button>
           </Card>
@@ -207,23 +207,21 @@ export default function Profil() {
       </div>
 
       {sheet === "inbox" && (
-        <Modal title="Kotak Masuk" onClose={() => setSheet(null)}>
-          <p className="text-[15px] text-muted-fg">
-            Balasan dari admin perpustakaan atas komentar Anda.
-          </p>
+        <Modal title={t("profile.inbox")} onClose={() => setSheet(null)}>
+          <p className="text-[15px] text-muted-fg">{t("profile.inboxDesc")}</p>
           {inbox.length === 0 ? (
-            <p className="py-6 text-center text-muted-fg">Belum ada balasan masuk.</p>
+            <p className="py-6 text-center text-muted-fg">{t("profile.noRepliesYetLong")}</p>
           ) : (
             <div className="mt-4 space-y-4">
               {inbox.map((c) => (
                 <div key={c.id} className="rounded-xl border border-line p-4">
                   <div className="text-sm text-muted-fg">
-                    Komentar Anda pada <strong className="text-fg">{c.bookTitle}</strong>
+                    {t("profile.commentOn")} <strong className="text-fg">{c.bookTitle}</strong>
                   </div>
                   <p className="mt-1 text-[15px] italic text-muted-fg">"{c.text}"</p>
                   <div className="mt-3 rounded-lg bg-primary-light/60 p-3">
                     <div className="flex items-center gap-2 text-sm font-bold text-primary">
-                      <ShieldCheck size={14} /> Balasan Admin
+                      <ShieldCheck size={14} /> {t("profile.adminReply")}
                     </div>
                     <p className="mt-1 text-[15px]">{c.reply!.text}</p>
                     <div className="mt-1 text-xs text-muted-fg">{c.reply!.date} · {c.reply!.time}</div>
@@ -236,11 +234,9 @@ export default function Profil() {
       )}
 
       {sheet === "wishlist" && (
-        <Modal title="Wishlist Saya" onClose={() => setSheet(null)}>
+        <Modal title={t("profile.wishlist")} onClose={() => setSheet(null)}>
           {lib.wishlist.length === 0 ? (
-            <p className="py-4 text-center text-muted-fg">
-              Belum ada buku di wishlist. Simpan buku dari halaman detail.
-            </p>
+            <p className="py-4 text-center text-muted-fg">{t("profile.wishlistEmpty")}</p>
           ) : (
             <div className="space-y-3">
               {lib.wishlist.map((id) => {
@@ -269,10 +265,11 @@ export default function Profil() {
       {sheet === "password" && (
         <ChangePasswordModal
           email={student.email}
+          t={t}
           onClose={() => setSheet(null)}
           onDone={() => {
             setSheet(null);
-            notify("Kata sandi berhasil diperbarui.");
+            notify(t("toast.passwordUpdated"));
           }}
         />
       )}
@@ -280,11 +277,12 @@ export default function Profil() {
       {sheet === "bahasa" && (
         <LanguageModal
           current={locale}
+          t={t}
           onClose={() => setSheet(null)}
           onSelect={(next) => {
             setLocale(next);
             setSheet(null);
-            notify(`Bahasa diubah ke ${LOCALE_META[next].label}.`);
+            notify(`${t("toast.langChangedPrefix")} ${LOCALE_META[next].label}.`);
           }}
         />
       )}
@@ -292,6 +290,7 @@ export default function Profil() {
       {sheet === "editProfil" && (
         <EditProfileModal
           student={student}
+          t={t}
           onClose={() => setSheet(null)}
           onSave={(patch) => {
             try {
@@ -299,9 +298,9 @@ export default function Profil() {
               const uid = auth.currentUser?.uid;
               if (uid) void syncStudentProfile(uid, patch);
               setSheet(null);
-              notify("Profil berhasil diperbarui.");
+              notify(t("toast.profileUpdated"));
             } catch (err) {
-              notify((err as Error).message || "Gagal menyimpan profil.");
+              notify((err as Error).message || t("toast.profileSaveFailed"));
             }
           }}
         />
@@ -309,11 +308,12 @@ export default function Profil() {
 
       {sheet === "bantuan" && (
         <BantuanModal
+          t={t}
           onClose={() => setSheet(null)}
           onSend={(msg) => {
             sendHelpToAdmin(student.name, msg);
             setSheet(null);
-            notify("Pesan bantuan terkirim ke admin.");
+            notify(t("toast.helpSent"));
           }}
         />
       )}
@@ -322,8 +322,8 @@ export default function Profil() {
 }
 
 function ChangePasswordModal({
-  email, onClose, onDone,
-}: { email: string; onClose: () => void; onDone: () => void }) {
+  email, onClose, onDone, t,
+}: { email: string; onClose: () => void; onDone: () => void; t: Translate }) {
   const [oldPw, setOldPw] = useState("");
   const [newPw, setNewPw] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -334,8 +334,8 @@ function ChangePasswordModal({
 
   async function submit(e: FormEvent) {
     e.preventDefault();
-    if (!email) return setError("Ubah sandi hanya untuk akun email. Akun SSO dikelola oleh UIN.");
-    if (newPw !== confirm) return setError("Konfirmasi kata sandi tidak sama.");
+    if (!email) return setError(t("profile.emailOnlyPasswordChange"));
+    if (newPw !== confirm) return setError(t("profile.passwordMismatch"));
     setError("");
     setBusy(true);
     try {
@@ -349,18 +349,18 @@ function ChangePasswordModal({
   }
 
   return (
-    <Modal title="Ubah Password" onClose={onClose}>
+    <Modal title={t("profile.changePassword")} onClose={onClose}>
       <form onSubmit={submit}>
-        <label className="font-display text-[15px] font-semibold">Kata Sandi Lama</label>
+        <label className="font-display text-[15px] font-semibold">{t("profile.oldPassword")}</label>
         <PasswordField value={oldPw} onChange={setOldPw} className={input} autoComplete="current-password" />
-        <label className="mt-4 block font-display text-[15px] font-semibold">Kata Sandi Baru</label>
+        <label className="mt-4 block font-display text-[15px] font-semibold">{t("profile.newPassword")}</label>
         <PasswordField value={newPw} onChange={setNewPw} className={input} showStrength autoComplete="new-password" />
-        <label className="mt-4 block font-display text-[15px] font-semibold">Ulangi Sandi Baru</label>
+        <label className="mt-4 block font-display text-[15px] font-semibold">{t("profile.confirmNewPassword")}</label>
         <PasswordField value={confirm} onChange={setConfirm} className={input} autoComplete="new-password" />
         {error && <p className="mt-4 rounded-lg bg-destructive-light px-4 py-3 text-sm text-destructive">{error}</p>}
         <div className="mt-6 grid grid-cols-2 gap-4">
-          <Button variant="outline" className="py-3.5" onClick={onClose}>Batal</Button>
-          <Button type="submit" className="py-3.5" disabled={busy}>{busy ? "Menyimpan..." : "Simpan"}</Button>
+          <Button variant="outline" className="py-3.5" onClick={onClose}>{t("action.cancel")}</Button>
+          <Button type="submit" className="py-3.5" disabled={busy}>{busy ? t("action.saving") : t("action.save")}</Button>
         </div>
       </form>
     </Modal>
@@ -368,10 +368,10 @@ function ChangePasswordModal({
 }
 
 function LanguageModal({
-  current, onClose, onSelect,
-}: { current: (typeof LOCALES)[number]; onClose: () => void; onSelect: (locale: (typeof LOCALES)[number]) => void }) {
+  current, onClose, onSelect, t,
+}: { current: (typeof LOCALES)[number]; onClose: () => void; onSelect: (locale: (typeof LOCALES)[number]) => void; t: Translate }) {
   return (
-    <Modal title="Pilih Bahasa" onClose={onClose}>
+    <Modal title={t("profile.chooseLang")} onClose={onClose}>
       <div className="space-y-2.5">
         {LOCALES.map((loc) => (
           <button
@@ -387,20 +387,18 @@ function LanguageModal({
           </button>
         ))}
       </div>
-      <p className="mt-4 text-sm text-muted-fg">
-        Navigasi utama dan halaman profil akan mengikuti bahasa pilihan. Sebagian
-        konten (judul buku, obrolan, panel admin) masih dalam Bahasa Indonesia.
-      </p>
+      <p className="mt-4 text-sm text-muted-fg">{t("profile.langNote")}</p>
     </Modal>
   );
 }
 
 function EditProfileModal({
-  student, onClose, onSave,
+  student, onClose, onSave, t,
 }: {
   student: { name: string; nim: string; faculty: string; program: string; angkatan: string };
   onClose: () => void;
   onSave: (patch: { name: string; nim: string; faculty: string; program: string; angkatan: string }) => void;
+  t: Translate;
 }) {
   const clean = (v: string) => (isPlaceholder(v) ? "" : v);
   const [name, setName] = useState(student.name);
@@ -412,29 +410,26 @@ function EditProfileModal({
     "mt-2 w-full rounded-xl border border-line px-4 py-3 text-[15px] outline-none focus:border-primary";
 
   return (
-    <Modal title="Edit Profil" onClose={onClose}>
-      <p className="text-sm text-muted-fg">
-        Lengkapi data akademik kamu supaya identitas sebagai mahasiswa kampus ini
-        tercatat benar di sistem - termasuk untuk verifikasi saat menghubungi admin.
-      </p>
-      <label className="mt-4 block font-display text-[15px] font-semibold">Nama Lengkap</label>
+    <Modal title={t("profile.editProfile")} onClose={onClose}>
+      <p className="text-sm text-muted-fg">{t("profile.editProfileDesc")}</p>
+      <label className="mt-4 block font-display text-[15px] font-semibold">{t("profile.fullName")}</label>
       <input value={name} onChange={(e) => setName(e.target.value)} className={input} />
-      <label className="mt-4 block font-display text-[15px] font-semibold">NIM</label>
-      <input value={nim} onChange={(e) => setNim(e.target.value)} placeholder="Nomor Induk Mahasiswa" className={input} />
+      <label className="mt-4 block font-display text-[15px] font-semibold">{t("profile.nimLabel")}</label>
+      <input value={nim} onChange={(e) => setNim(e.target.value)} placeholder={t("profile.nimPlaceholder")} className={input} />
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="mt-4 block font-display text-[15px] font-semibold">Fakultas</label>
+          <label className="mt-4 block font-display text-[15px] font-semibold">{t("profile.facultyLabel")}</label>
           <input value={faculty} onChange={(e) => setFaculty(e.target.value)} className={input} />
         </div>
         <div>
-          <label className="mt-4 block font-display text-[15px] font-semibold">Program Studi</label>
+          <label className="mt-4 block font-display text-[15px] font-semibold">{t("profile.programLabel")}</label>
           <input value={program} onChange={(e) => setProgram(e.target.value)} className={input} />
         </div>
       </div>
-      <label className="mt-4 block font-display text-[15px] font-semibold">Angkatan</label>
+      <label className="mt-4 block font-display text-[15px] font-semibold">{t("profile.batch")}</label>
       <input value={angkatan} onChange={(e) => setAngkatan(e.target.value)} className={input} />
       <div className="mt-6 grid grid-cols-2 gap-4">
-        <Button variant="outline" className="py-3.5" onClick={onClose}>Batal</Button>
+        <Button variant="outline" className="py-3.5" onClick={onClose}>{t("action.cancel")}</Button>
         <Button
           className="py-3.5"
           disabled={name.trim().length < 3}
@@ -448,7 +443,7 @@ function EditProfileModal({
             })
           }
         >
-          Simpan
+          {t("action.save")}
         </Button>
       </div>
     </Modal>
@@ -456,30 +451,27 @@ function EditProfileModal({
 }
 
 function BantuanModal({
-  onClose, onSend,
-}: { onClose: () => void; onSend: (message: string) => void }) {
+  onClose, onSend, t,
+}: { onClose: () => void; onSend: (message: string) => void; t: Translate }) {
   const [message, setMessage] = useState("");
   return (
-    <Modal title="Bantuan" onClose={onClose}>
-      <p className="text-[15px] text-muted-fg">
-        Sampaikan kendala atau pertanyaan Anda. Pesan ini dikirim ke admin
-        perpustakaan dan akan muncul di notifikasi admin.
-      </p>
+    <Modal title={t("profile.help")} onClose={onClose}>
+      <p className="text-[15px] text-muted-fg">{t("profile.helpDesc")}</p>
       <textarea
         value={message}
         onChange={(e) => setMessage(e.target.value)}
         rows={5}
-        placeholder="Tulis pesan Anda untuk admin..."
+        placeholder={t("profile.helpPlaceholder")}
         className="mt-4 w-full resize-none rounded-xl border border-line px-4 py-3.5 text-[15px] outline-none focus:border-primary"
       />
       <div className="mt-5 grid grid-cols-2 gap-4">
-        <Button variant="outline" className="py-3.5" onClick={onClose}>Batal</Button>
+        <Button variant="outline" className="py-3.5" onClick={onClose}>{t("action.cancel")}</Button>
         <Button
           className="py-3.5"
           disabled={message.trim().length < 5}
           onClick={() => onSend(message.trim())}
         >
-          <span className="flex items-center justify-center gap-2"><BookOpen size={16} /> Kirim ke Admin</span>
+          <span className="flex items-center justify-center gap-2"><BookOpen size={16} /> {t("profile.sendToAdmin")}</span>
         </Button>
       </div>
     </Modal>

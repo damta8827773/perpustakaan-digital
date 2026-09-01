@@ -15,11 +15,30 @@ import {
 import { useEffect, useState } from "react";
 import { db } from "@/common/libs/firebase";
 import { matchFaqAnswer } from "@/services/chatBot";
+import { getLocale } from "@/services/localeStore";
+import type { Locale } from "@/i18n";
 
 const DEMO = import.meta.env.VITE_DEMO === "1";
-const AI_SENDER_NAME = "AI Asisten Perpustakaan";
-const GENERIC_ACK =
-  "Terima kasih, pesan Anda sudah kami catat dan diteruskan ke admin perpustakaan. Mohon tunggu sebentar, admin akan segera membalas.";
+
+const AI_SENDER_NAME: Record<Locale, string> = {
+  id: "AI Asisten Perpustakaan",
+  en: "AI Library Assistant",
+  ar: "المساعد الآلي للمكتبة",
+};
+
+const GENERIC_ACK: Record<Locale, string> = {
+  id: "Terima kasih, pesan Anda sudah kami catat dan diteruskan ke admin perpustakaan. Mohon tunggu sebentar, admin akan segera membalas.",
+  en: "Thank you, your message has been noted and forwarded to the library admin. Please wait a moment, admin will reply shortly.",
+  ar: "شكرًا لك، تم تسجيل رسالتك وإرسالها إلى إدارة المكتبة. يُرجى الانتظار قليلًا، سيردّ عليك الإداري قريبًا.",
+};
+
+const SENDING_LABEL: Record<Locale, string> = {
+  id: "Mengirim...",
+  en: "Sending...",
+  ar: "جارٍ الإرسال...",
+};
+
+const INTL_LOCALE: Record<Locale, string> = { id: "id-ID", en: "en-US", ar: "ar" };
 
 export type ChatSenderRole = "student" | "admin" | "ai";
 
@@ -87,10 +106,10 @@ export function isChatAvailable(): boolean {
   return !DEMO;
 }
 
-/** "24 Agustus 2026 19:27:45" - tanggal, bulan, tahun, jam, menit, detik lengkap. */
-export function formatFullTimestamp(ms: number | null): string {
-  if (ms == null) return "Mengirim...";
-  return new Date(ms).toLocaleString("id-ID", {
+/** "24 Agustus 2026 19:27:45" - tanggal, bulan, tahun, jam, menit, detik lengkap, mengikuti bahasa aktif. */
+export function formatFullTimestamp(ms: number | null, locale: Locale = getLocale()): string {
+  if (ms == null) return SENDING_LABEL[locale];
+  return new Date(ms).toLocaleString(INTL_LOCALE[locale], {
     day: "numeric", month: "long", year: "numeric",
     hour: "2-digit", minute: "2-digit", second: "2-digit",
   });
@@ -122,12 +141,12 @@ async function updateChatSummaryAndQueue(
   });
 }
 
-async function sendAiAutoReply(studentUid: string, answer: string): Promise<void> {
+async function sendAiAutoReply(studentUid: string, answer: string, locale: Locale): Promise<void> {
   try {
     await addDoc(collection(db, "chats", studentUid, "messages"), {
       senderUid: studentUid,
       senderRole: "ai",
-      senderName: AI_SENDER_NAME,
+      senderName: AI_SENDER_NAME[locale],
       text: answer,
       createdAt: serverTimestamp(),
     });
@@ -192,10 +211,13 @@ export async function sendChatMessage(
   if (senderRole === "student" && lastRole !== "admin") {
     // AI selalu membalas SETIAP pesan mahasiswa (sesuai permintaan) selama
     // admin manusia belum turun tangan - jawaban spesifik kalau topiknya
-    // dikenali, kalau tidak tetap pakai pengakuan umum (bukan diam).
-    const reply = matchFaqAnswer(clean) ?? GENERIC_ACK;
+    // dikenali, kalau tidak tetap pakai pengakuan umum (bukan diam). Bahasa
+    // balasan ikut bahasa aktif mahasiswa saat mengirim, supaya tidak
+    // tercampur dengan sisa UI yang sudah diterjemahkan.
+    const locale = getLocale();
+    const reply = matchFaqAnswer(clean, locale) ?? GENERIC_ACK[locale];
     if (reply) {
-      window.setTimeout(() => void sendAiAutoReply(studentUid, reply), 700);
+      window.setTimeout(() => void sendAiAutoReply(studentUid, reply, locale), 700);
     }
   }
 }

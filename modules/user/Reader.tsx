@@ -8,6 +8,7 @@ import { bookById } from "@/common/constants/catalog";
 import { ebookContent, ebookReferences } from "@/contents/ebooks";
 import { useToast } from "@/components/Toast";
 import { useSpeechReader } from "@/hooks/useSpeechReader";
+import { useTranslate } from "@/services/localeStore";
 
 const RATES = [0.75, 1, 1.25, 1.5];
 
@@ -15,6 +16,7 @@ export default function Reader() {
   const { id } = useParams();
   const book = bookById(id ?? "");
   const { notify } = useToast();
+  const t = useTranslate();
   const [fontSize, setFontSize] = useState(16);
   const [dark, setDark] = useState(false);
   const [chapterIdx, setChapterIdx] = useState(0);
@@ -31,7 +33,7 @@ export default function Reader() {
       : `${content.chapters[chapterIdx].title}. ${content.chapters[chapterIdx].paragraphs.join(" ")}`;
   const speech = useSpeechReader(speechText);
 
-  if (!book || !content) return <p>Buku tidak ditemukan.</p>;
+  if (!book || !content) return <p>{t("bookdetail.notFound")}</p>;
   const references = ebookReferences(book.id);
   const totalChapters = content.chapters.length + 1; // + Daftar Pustaka
   const isReferences = chapterIdx === content.chapters.length;
@@ -47,7 +49,7 @@ export default function Reader() {
             to="/app/baca"
             className={`flex items-center gap-2 font-semibold ${dark ? "text-white/70 hover:text-white" : "text-muted-fg hover:text-fg"}`}
           >
-            <ArrowLeft size={18} /> Kembali ke Daftar Baca
+            <ArrowLeft size={18} /> {t("reader.backToList")}
           </Link>
           <span className="font-display text-lg font-bold">{book.title}</span>
           <div className="flex items-center gap-3">
@@ -57,7 +59,7 @@ export default function Reader() {
               <button
                 onClick={() => setFontSize((s) => Math.max(12, s - 1))}
                 className="cursor-pointer rounded-md p-1.5 hover:bg-black/10"
-                aria-label="Perkecil huruf"
+                aria-label={t("reader.shrinkFont")}
               >
                 <Minus size={15} />
               </button>
@@ -65,7 +67,7 @@ export default function Reader() {
               <button
                 onClick={() => setFontSize((s) => Math.min(24, s + 1))}
                 className="cursor-pointer rounded-md p-1.5 hover:bg-black/10"
-                aria-label="Perbesar huruf"
+                aria-label={t("reader.enlargeFont")}
               >
                 <Plus size={15} />
               </button>
@@ -81,8 +83,8 @@ export default function Reader() {
                     else speech.play();
                   }}
                   className="cursor-pointer rounded-md p-1.5 hover:bg-black/10"
-                  aria-label={speech.status === "speaking" ? "Jeda bacaan" : "Dengarkan bab ini"}
-                  title="Dengarkan bab ini"
+                  aria-label={speech.status === "speaking" ? t("reader.pauseReading") : t("reader.listenChapter")}
+                  title={t("reader.listenChapter")}
                 >
                   {speech.status === "speaking" ? <Pause size={15} /> : <Volume2 size={15} />}
                 </button>
@@ -90,8 +92,8 @@ export default function Reader() {
                   <button
                     onClick={speech.stop}
                     className="cursor-pointer rounded-md p-1.5 hover:bg-black/10"
-                    aria-label="Hentikan bacaan"
-                    title="Hentikan"
+                    aria-label={t("reader.stopReading")}
+                    title={t("reader.stopTitle")}
                   >
                     <Square size={13} />
                   </button>
@@ -103,8 +105,8 @@ export default function Reader() {
                     if (speech.status !== "idle") speech.play();
                   }}
                   className="flex cursor-pointer items-center gap-1 rounded-md px-1.5 py-1.5 text-sm font-semibold hover:bg-black/10"
-                  aria-label="Kecepatan bacaan"
-                  title="Kecepatan bacaan"
+                  aria-label={t("reader.readingSpeed")}
+                  title={t("reader.readingSpeed")}
                 >
                   <Gauge size={14} /> {speech.rate}x
                 </button>
@@ -113,7 +115,7 @@ export default function Reader() {
             <button
               onClick={() => setDark((d) => !d)}
               className={`cursor-pointer rounded-xl p-2.5 ${dark ? "bg-white/10" : "bg-muted"}`}
-              aria-label="Mode gelap"
+              aria-label={t("reader.darkMode")}
             >
               <Moon size={17} />
             </button>
@@ -122,12 +124,12 @@ export default function Reader() {
                 setBookmarked((b) => !b);
                 notify(
                   bookmarked
-                    ? "Penanda bab dihapus."
-                    : `${isReferences ? "Daftar Pustaka" : chapter.title} ditandai.`,
+                    ? t("reader.bookmarkRemovedToast")
+                    : `${isReferences ? t("reader.references") : chapter.title} ${t("reader.bookmarkAddedSuffix")}`,
                 );
               }}
               className={`cursor-pointer rounded-xl p-2.5 ${bookmarked ? "bg-primary text-white" : dark ? "bg-white/10" : "bg-muted"}`}
-              aria-label="Tandai halaman"
+              aria-label={t("reader.bookmarkPage")}
             >
               <Bookmark size={17} fill={bookmarked ? "currentColor" : "none"} />
             </button>
@@ -144,7 +146,7 @@ export default function Reader() {
           </p>
           {isReferences ? (
             <>
-              <h1 className="mt-3 font-display text-[32px] font-bold">Daftar Pustaka</h1>
+              <h1 className="mt-3 font-display text-[32px] font-bold">{t("reader.references")}</h1>
               <ol
                 className="mt-8 space-y-4 leading-[1.9]"
                 style={{ fontSize, fontFamily: "Georgia, 'Times New Roman', serif" }}
@@ -178,17 +180,17 @@ export default function Reader() {
               disabled={chapterIdx <= 0}
               className={`flex cursor-pointer items-center gap-2 font-semibold disabled:cursor-not-allowed disabled:opacity-40 ${dark ? "text-white/70 hover:text-white" : "text-muted-fg hover:text-fg"}`}
             >
-              <ChevronLeft size={18} /> Bab Sebelumnya
+              <ChevronLeft size={18} /> {t("reader.prevChapter")}
             </button>
             <span className={dark ? "text-white/60" : "text-muted-fg"}>
-              {isReferences ? "Daftar Pustaka" : `Bab ${chapterIdx + 1} dari ${totalChapters - 1}`}
+              {isReferences ? t("reader.references") : `${t("reader.chapterPrefix")} ${chapterIdx + 1} ${t("pinjaman.ofSuffix")} ${totalChapters - 1}`}
             </span>
             <button
               onClick={() => setChapterIdx((i) => Math.min(totalChapters - 1, i + 1))}
               disabled={chapterIdx >= totalChapters - 1}
               className={`flex cursor-pointer items-center gap-2 font-semibold disabled:cursor-not-allowed disabled:opacity-40 ${dark ? "text-white/70 hover:text-white" : "text-muted-fg hover:text-fg"}`}
             >
-              Bab Berikutnya <ChevronRight size={18} />
+              {t("reader.nextChapter")} <ChevronRight size={18} />
             </button>
           </div>
         </div>

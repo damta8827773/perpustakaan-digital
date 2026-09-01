@@ -58,7 +58,15 @@ export async function uploadAvatar(
     throw new Error("Foto terlalu kompleks untuk disimpan, coba foto lain yang lebih sederhana.");
   }
 
-  await setDoc(doc(db, "users", uid), { photoURL }, { merge: true });
+  try {
+    await setDoc(doc(db, "users", uid), { photoURL }, { merge: true });
+  } catch (err) {
+    const code = (err as { code?: string })?.code ?? "";
+    if (code === "permission-denied") {
+      throw new Error("Tidak punya izin menyimpan foto - coba keluar lalu masuk lagi, atau hubungi admin.");
+    }
+    throw err;
+  }
   onProgress?.(100);
 
   return photoURL;
