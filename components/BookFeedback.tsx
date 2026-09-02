@@ -110,12 +110,12 @@ export function BookFeedback({ book }: { book: Book }) {
                 <p className="mt-2 leading-relaxed">{c.text}</p>
 
                 <button
-                  onClick={() => toggleCommentLike(c.id, email)}
+                  onClick={() => toggleCommentLike(c.id, email, student.name)}
                   className={`mt-3 flex cursor-pointer items-center gap-1.5 text-sm font-semibold ${
-                    c.likes.includes(email) ? "text-primary" : "text-muted-fg hover:text-fg"
+                    c.likes.some((l) => l.email === email) ? "text-primary" : "text-muted-fg hover:text-fg"
                   }`}
                 >
-                  <ThumbsUp size={14} fill={c.likes.includes(email) ? "currentColor" : "none"} />
+                  <ThumbsUp size={14} fill={c.likes.some((l) => l.email === email) ? "currentColor" : "none"} />
                   {c.likes.length} {t("feedback.like")}
                 </button>
 

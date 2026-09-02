@@ -340,5 +340,16 @@
   "feedback.adminReplyLabel": "رد إدارة المكتبة",
   "reviewmodal.title": "التقييم والمراجعة",
   "reviewmodal.yourReviewLabel": "مراجعتك",
-  "reviewmodal.submit": "إرسال المراجعة"
+  "reviewmodal.submit": "إرسال المراجعة",
+  "notif.title": "الإشعارات",
+  "notif.adminPanel": "لوحة الإدارة",
+  "notif.studentFallback": "طالب",
+  "notif.empty": "لا توجد إشعارات جديدة.",
+  "notif.markAllRead": "تحديد الكل كمقروء",
+  "notif.newMessageFromPrefix": "رسالة جديدة من",
+  "notif.liveChat": "دردشة مباشرة",
+  "notif.someone": "شخص ما",
+  "notif.likedYourCommentSuffix": "أعجب بتعليقك",
+  "notif.onBookPrefix": "على",
+  "notif.newLabel": "الآن"
 }

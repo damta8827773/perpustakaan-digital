@@ -91,6 +91,10 @@ export function visibleNotifications(role: NotifRole): AppNotification[] {
   return allFor(role).filter((n) => !read.includes(n.id));
 }
 
+export function isRead(role: NotifRole, id: string): boolean {
+  return (readIds[role] ?? []).includes(id);
+}
+
 export function markRead(role: NotifRole, id: string): void {
   const read = readIds[role] ?? [];
   if (read.includes(id)) return;
