@@ -340,5 +340,16 @@
   "feedback.adminReplyLabel": "Balasan Admin Perpustakaan",
   "reviewmodal.title": "Beri Rating & Ulasan",
   "reviewmodal.yourReviewLabel": "Ulasan Anda",
-  "reviewmodal.submit": "Kirim Ulasan"
+  "reviewmodal.submit": "Kirim Ulasan",
+  "notif.title": "Notifikasi",
+  "notif.adminPanel": "Panel Admin",
+  "notif.studentFallback": "Mahasiswa",
+  "notif.empty": "Tidak ada notifikasi baru.",
+  "notif.markAllRead": "Tandai semua dibaca",
+  "notif.newMessageFromPrefix": "Pesan baru dari",
+  "notif.liveChat": "Live chat",
+  "notif.someone": "Seseorang",
+  "notif.likedYourCommentSuffix": "menyukai komentar Anda",
+  "notif.onBookPrefix": "pada",
+  "notif.newLabel": "Baru saja"
 }

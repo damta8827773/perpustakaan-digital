@@ -340,5 +340,16 @@
   "feedback.adminReplyLabel": "Library Admin Reply",
   "reviewmodal.title": "Rate & Review",
   "reviewmodal.yourReviewLabel": "Your Review",
-  "reviewmodal.submit": "Submit Review"
+  "reviewmodal.submit": "Submit Review",
+  "notif.title": "Notifications",
+  "notif.adminPanel": "Admin Panel",
+  "notif.studentFallback": "Student",
+  "notif.empty": "No new notifications.",
+  "notif.markAllRead": "Mark all as read",
+  "notif.newMessageFromPrefix": "New message from",
+  "notif.liveChat": "Live chat",
+  "notif.someone": "Someone",
+  "notif.likedYourCommentSuffix": "liked your comment",
+  "notif.onBookPrefix": "on",
+  "notif.newLabel": "Just now"
 }

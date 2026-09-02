@@ -2,10 +2,13 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { Bell, BellOff } from "lucide-react";
 import {
-  useNotifications, markRead, markAllRead,
+  useNotifications, markRead, markAllRead, isRead,
   type NotifRole, type NotifTone, type AppNotification,
 } from "@/services/notificationsStore";
 import { markChatRead, useAdminChatInbox } from "@/services/chatStore";
+import { useFeedback, commentLikeNotificationsFor } from "@/services/feedbackStore";
+import { useCurrentStudent } from "@/services/sessionStore";
+import { useTranslate } from "@/services/localeStore";
 
 function useClickOutside(onClose: () => void) {
   const ref = useRef<HTMLDivElement>(null);
@@ -33,6 +36,7 @@ export function NotificationBell({
   const [open, setOpen] = useState(false);
   const ref = useClickOutside(() => setOpen(false));
   const navigate = useNavigate();
+  const t = useTranslate();
   const items = useNotifications(role);
 
   // Live chat masuk (Firestore, real-time) digabung ke daftar notifikasi
@@ -43,12 +47,32 @@ export function NotificationBell({
   const chatItems: AppNotification[] = unreadChats.map((c) => ({
     id: `chat-${c.studentUid}`,
     tone: "accent",
-    title: `Pesan baru dari ${c.studentName || "mahasiswa"}`,
+    title: `${t("notif.newMessageFromPrefix")} ${c.studentName || t("notif.studentFallback")}`,
     detail: c.lastMessageText,
-    time: "Live chat",
+    time: t("notif.liveChat"),
     to: "/admin/pesan",
   }));
-  const allItems = [...chatItems, ...items];
+
+  // Komentar mahasiswa yang disukai orang lain - dihitung dari feedbackStore
+  // (localStorage), bukan Firestore, jadi perlu berlangganan lewat
+  // useFeedback() supaya bel notifikasi langsung update saat ada suka baru.
+  useFeedback();
+  const student = useCurrentStudent();
+  const likeItems: AppNotification[] =
+    role === "user"
+      ? commentLikeNotificationsFor(student.email || `${student.nim}@mahasiswa.uinjkt.ac.id`)
+          .filter((n) => !isRead("user", n.id))
+          .map((n) => ({
+            id: n.id,
+            tone: "primary",
+            title: `${n.likerName || t("notif.someone")} ${t("notif.likedYourCommentSuffix")}`,
+            detail: `"${n.commentText}" ${t("notif.onBookPrefix")} ${n.bookTitle}`,
+            time: t("notif.newLabel"),
+            to: `/app/buku/${n.bookId}`,
+          }))
+      : [];
+
+  const allItems = [...chatItems, ...likeItems, ...items];
   const unread = allItems.length;
 
   return (
@@ -56,7 +80,7 @@ export function NotificationBell({
       <button
         onClick={() => setOpen((o) => !o)}
         className={`relative cursor-pointer rounded-lg p-2 ${dark ? "text-white/80 hover:bg-white/10" : "text-muted-fg hover:bg-muted"}`}
-        aria-label="Notifikasi"
+        aria-label={t("notif.title")}
       >
         <Bell size={20} />
         {unread > 0 && (
@@ -69,16 +93,16 @@ export function NotificationBell({
       {open && (
         <div className="absolute right-0 top-12 z-50 w-[360px] overflow-hidden rounded-xl border border-line bg-card shadow-xl">
           <div className="flex items-center justify-between border-b border-line px-5 py-3.5">
-            <span className="font-display font-bold">Notifikasi</span>
+            <span className="font-display font-bold">{t("notif.title")}</span>
             <span className="text-xs text-muted-fg">
-              {role === "admin" ? "Panel Admin" : "Mahasiswa"}
+              {role === "admin" ? t("notif.adminPanel") : t("notif.studentFallback")}
             </span>
           </div>
 
           {unread === 0 ? (
             <div className="flex flex-col items-center gap-2 px-5 py-10 text-center text-muted-fg">
               <BellOff size={26} />
-              <span className="text-sm">Tidak ada notifikasi baru.</span>
+              <span className="text-sm">{t("notif.empty")}</span>
             </div>
           ) : (
             <>
@@ -107,10 +131,11 @@ export function NotificationBell({
                 onClick={() => {
                   markAllRead(role);
                   unreadChats.forEach((c) => void markChatRead(c.studentUid, "admin"));
+                  likeItems.forEach((n) => markRead("user", n.id));
                 }}
                 className="w-full cursor-pointer bg-muted/40 py-3 text-center text-sm font-semibold text-primary hover:bg-muted"
               >
-                Tandai semua dibaca
+                {t("notif.markAllRead")}
               </button>
             </>
           )}

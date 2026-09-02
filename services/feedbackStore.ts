@@ -16,6 +16,11 @@ export interface AdminReply {
   ts: number;
 }
 
+export interface CommentLike {
+  email: string;
+  name: string;
+}
+
 export interface Comment {
   id: string;
   bookId: string;
@@ -29,7 +34,7 @@ export interface Comment {
   date: string;
   time: string;
   ts: number;
-  likes: string[];          // daftar email yang menyukai komentar
+  likes: CommentLike[];     // siapa saja yang menyukai komentar (email + nama)
   reply?: AdminReply;
 }
 
@@ -51,10 +56,23 @@ const KEY = "perpus.feedback";
 type Listener = () => void;
 const listeners = new Set<Listener>();
 
+// Migrasi data lama: sebelumnya comment.likes cuma array email (string[]),
+// sekarang array {email, name} supaya notifikasi bisa menyebut nama penyuka.
+function normalizeLikes(likes: unknown): CommentLike[] {
+  if (!Array.isArray(likes)) return [];
+  return likes.map((l) =>
+    typeof l === "string" ? { email: l, name: "" } : (l as CommentLike),
+  );
+}
+
 function read(): FeedbackState {
   try {
     const raw = localStorage.getItem(KEY);
-    if (raw) return { comments: [], likes: [], favorites: [], ...JSON.parse(raw) };
+    if (raw) {
+      const parsed = { comments: [], likes: [], favorites: [], ...JSON.parse(raw) } as FeedbackState;
+      parsed.comments = parsed.comments.map((c) => ({ ...c, likes: normalizeLikes(c.likes) }));
+      return parsed;
+    }
   } catch {
     /* abaikan */
   }
@@ -125,15 +143,17 @@ export function addComment(
   persist({ ...cache, comments: [comment, ...cache.comments] });
 }
 
-export function toggleCommentLike(commentId: string, email: string): void {
+export function toggleCommentLike(commentId: string, email: string, name: string): void {
   persist({
     ...cache,
     comments: cache.comments.map((c) => {
       if (c.id !== commentId) return c;
-      const liked = c.likes.includes(email);
+      const liked = c.likes.some((l) => l.email === email);
       return {
         ...c,
-        likes: liked ? c.likes.filter((e) => e !== email) : [...c.likes, email],
+        likes: liked
+          ? c.likes.filter((l) => l.email !== email)
+          : [...c.likes, { email, name }],
       };
     }),
   });
@@ -203,4 +223,33 @@ export function isFavorite(bookId: string, email: string): boolean {
 
 export function favoriteCount(bookId: string): number {
   return cache.favorites.filter((f) => f.bookId === bookId).length;
+}
+
+// ---------- Notifikasi "komentar Anda disukai" ----------
+
+export interface CommentLikeNotification {
+  id: string;
+  bookId: string;
+  bookTitle: string;
+  commentText: string;
+  likerName: string;
+}
+
+/** Satu entri per (komentar, penyuka) - tidak termasuk suka dari diri sendiri. */
+export function commentLikeNotificationsFor(email: string): CommentLikeNotification[] {
+  const result: CommentLikeNotification[] = [];
+  for (const c of cache.comments) {
+    if (c.userEmail !== email) continue;
+    for (const like of c.likes) {
+      if (like.email === email) continue;
+      result.push({
+        id: `like-${c.id}-${like.email}`,
+        bookId: c.bookId,
+        bookTitle: c.bookTitle,
+        commentText: c.text,
+        likerName: like.name,
+      });
+    }
+  }
+  return result;
 }
