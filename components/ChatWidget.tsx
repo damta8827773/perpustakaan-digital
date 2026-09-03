@@ -42,7 +42,7 @@ export function ChatWidget() {
   return (
     <>
       {open && (
-        <div className="fixed bottom-24 right-6 z-40 flex h-[520px] w-[340px] flex-col overflow-hidden rounded-2xl border border-line bg-card shadow-2xl">
+        <div className="fixed bottom-[156px] right-4 z-40 flex h-[min(520px,70vh)] w-[min(340px,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border border-line bg-card shadow-2xl lg:bottom-24 lg:right-6">
           <div className="flex shrink-0 items-center justify-between border-b border-line px-4 py-3">
             <span className="flex items-center gap-2 font-display font-bold">
               <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary-light text-primary">
@@ -84,7 +84,7 @@ export function ChatWidget() {
       )}
       <button
         onClick={toggle}
-        className="fixed bottom-6 right-6 z-40 flex h-14 w-14 cursor-pointer items-center justify-center rounded-full bg-primary text-white shadow-lg transition-colors hover:bg-primary-dark"
+        className="fixed bottom-[84px] right-4 z-40 flex h-14 w-14 cursor-pointer items-center justify-center rounded-full bg-primary text-white shadow-lg transition-colors hover:bg-primary-dark lg:bottom-6 lg:right-6"
         aria-label={t("chat.launcherAriaLabel")}
       >
         {open ? <X size={22} /> : <MessageCircle size={22} />}

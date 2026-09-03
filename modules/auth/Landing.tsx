@@ -98,19 +98,19 @@ export default function Landing() {
   return (
     <div className="min-h-screen bg-bg">
       <header className="border-b border-line bg-card">
-        <div className="mx-auto flex h-[88px] max-w-[1140px] items-center justify-between px-6">
+        <div className="mx-auto flex min-h-[72px] max-w-[1140px] flex-wrap items-center justify-between gap-3 px-4 py-3 sm:h-[88px] sm:flex-nowrap sm:py-0 sm:px-6">
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-white">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary text-white">
               <BookOpen size={22} />
             </div>
             <div>
-              <div className="font-display text-lg font-bold">{t("app.name")}</div>
-              <div className="text-sm text-muted-fg">{t("app.institution")}</div>
+              <div className="font-display text-lg font-bold leading-tight">{t("app.name")}</div>
+              <div className="hidden text-sm text-muted-fg sm:block">{t("app.institution")}</div>
             </div>
           </div>
           <div className="flex items-center gap-3">
             <LanguageSwitcher />
-            <span className="text-[15px] text-muted-fg">© 2026 UIN Jakarta</span>
+            <span className="hidden text-[15px] text-muted-fg sm:inline">© 2026 UIN Jakarta</span>
           </div>
         </div>
       </header>
@@ -210,13 +210,13 @@ export default function Landing() {
           </div>
         </div>
 
-        <div className="mt-8 grid grid-cols-2 gap-6 lg:grid-cols-4">
+        <div className="mt-8 grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4">
           {STATS.map(({ icon: Icon, value, suffix, decimals, label, desc }) => (
-            <Card key={label} className="flex items-start gap-4 p-6">
+            <Card key={label} className="flex items-start gap-3 p-4 sm:gap-4 sm:p-6">
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary-light text-primary">
                 <Icon size={22} />
               </div>
-              <div>
+              <div className="min-w-0">
                 <div className="font-display text-[17px] font-bold leading-snug">
                   {value > 0 ? (
                     <>
