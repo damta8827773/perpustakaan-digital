@@ -95,7 +95,10 @@ anggota, membalas komentar pengguna, dan menyusun laporan.
   dicatat sebagai audit log dan ditegakkan lewat Security Rules, bukan cuma
   validasi UI.
 - Laporan: peminjaman bulanan, buku terpopuler, keterlambatan, dan kategori
-  favorit, dengan grafik interaktif dan opsi ekspor data.
+  favorit, dengan grafik interaktif dan ekspor **PDF & Excel (.xlsx) sungguhan**
+  (bukan berkas teks berlabel ekstensi salah) - library-nya dimuat belakangan
+  (dynamic import) supaya tidak memperbesar ukuran unduhan mahasiswa yang
+  tidak pernah membuka panel admin.
 
 **Autentikasi & Keamanan**
 - Mahasiswa: SSO UIN, Google, email tanpa kata sandi, atau NIM. Tersedia
@@ -320,6 +323,9 @@ Rincian lengkap ada di [`SECURITY.md`](SECURITY.md).
       detail buku, reservasi, konfirmasi, pinjaman, baca, profil, live
       chat) ke Indonesia/English/العربية, termasuk format tanggal dan waktu
       yang ikut bahasa aktif.
+- [x] Ekspor laporan admin ke PDF & Excel (.xlsx) sungguhan (sebelumnya
+      berkas teks CSV berlabel ekstensi `.pdf`/`.xlsx` yang salah - gagal
+      dibuka di pembaca PDF/Excel asli).
 
 **Belum selesai**
 - [ ] Menghubungkan koleksi buku, peminjaman, dan data anggota ke Cloud
@@ -328,7 +334,6 @@ Rincian lengkap ada di [`SECURITY.md`](SECURITY.md).
 - [ ] Penyimpanan berkas e-book pada Firebase Storage.
 - [ ] Integrasi SSO OIDC/CAS resmi dengan penukaran token di sisi server.
 - [ ] Notifikasi tenggat pengembalian lewat email/push, bukan hanya in-app.
-- [ ] Ekspor laporan ke format PDF dan Excel yang sesungguhnya.
 - [ ] Terjemahan konten katalog (judul, deskripsi, isi bab e-book) dan panel
       admin - saat ini tetap Bahasa Indonesia karena berupa data konten,
       bukan teks antarmuka.
