@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { Calendar, ChevronDown, Download } from "lucide-react";
+import { Calendar, ChevronDown, Download, Loader2 } from "lucide-react";
 import { REPORT } from "@/common/constants/catalog";
 import { Card } from "@/components/ui";
 import { useToast } from "@/components/Toast";
-import { downloadTextFile, rowsToCsv } from "@/common/libs/download";
+import { downloadReportPdf, downloadReportXlsx } from "@/common/libs/download";
 
 function ExportButtons({
   name, headers, rows,
@@ -13,26 +13,40 @@ function ExportButtons({
   rows: (string | number)[][];
 }) {
   const { notify } = useToast();
+  const [busy, setBusy] = useState<"pdf" | "xlsx" | null>(null);
   const slug = name.toLowerCase().replace(/\s+/g, "-");
 
-  const exportCsv = (ext: string) => {
-    downloadTextFile(`laporan-${slug}.${ext}`, rowsToCsv(headers, rows));
-    notify(`Laporan "${name}" diunduh (${ext.toUpperCase()}).`);
-  };
+  async function handleExport(kind: "pdf" | "xlsx") {
+    setBusy(kind);
+    try {
+      if (kind === "pdf") {
+        await downloadReportPdf(`laporan-${slug}.pdf`, name, headers, rows);
+      } else {
+        await downloadReportXlsx(`laporan-${slug}.xlsx`, headers, rows);
+      }
+      notify(`Laporan "${name}" diunduh (${kind.toUpperCase()}).`);
+    } catch {
+      notify(`Gagal mengunduh laporan "${name}". Coba lagi.`);
+    } finally {
+      setBusy(null);
+    }
+  }
 
   return (
     <div className="flex items-center gap-2.5">
       <button
-        onClick={() => exportCsv("pdf")}
-        className="flex cursor-pointer items-center gap-1.5 rounded-lg bg-primary-light px-4 py-2 text-sm font-semibold text-primary hover:bg-primary-light-hover"
+        onClick={() => void handleExport("pdf")}
+        disabled={busy !== null}
+        className="flex cursor-pointer items-center gap-1.5 rounded-lg bg-primary-light px-4 py-2 text-sm font-semibold text-primary hover:bg-primary-light-hover disabled:cursor-not-allowed disabled:opacity-60"
       >
-        <Download size={14} /> PDF
+        {busy === "pdf" ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />} PDF
       </button>
       <button
-        onClick={() => exportCsv("csv")}
-        className="flex cursor-pointer items-center gap-1.5 rounded-lg border border-line bg-card px-4 py-2 text-sm font-semibold hover:bg-muted"
+        onClick={() => void handleExport("xlsx")}
+        disabled={busy !== null}
+        className="flex cursor-pointer items-center gap-1.5 rounded-lg border border-line bg-card px-4 py-2 text-sm font-semibold hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
       >
-        <Download size={14} /> Excel
+        {busy === "xlsx" ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />} Excel
       </button>
     </div>
   );
