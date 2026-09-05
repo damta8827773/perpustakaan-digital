@@ -2,6 +2,15 @@
 // Aplikasi ini adalah SPA, sehingga penegakan aturan dilakukan oleh penjaga
 // rute (route guard) di app/App.tsx. Modul ini mendokumentasikan dan
 // menyediakan pemetaan aturan agar mudah dirawat di satu tempat.
+//
+// CATATAN PENTING: file ini SEBELUMNYA bernama `middleware.ts` di root
+// repository. Vercel secara otomatis mendeteksi file bernama itu di root
+// sebagai Edge Middleware sungguhan (fitur khusus Next.js) dan mencoba
+// menjalankannya sebagai fungsi server di setiap request - padahal modul
+// ini cuma dokumentasi/util biasa tanpa default export yang sesuai
+// kontrak tersebut. Itu menyebabkan SELURUH situs mengembalikan
+// 500 MIDDLEWARE_INVOCATION_FAILED. Jangan pindahkan file ini kembali ke
+// root dengan nama `middleware.ts`/`middleware.js`.
 
 export type Role = "student" | "admin" | "guest";
 
