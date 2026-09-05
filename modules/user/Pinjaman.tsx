@@ -272,8 +272,8 @@ export default function Pinjaman() {
               <h2 className="font-display text-xl font-bold">{t("pinjaman.historyPhysical")}</h2>
               <Badge tone="primary">{HISTORY_PHYSICAL.length} {t("pinjaman.recordsSuffix")}</Badge>
             </div>
-            <Card className="mt-4 overflow-hidden">
-              <table className="w-full text-left">
+            <Card className="mt-4 overflow-x-auto">
+              <table className="w-full min-w-[760px] text-left">
                 <thead>
                   <tr className="border-b border-line text-sm uppercase tracking-wider text-muted-fg">
                     <th className="px-6 py-4 font-semibold">{t("pinjaman.colBook")}</th>
@@ -338,8 +338,8 @@ export default function Pinjaman() {
               <h2 className="font-display text-xl font-bold">{t("pinjaman.historyEbook")}</h2>
               <Badge tone="accent">{HISTORY_EBOOK.length} {t("pinjaman.recordsSuffix")}</Badge>
             </div>
-            <Card className="mt-4 overflow-hidden">
-              <table className="w-full text-left">
+            <Card className="mt-4 overflow-x-auto">
+              <table className="w-full min-w-[900px] text-left">
                 <thead>
                   <tr className="border-b border-line text-sm uppercase tracking-wider text-muted-fg">
                     <th className="px-6 py-4 font-semibold">{t("pinjaman.colBook")}</th>
