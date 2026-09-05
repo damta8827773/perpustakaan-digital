@@ -93,11 +93,21 @@ Penyebab yang sudah pernah ditemukan di proyek ini:
 3. **Redeploy dari dashboard web membangun commit lama** - kalau ragu,
    selalu deploy lewat `npx vercel --prod --yes` dari folder proyek lokal
    yang sudah `git pull` versi terbaru.
+4. **File/folder dengan nama reserved di root repository** (`middleware.ts`,
+   `middleware.js`, folder `api/`, dll) - Vercel mendeteksi nama-nama ini
+   secara otomatis sebagai fitur khusus (Edge Middleware, Serverless
+   Functions) walaupun proyek ini murni SPA statis. Kalau isinya bukan
+   fungsi yang sesuai kontrak Vercel, hasilnya 500
+   `MIDDLEWARE_INVOCATION_FAILED` atau error serupa di SELURUH situs.
+   Jangan taruh modul biasa dengan nama-nama itu di root - taruh di
+   `common/libs/` seperti modul lain.
 
 ## Riwayat Update Besar
 
 | Tanggal | Perubahan | Alasan |
 |---|---|---|
+| 2026-09-05 | Perbaikan 500 MIDDLEWARE_INVOCATION_FAILED di production | File `middleware.ts` di root repository (modul dokumentasi biasa) terdeteksi otomatis oleh Vercel sebagai Edge Middleware sungguhan dan gagal saat diinvoke - dipindah ke `common/libs/routeRules.ts` |
+| 2026-09-05 | Perbaikan tabel Riwayat terpotong di HP + sidebar admin tidak responsif | Kolom Status/Akses Berakhir kepotong di layar sempit (dilaporkan lewat screenshot); audit lebih menyeluruh menemukan seluruh panel admin ikut overflow di HP karena sidebar lebar tetap 260px tanpa alternatif |
 | 2026-09-04 | Ekspor laporan PDF/Excel sungguhan (jsPDF + write-excel-file, dynamic import) | Tombol lama menghasilkan file CSV berlabel ekstensi `.pdf`/`.xlsx` yang salah - gagal dibuka di pembaca PDF/Excel asli |
 | 2026-09-03 | Perbaikan tampilan responsif (bilah navigasi bawah untuk HP/tablet) | Header portal mahasiswa terpotong di layar sempit |
 | 2026-09-03 | Perbaikan konfigurasi Firebase di Vercel + pesan error yang jelas | Variabel lingkungan salah isi menyebabkan halaman putih kosong |
