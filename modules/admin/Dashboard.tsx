@@ -63,7 +63,26 @@ export default function Dashboard() {
             Lihat Semua
           </button>
         </div>
-        <div className="mt-5 overflow-x-auto">
+        {/* Di bawah lg (HP/tablet): kartu bertumpuk, tidak perlu geser
+            horizontal. Dari lg ke atas: tabel biasa. */}
+        <div className="mt-5 divide-y divide-line lg:hidden">
+          {ADMIN_ACTIVITIES.map((a) => (
+            <div key={a.no} className="flex items-center justify-between gap-3 py-4">
+              <div className="min-w-0">
+                <div className="font-display text-[15px] font-bold">{a.bookTitle}</div>
+                <div className="mt-0.5 text-sm text-muted-fg">{a.borrower} - {a.date}</div>
+              </div>
+              {a.status === "aktif" ? (
+                <Badge tone="primary" className="shrink-0 uppercase">Aktif</Badge>
+              ) : (
+                <Badge tone="destructive" className="shrink-0 uppercase">
+                  Terlambat +{a.lateHours}H
+                </Badge>
+              )}
+            </div>
+          ))}
+        </div>
+        <div className="mt-5 hidden overflow-x-auto lg:block">
         <table className="w-full min-w-[720px] text-left">
           <thead>
             <tr className="border-b border-line text-sm uppercase tracking-wider text-muted-fg">

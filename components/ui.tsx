@@ -1,7 +1,18 @@
 import { useEffect, useState, type ReactNode, type MouseEventHandler } from "react";
-import { X } from "lucide-react";
+import { X, Loader2 } from "lucide-react";
 import { findGoogleBookCover } from "@/services/googleBooks";
 import { initialsOf } from "@/services/sessionStore";
+
+// Label tombol saat aksi async berjalan (submit form, panggilan Firebase, dst.)
+// - ikonnya berputar terus-menerus supaya pengguna melihat sistem benar-benar
+// sedang bekerja, bukan macet/diam.
+export function BusyLabel({ text }: { text: string }) {
+  return (
+    <span className="inline-flex items-center justify-center gap-2">
+      <Loader2 size={16} className="animate-spin" /> {text}
+    </span>
+  );
+}
 
 export function BookCover({
   initials, color, className = "", textClass = "text-2xl",

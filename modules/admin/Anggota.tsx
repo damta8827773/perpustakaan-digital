@@ -95,7 +95,41 @@ export default function Anggota() {
         </div>
       </div>
 
-      <Card className="mt-6 overflow-x-auto">
+      <Card className="mt-6 overflow-hidden">
+        {/* Di bawah lg (HP/tablet): kartu bertumpuk, tidak perlu geser
+            horizontal. Dari lg ke atas: tabel biasa. */}
+        <div className="divide-y divide-line lg:hidden">
+          {rows.map((m) => (
+            <div key={m.nim} className="flex items-center justify-between gap-3 p-5">
+              <div className="flex min-w-0 items-center gap-3.5">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-white">
+                  {m.name.split(" ").map((w) => w[0]).slice(0, 2).join("")}
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="truncate font-semibold" title={m.name}>{m.name}</span>
+                    {m.source === "sso" && <Badge tone="accent" className="shrink-0 uppercase">SSO</Badge>}
+                  </div>
+                  <div className="text-sm text-muted-fg">{m.faculty} - {m.activeLoans} pinjaman aktif</div>
+                </div>
+              </div>
+              <div className="flex shrink-0 flex-col items-end gap-2">
+                {m.status === "aktif" ? (
+                  <Badge tone="primary" className="uppercase">Aktif</Badge>
+                ) : (
+                  <Badge tone="muted" className="uppercase">Nonaktif</Badge>
+                )}
+                <button
+                  onClick={() => setDetail(m)}
+                  className="flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-semibold text-primary hover:bg-primary-light"
+                >
+                  <Eye size={15} /> Detail
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="hidden overflow-x-auto lg:block">
         <table className="w-full min-w-[860px] text-left">
           <thead>
             <tr className="border-b border-line bg-bg/60 text-sm uppercase tracking-wider text-muted-fg">
@@ -145,6 +179,7 @@ export default function Anggota() {
             ))}
           </tbody>
         </table>
+        </div>
       </Card>
 
       {detail && (

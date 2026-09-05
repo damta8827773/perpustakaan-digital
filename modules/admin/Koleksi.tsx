@@ -274,7 +274,55 @@ export default function Koleksi() {
         </button>
       </div>
 
-      <Card className="mt-6 overflow-x-auto">
+      <Card className="mt-6 overflow-hidden">
+        {/* Di bawah lg (HP/tablet): kartu bertumpuk, tidak perlu geser
+            horizontal. Dari lg ke atas: tabel biasa. */}
+        <div className="divide-y divide-line lg:hidden">
+          {rows.map((b) => (
+            <div key={b.id} className="p-5">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="font-display text-[15px] font-bold">{b.title}</div>
+                  <div className="text-sm text-muted-fg">{b.author}</div>
+                  <div className="mt-1 font-mono text-xs text-muted-fg">{b.isbn}</div>
+                </div>
+                {statusBadge(b)}
+              </div>
+              <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-fg">
+                <span>Kategori: <span className="font-semibold text-fg">{b.category}</span></span>
+                <span>Tahun: <span className="font-semibold text-fg">{b.year}</span></span>
+                <span>Stok: <span className="font-semibold text-fg">{b.stockAvailable}/{b.stockTotal}</span></span>
+              </div>
+              <div className="mt-3 flex gap-1.5">
+                {b.ebookTotal > 0 && (
+                  <button
+                    onClick={() => navigate(`/admin/baca/${b.id}`)}
+                    className="cursor-pointer rounded-lg p-2 text-accent hover:bg-accent-light"
+                    aria-label={`Baca online ${b.title}`}
+                    title="Baca e-book online"
+                  >
+                    <BookOpen size={16} />
+                  </button>
+                )}
+                <button
+                  onClick={() => setModal({ mode: "edit", book: b })}
+                  className="cursor-pointer rounded-lg p-2 text-primary hover:bg-primary-light"
+                  aria-label={`Edit ${b.title}`}
+                >
+                  <Pencil size={16} />
+                </button>
+                <button
+                  onClick={() => setBooks((prev) => prev.filter((x) => x.id !== b.id))}
+                  className="cursor-pointer rounded-lg p-2 text-destructive hover:bg-destructive-light"
+                  aria-label={`Hapus ${b.title}`}
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="hidden overflow-x-auto lg:block">
         <table className="w-full min-w-[900px] text-left">
           <thead>
             <tr className="border-b border-line bg-bg/60 text-sm uppercase tracking-wider text-muted-fg">
@@ -332,6 +380,7 @@ export default function Koleksi() {
             ))}
           </tbody>
         </table>
+        </div>
         <div className="flex items-center justify-between border-t border-line px-5 py-4">
           <span className="text-[15px] text-muted-fg">
             Menampilkan {rows.length} dari {books.length} buku

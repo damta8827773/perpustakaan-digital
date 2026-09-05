@@ -272,44 +272,32 @@ export default function Pinjaman() {
               <h2 className="font-display text-xl font-bold">{t("pinjaman.historyPhysical")}</h2>
               <Badge tone="primary">{HISTORY_PHYSICAL.length} {t("pinjaman.recordsSuffix")}</Badge>
             </div>
-            <Card className="mt-4 overflow-x-auto">
-              <table className="w-full min-w-[760px] text-left">
-                <thead>
-                  <tr className="border-b border-line text-sm uppercase tracking-wider text-muted-fg">
-                    <th className="px-6 py-4 font-semibold">{t("pinjaman.colBook")}</th>
-                    <th className="px-6 py-4 font-semibold">{t("pinjaman.borrowDate")}</th>
-                    <th className="px-6 py-4 font-semibold">{t("pinjaman.returnDate")}</th>
-                    <th className="px-6 py-4 font-semibold">{t("pinjaman.colStatus")}</th>
-                    <th className="px-6 py-4 font-semibold">{t("pinjaman.colRating")}</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-line">
-                  {HISTORY_PHYSICAL.map((h) => {
-                    const book = bookById(h.bookId)!;
-                    return (
-                      <tr key={h.bookId}>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-4">
-                            <RemoteCover title={book.title} author={book.author} initials={book.initials} color={book.color}
-                              className="h-14 w-12 rounded-lg"
-                              textClass="text-sm"
-                            />
-                            <div>
-                              <div className="font-display font-bold">{book.title}</div>
-                              <div className="text-sm text-muted-fg">{book.author}</div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-muted-fg">{h.borrowDate}</td>
-                        <td className="px-6 py-4 text-muted-fg">{h.returnDate}</td>
-                        <td className="px-6 py-4">
+            <Card className="mt-4 overflow-hidden">
+              {/* Di bawah lg (HP/tablet): kartu bertumpuk, tidak perlu geser
+                  horizontal sama sekali. Dari lg ke atas (laptop/TV): tabel
+                  biasa, karena lebarnya sudah cukup. */}
+              <div className="divide-y divide-line lg:hidden">
+                {HISTORY_PHYSICAL.map((h) => {
+                  const book = bookById(h.bookId)!;
+                  return (
+                    <div key={h.bookId} className="flex items-start gap-4 px-5 py-4">
+                      <RemoteCover title={book.title} author={book.author} initials={book.initials} color={book.color}
+                        className="h-14 w-12 shrink-0 rounded-lg"
+                        textClass="text-sm"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div className="font-display font-bold">{book.title}</div>
+                        <div className="text-sm text-muted-fg">{book.author}</div>
+                        <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-fg">
+                          <span>{t("pinjaman.borrowDate")}: <span className="font-semibold text-fg">{h.borrowDate}</span></span>
+                          <span>{t("pinjaman.returnDate")}: <span className="font-semibold text-fg">{h.returnDate}</span></span>
+                        </div>
+                        <div className="mt-2.5 flex flex-wrap items-center gap-2">
                           {h.status === "dikembalikan" ? (
                             <Badge tone="success">{t("pinjaman.returnedStatus")}</Badge>
                           ) : (
                             <Badge tone="destructive">{t("home.latePrefix")} +{h.lateDays} {t("pinjaman.lateBySuffix")}</Badge>
                           )}
-                        </td>
-                        <td className="px-6 py-4">
                           {lib.ratings[book.id] ? (
                             <span className="flex items-center gap-1 text-sm font-semibold text-warning">
                               <Star size={15} fill="#f59e0b" stroke="#f59e0b" />
@@ -318,17 +306,75 @@ export default function Pinjaman() {
                           ) : (
                             <button
                               onClick={() => setRatingFor({ bookId: book.id, title: book.title })}
-                              className="cursor-pointer rounded-lg bg-primary-light px-4 py-2 text-sm font-semibold text-primary hover:bg-primary-light-hover"
+                              className="cursor-pointer rounded-lg bg-primary-light px-3 py-1.5 text-sm font-semibold text-primary hover:bg-primary-light-hover"
                             >
                               + {t("pinjaman.addRating")}
                             </button>
                           )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="hidden overflow-x-auto lg:block">
+                <table className="w-full min-w-[760px] text-left">
+                  <thead>
+                    <tr className="border-b border-line text-sm uppercase tracking-wider text-muted-fg">
+                      <th className="px-6 py-4 font-semibold">{t("pinjaman.colBook")}</th>
+                      <th className="px-6 py-4 font-semibold">{t("pinjaman.borrowDate")}</th>
+                      <th className="px-6 py-4 font-semibold">{t("pinjaman.returnDate")}</th>
+                      <th className="px-6 py-4 font-semibold">{t("pinjaman.colStatus")}</th>
+                      <th className="px-6 py-4 font-semibold">{t("pinjaman.colRating")}</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-line">
+                    {HISTORY_PHYSICAL.map((h) => {
+                      const book = bookById(h.bookId)!;
+                      return (
+                        <tr key={h.bookId}>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-4">
+                              <RemoteCover title={book.title} author={book.author} initials={book.initials} color={book.color}
+                                className="h-14 w-12 rounded-lg"
+                                textClass="text-sm"
+                              />
+                              <div>
+                                <div className="font-display font-bold">{book.title}</div>
+                                <div className="text-sm text-muted-fg">{book.author}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 text-muted-fg">{h.borrowDate}</td>
+                          <td className="px-6 py-4 text-muted-fg">{h.returnDate}</td>
+                          <td className="px-6 py-4">
+                            {h.status === "dikembalikan" ? (
+                              <Badge tone="success">{t("pinjaman.returnedStatus")}</Badge>
+                            ) : (
+                              <Badge tone="destructive">{t("home.latePrefix")} +{h.lateDays} {t("pinjaman.lateBySuffix")}</Badge>
+                            )}
+                          </td>
+                          <td className="px-6 py-4">
+                            {lib.ratings[book.id] ? (
+                              <span className="flex items-center gap-1 text-sm font-semibold text-warning">
+                                <Star size={15} fill="#f59e0b" stroke="#f59e0b" />
+                                {lib.ratings[book.id]}.0
+                              </span>
+                            ) : (
+                              <button
+                                onClick={() => setRatingFor({ bookId: book.id, title: book.title })}
+                                className="cursor-pointer rounded-lg bg-primary-light px-4 py-2 text-sm font-semibold text-primary hover:bg-primary-light-hover"
+                              >
+                                + {t("pinjaman.addRating")}
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </Card>
           </section>
 
@@ -338,50 +384,36 @@ export default function Pinjaman() {
               <h2 className="font-display text-xl font-bold">{t("pinjaman.historyEbook")}</h2>
               <Badge tone="accent">{HISTORY_EBOOK.length} {t("pinjaman.recordsSuffix")}</Badge>
             </div>
-            <Card className="mt-4 overflow-x-auto">
-              <table className="w-full min-w-[900px] text-left">
-                <thead>
-                  <tr className="border-b border-line text-sm uppercase tracking-wider text-muted-fg">
-                    <th className="px-6 py-4 font-semibold">{t("pinjaman.colBook")}</th>
-                    <th className="px-6 py-4 font-semibold">{t("pinjaman.colCopy")}</th>
-                    <th className="px-6 py-4 font-semibold">{t("pinjaman.borrowDate")}</th>
-                    <th className="px-6 py-4 font-semibold">{t("pinjaman.colAccessEnds")}</th>
-                    <th className="px-6 py-4 font-semibold">{t("pinjaman.colStatus")}</th>
-                    <th className="px-6 py-4 font-semibold">{t("pinjaman.colRating")}</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-line">
-                  {HISTORY_EBOOK.map((h) => {
-                    const book = bookById(h.bookId)!;
-                    return (
-                      <tr key={h.bookId}>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-4">
-                            <RemoteCover title={book.title} author={book.author} initials={book.initials} color={book.color}
-                              className="h-14 w-12 rounded-lg"
-                              textClass="text-sm"
-                            />
-                            <div>
-                              <div className="font-display font-bold">{book.title}</div>
-                              <div className="text-sm text-muted-fg">{book.author}</div>
-                            </div>
+            <Card className="mt-4 overflow-hidden">
+              <div className="divide-y divide-line lg:hidden">
+                {HISTORY_EBOOK.map((h) => {
+                  const book = bookById(h.bookId)!;
+                  return (
+                    <div key={h.bookId} className="flex items-start gap-4 px-5 py-4">
+                      <RemoteCover title={book.title} author={book.author} initials={book.initials} color={book.color}
+                        className="h-14 w-12 shrink-0 rounded-lg"
+                        textClass="text-sm"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <div className="font-display font-bold">{book.title}</div>
+                            <div className="text-sm text-muted-fg">{book.author}</div>
                           </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <Badge tone="accent">
+                          <Badge tone="accent" className="shrink-0">
                             <BookText size={12} /> {t("pinjaman.copyPrefix")}{h.copyNumber} {t("pinjaman.ofSuffix")} {h.copyTotal}
                           </Badge>
-                        </td>
-                        <td className="px-6 py-4 text-muted-fg">{h.borrowDate}</td>
-                        <td className="px-6 py-4 text-muted-fg">{h.endDate}</td>
-                        <td className="px-6 py-4">
+                        </div>
+                        <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-fg">
+                          <span>{t("pinjaman.borrowDate")}: <span className="font-semibold text-fg">{h.borrowDate}</span></span>
+                          <span>{t("pinjaman.colAccessEnds")}: <span className="font-semibold text-fg">{h.endDate}</span></span>
+                        </div>
+                        <div className="mt-2.5 flex flex-wrap items-center gap-2">
                           {h.status === "selesai" ? (
                             <Badge tone="success">{t("pinjaman.finishedReading")}</Badge>
                           ) : (
                             <Badge tone="muted">{t("pinjaman.expired")}</Badge>
                           )}
-                        </td>
-                        <td className="px-6 py-4">
                           {lib.ratings[book.id] ? (
                             <span className="flex items-center gap-1 text-sm font-semibold text-warning">
                               <Star size={15} fill="#f59e0b" stroke="#f59e0b" />
@@ -390,19 +422,85 @@ export default function Pinjaman() {
                           ) : h.status === "selesai" ? (
                             <button
                               onClick={() => setRatingFor({ bookId: book.id, title: book.title })}
-                              className="cursor-pointer rounded-lg bg-accent-light px-4 py-2 text-sm font-semibold text-accent hover:bg-[#ddd3fb]"
+                              className="cursor-pointer rounded-lg bg-accent-light px-3 py-1.5 text-sm font-semibold text-accent hover:bg-[#ddd3fb]"
                             >
                               + {t("pinjaman.addRating")}
                             </button>
                           ) : (
                             <span className="text-muted-fg">-</span>
                           )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="hidden overflow-x-auto lg:block">
+                <table className="w-full min-w-[900px] text-left">
+                  <thead>
+                    <tr className="border-b border-line text-sm uppercase tracking-wider text-muted-fg">
+                      <th className="px-6 py-4 font-semibold">{t("pinjaman.colBook")}</th>
+                      <th className="px-6 py-4 font-semibold">{t("pinjaman.colCopy")}</th>
+                      <th className="px-6 py-4 font-semibold">{t("pinjaman.borrowDate")}</th>
+                      <th className="px-6 py-4 font-semibold">{t("pinjaman.colAccessEnds")}</th>
+                      <th className="px-6 py-4 font-semibold">{t("pinjaman.colStatus")}</th>
+                      <th className="px-6 py-4 font-semibold">{t("pinjaman.colRating")}</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-line">
+                    {HISTORY_EBOOK.map((h) => {
+                      const book = bookById(h.bookId)!;
+                      return (
+                        <tr key={h.bookId}>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-4">
+                              <RemoteCover title={book.title} author={book.author} initials={book.initials} color={book.color}
+                                className="h-14 w-12 rounded-lg"
+                                textClass="text-sm"
+                              />
+                              <div>
+                                <div className="font-display font-bold">{book.title}</div>
+                                <div className="text-sm text-muted-fg">{book.author}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <Badge tone="accent">
+                              <BookText size={12} /> {t("pinjaman.copyPrefix")}{h.copyNumber} {t("pinjaman.ofSuffix")} {h.copyTotal}
+                            </Badge>
+                          </td>
+                          <td className="px-6 py-4 text-muted-fg">{h.borrowDate}</td>
+                          <td className="px-6 py-4 text-muted-fg">{h.endDate}</td>
+                          <td className="px-6 py-4">
+                            {h.status === "selesai" ? (
+                              <Badge tone="success">{t("pinjaman.finishedReading")}</Badge>
+                            ) : (
+                              <Badge tone="muted">{t("pinjaman.expired")}</Badge>
+                            )}
+                          </td>
+                          <td className="px-6 py-4">
+                            {lib.ratings[book.id] ? (
+                              <span className="flex items-center gap-1 text-sm font-semibold text-warning">
+                                <Star size={15} fill="#f59e0b" stroke="#f59e0b" />
+                                {lib.ratings[book.id]}.0
+                              </span>
+                            ) : h.status === "selesai" ? (
+                              <button
+                                onClick={() => setRatingFor({ bookId: book.id, title: book.title })}
+                                className="cursor-pointer rounded-lg bg-accent-light px-4 py-2 text-sm font-semibold text-accent hover:bg-[#ddd3fb]"
+                              >
+                                + {t("pinjaman.addRating")}
+                              </button>
+                            ) : (
+                              <span className="text-muted-fg">-</span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </Card>
           </section>
         </div>
