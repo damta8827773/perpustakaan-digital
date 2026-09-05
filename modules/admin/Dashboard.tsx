@@ -63,7 +63,8 @@ export default function Dashboard() {
             Lihat Semua
           </button>
         </div>
-        <table className="mt-5 w-full text-left">
+        <div className="mt-5 overflow-x-auto">
+        <table className="w-full min-w-[720px] text-left">
           <thead>
             <tr className="border-b border-line text-sm uppercase tracking-wider text-muted-fg">
               <th className="py-3.5 pr-4 font-semibold">No</th>
@@ -95,6 +96,7 @@ export default function Dashboard() {
             ))}
           </tbody>
         </table>
+        </div>
       </Card>
 
       <Card className="p-7">
