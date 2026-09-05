@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { BookOpen, ArrowLeft } from "lucide-react";
 import { useAuth, loginErrorMessage } from "@/services/auth";
 import { CountUp } from "@/components/CountUp";
-import { Button, Modal } from "@/components/ui";
+import { Button, BusyLabel, Modal } from "@/components/ui";
 import { startSso } from "@/common/libs/sso";
 import {
   loginWithEmailOnly, loginWithGoogle, sendResetPassword,
@@ -225,7 +225,7 @@ export default function LoginMahasiswa() {
             disabled={busy}
             className="mt-6 w-full cursor-pointer rounded-xl border border-primary py-4 font-display text-[17px] font-bold text-primary transition-colors hover:bg-primary-light disabled:opacity-60"
           >
-            {busy ? "Memproses..." : "Masuk"}
+            {busy ? <BusyLabel text="Memproses..." /> : "Masuk"}
           </button>
 
           <p className="mt-5 text-center text-[15px] text-muted-fg">
@@ -351,7 +351,7 @@ function ForgotPasswordModal({ onClose }: { onClose: () => void }) {
               Kembali
             </Button>
             <Button type="submit" className="py-3.5" disabled={busy || !nimOrEmail.trim()}>
-              {busy ? "Mengirim..." : "Kirim ke Admin"}
+              {busy ? <BusyLabel text="Mengirim..." /> : "Kirim ke Admin"}
             </Button>
           </div>
         </form>
@@ -381,7 +381,7 @@ function ForgotPasswordModal({ onClose }: { onClose: () => void }) {
         <div className="mt-6 grid grid-cols-2 gap-4">
           <Button variant="outline" className="py-3.5" onClick={onClose} type="button">Batal</Button>
           <Button type="submit" className="py-3.5" disabled={busy}>
-            {busy ? "Mengirim..." : "Kirim Tautan"}
+            {busy ? <BusyLabel text="Mengirim..." /> : "Kirim Tautan"}
           </Button>
         </div>
         <button

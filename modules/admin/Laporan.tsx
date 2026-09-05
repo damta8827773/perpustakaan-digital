@@ -258,7 +258,7 @@ export default function Laporan() {
 
       <div className="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-2">
         <Card className="p-7">
-          <div className="flex items-start justify-between">
+          <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
             <h2 className="font-display text-xl font-bold">Peminjaman per Bulan</h2>
             <ExportButtons
               name="Peminjaman per Bulan"
@@ -270,7 +270,7 @@ export default function Laporan() {
         </Card>
 
         <Card className="p-7">
-          <div className="flex items-start justify-between">
+          <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
             <h2 className="font-display text-xl font-bold">Buku Terpopuler</h2>
             <ExportButtons
               name="Buku Terpopuler"
@@ -301,7 +301,7 @@ export default function Laporan() {
         </Card>
 
         <Card className="p-7">
-          <div className="flex items-start justify-between">
+          <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
             <h2 className="font-display text-xl font-bold">Keterlambatan</h2>
             <ExportButtons
               name="Keterlambatan"
@@ -313,7 +313,7 @@ export default function Laporan() {
         </Card>
 
         <Card className="p-7">
-          <div className="flex items-start justify-between">
+          <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
             <h2 className="font-display text-xl font-bold">Kategori Favorit</h2>
             <ExportButtons
               name="Kategori Favorit"

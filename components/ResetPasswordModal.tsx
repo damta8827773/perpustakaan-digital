@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { Modal, Button } from "@/components/ui";
+import { Modal, Button, BusyLabel } from "@/components/ui";
 import { adminTriggerPasswordReset } from "@/services/passwordReset";
 
 const MIN_LEN = 20;
@@ -56,7 +56,7 @@ export function ResetPasswordModal({
         <div className="mt-4 grid grid-cols-2 gap-4">
           <Button variant="outline" className="py-3.5" onClick={onClose} type="button">Batal</Button>
           <Button type="submit" className="py-3.5" disabled={busy || reason.trim().length < MIN_LEN}>
-            {busy ? "Mengirim..." : "Kirim Reset"}
+            {busy ? <BusyLabel text="Mengirim..." /> : "Kirim Reset"}
           </Button>
         </div>
       </form>

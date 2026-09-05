@@ -47,7 +47,31 @@ export default function Peminjaman() {
         </button>
       </div>
 
-      <Card className="mt-6 overflow-x-auto">
+      <Card className="mt-6 overflow-hidden">
+        {/* Di bawah lg (HP/tablet): kartu bertumpuk, tidak perlu geser
+            horizontal. Dari lg ke atas: tabel biasa. */}
+        <div className="divide-y divide-line lg:hidden">
+          {rows.map((l) => (
+            <div key={l.no} className="p-5">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="font-display text-[15px] font-bold">{l.bookTitle}</div>
+                  <div className="text-sm text-muted-fg">{l.name} - {l.nim}</div>
+                </div>
+                <div className="shrink-0">
+                  {l.status === "aktif" && <Badge tone="primary">Aktif</Badge>}
+                  {l.status === "terlambat" && <Badge tone="destructive">Terlambat</Badge>}
+                  {l.status === "dikembalikan" && <Badge tone="success">Dikembalikan</Badge>}
+                </div>
+              </div>
+              <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-fg">
+                <span>Tgl Pinjam: <span className="font-semibold text-fg">{l.borrowDate}</span></span>
+                <span>Tgl Kembali: <span className={`font-semibold ${l.late ? "text-destructive" : "text-fg"}`}>{l.dueDate}</span></span>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="hidden overflow-x-auto lg:block">
         <table className="w-full min-w-[900px] text-left">
           <thead>
             <tr className="border-b border-line bg-bg/60 text-sm uppercase tracking-wider text-muted-fg">
@@ -80,6 +104,7 @@ export default function Peminjaman() {
             ))}
           </tbody>
         </table>
+        </div>
       </Card>
     </div>
   );

@@ -6,7 +6,7 @@ import {
 import { BookOpen, CheckCircle2, XCircle, ArrowLeft } from "lucide-react";
 import { auth } from "@/common/libs/firebase";
 import { PasswordField } from "@/components/PasswordField";
-import { Button } from "@/components/ui";
+import { Button, BusyLabel } from "@/components/ui";
 import { isValidPassword } from "@/common/libs/security";
 
 type Status = "checking" | "valid" | "invalid" | "done";
@@ -136,7 +136,7 @@ export default function ResetPassword() {
               <p className="mt-4 rounded-lg bg-destructive-light px-4 py-3 text-sm text-destructive">{error}</p>
             )}
             <Button type="submit" className="mt-6 w-full py-3.5" disabled={busy}>
-              {busy ? "Menyimpan..." : "Simpan Kata Sandi Baru"}
+              {busy ? <BusyLabel text="Menyimpan..." /> : "Simpan Kata Sandi Baru"}
             </Button>
           </form>
         )}

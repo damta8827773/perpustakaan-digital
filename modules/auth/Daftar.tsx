@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { BookOpen, ArrowLeft, UserPlus } from "lucide-react";
+import { BookOpen, ArrowLeft, UserPlus, Loader2 } from "lucide-react";
 import { registerAccount, isValidEmail } from "@/services/accounts";
 import { setCurrentStudent } from "@/services/sessionStore";
 import { registerSsoMember } from "@/services/membersStore";
@@ -151,7 +151,7 @@ export default function Daftar() {
           disabled={busy}
           className="mt-7 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-primary py-3.5 font-display text-[16px] font-bold text-white hover:bg-primary-dark disabled:opacity-60"
         >
-          <UserPlus size={18} /> {busy ? "Memproses..." : "Daftar & Masuk"}
+          {busy ? <Loader2 size={18} className="animate-spin" /> : <UserPlus size={18} />} {busy ? "Memproses..." : "Daftar & Masuk"}
         </button>
 
         <div className="mt-5 flex items-center justify-between text-sm">

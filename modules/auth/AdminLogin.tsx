@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { BookOpen, ArrowLeft, ShieldCheck } from "lucide-react";
+import { BookOpen, ArrowLeft, ShieldCheck, Loader2 } from "lucide-react";
 import { loginAdminWithGoogle } from "@/services/admin";
 
 function GoogleIcon() {
@@ -57,7 +57,7 @@ export default function AdminLogin() {
           disabled={busy}
           className="mt-7 flex w-full cursor-pointer items-center justify-center gap-3 rounded-xl border border-line bg-card py-4 font-display text-[16px] font-semibold hover:bg-muted disabled:opacity-60"
         >
-          <GoogleIcon /> {busy ? "Memproses..." : "Masuk dengan Google"}
+          {busy ? <Loader2 size={20} className="animate-spin" /> : <GoogleIcon />} {busy ? "Memproses..." : "Masuk dengan Google"}
         </button>
 
         {error && (
