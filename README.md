@@ -326,6 +326,10 @@ Rincian lengkap ada di [`SECURITY.md`](SECURITY.md).
 - [x] Ekspor laporan admin ke PDF & Excel (.xlsx) sungguhan (sebelumnya
       berkas teks CSV berlabel ekstensi `.pdf`/`.xlsx` yang salah - gagal
       dibuka di pembaca PDF/Excel asli).
+- [x] Komentar, suka, dan favorit buku dipindah dari `localStorage` ke Cloud
+      Firestore (real-time, lintas perangkat) - sebelumnya komentar seorang
+      mahasiswa tidak pernah terlihat mahasiswa lain kecuali kebetulan
+      memakai peramban yang sama persis. Lihat [`services/feedbackStore.ts`](services/feedbackStore.ts).
 
 **Belum selesai**
 - [ ] Menghubungkan koleksi buku, peminjaman, dan data anggota ke Cloud

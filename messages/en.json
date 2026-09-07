@@ -338,6 +338,8 @@
   "feedback.commentSentToast": "Comment sent.",
   "feedback.noComments": "No comments yet. Be the first to comment.",
   "feedback.adminReplyLabel": "Library Admin Reply",
+  "feedback.needFirebaseConfig": "Comments and book likes require Firebase configuration (disabled in demo mode).",
+  "feedback.needLogin": "Sign in with a Google account to comment or like this book.",
   "reviewmodal.title": "Rate & Review",
   "reviewmodal.yourReviewLabel": "Your Review",
   "reviewmodal.submit": "Submit Review",

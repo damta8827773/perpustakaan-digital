@@ -338,6 +338,8 @@
   "feedback.commentSentToast": "تم إرسال التعليق.",
   "feedback.noComments": "لا توجد تعليقات بعد. كن أول من يعلّق.",
   "feedback.adminReplyLabel": "رد إدارة المكتبة",
+  "feedback.needFirebaseConfig": "التعليقات والإعجاب بالكتب تتطلب إعداد Firebase (معطّلة في وضع العرض التجريبي).",
+  "feedback.needLogin": "سجّل الدخول بحساب Google للتعليق على هذا الكتاب أو الإعجاب به.",
   "reviewmodal.title": "التقييم والمراجعة",
   "reviewmodal.yourReviewLabel": "مراجعتك",
   "reviewmodal.submit": "إرسال المراجعة",

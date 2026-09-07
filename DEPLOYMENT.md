@@ -106,6 +106,8 @@ Penyebab yang sudah pernah ditemukan di proyek ini:
 
 | Tanggal | Perubahan | Alasan |
 |---|---|---|
+| 2026-09-05 | Komentar/suka/favorit buku dipindah dari `localStorage` ke Cloud Firestore | Komentar seorang mahasiswa tidak pernah terlihat mahasiswa lain (localStorage bersifat per-peramban) - diverifikasi lewat Firebase Emulator dengan dua sesi independen sebelum deploy |
+| 2026-09-05 | Tabel Riwayat/Koleksi/Peminjaman/Anggota diganti jadi kartu bertumpuk di HP/tablet | Perbaikan sebelumnya (overflow-x-auto) masih mengharuskan geser horizontal - dilaporkan tetap merepotkan |
 | 2026-09-05 | Perbaikan 500 MIDDLEWARE_INVOCATION_FAILED di production | File `middleware.ts` di root repository (modul dokumentasi biasa) terdeteksi otomatis oleh Vercel sebagai Edge Middleware sungguhan dan gagal saat diinvoke - dipindah ke `common/libs/routeRules.ts` |
 | 2026-09-05 | Perbaikan tabel Riwayat terpotong di HP + sidebar admin tidak responsif | Kolom Status/Akses Berakhir kepotong di layar sempit (dilaporkan lewat screenshot); audit lebih menyeluruh menemukan seluruh panel admin ikut overflow di HP karena sidebar lebar tetap 260px tanpa alternatif |
 | 2026-09-04 | Ekspor laporan PDF/Excel sungguhan (jsPDF + write-excel-file, dynamic import) | Tombol lama menghasilkan file CSV berlabel ekstensi `.pdf`/`.xlsx` yang salah - gagal dibuka di pembaca PDF/Excel asli |

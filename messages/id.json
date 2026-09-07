@@ -338,6 +338,8 @@
   "feedback.commentSentToast": "Komentar terkirim.",
   "feedback.noComments": "Belum ada komentar. Jadilah yang pertama berkomentar.",
   "feedback.adminReplyLabel": "Balasan Admin Perpustakaan",
+  "feedback.needFirebaseConfig": "Komentar & suka buku memerlukan konfigurasi Firebase (nonaktif di mode demo).",
+  "feedback.needLogin": "Masuk dengan akun Google untuk berkomentar atau menyukai buku ini.",
   "reviewmodal.title": "Beri Rating & Ulasan",
   "reviewmodal.yourReviewLabel": "Ulasan Anda",
   "reviewmodal.submit": "Kirim Ulasan",

@@ -532,7 +532,7 @@ export default function Pinjaman() {
               onClick={() => {
                 returnLoan(returnFor.bookId);
                 if (returnComment.trim().length >= 2) {
-                  addComment(returnFor.bookId, returnFor.title, {
+                  void addComment(returnFor.bookId, returnFor.title, {
                     name: student.name,
                     email: student.email || `${student.nim}@mahasiswa.uinjkt.ac.id`,
                     program: student.program,
