@@ -106,6 +106,7 @@ Penyebab yang sudah pernah ditemukan di proyek ini:
 
 | Tanggal | Perubahan | Alasan |
 |---|---|---|
+| 2026-09-14 | Perbaikan live chat admin: aturan `users/{uid}` diubah supaya role bisa self-heal ke allowlist terkini | Admin yang dokumen `users/{uid}`-nya sempat tersimpan role "student" tidak bisa memperbaikinya sendiri (rules lama menolak perubahan role) - `isAdmin()` jadi selalu gagal dan koleksi `chats/` tidak bisa diakses; diverifikasi lewat Firestore Emulator + rules-unit-testing (4 skenario, termasuk regresi keamanan) |
 | 2026-09-05 | Komentar/suka/favorit buku dipindah dari `localStorage` ke Cloud Firestore | Komentar seorang mahasiswa tidak pernah terlihat mahasiswa lain (localStorage bersifat per-peramban) - diverifikasi lewat Firebase Emulator dengan dua sesi independen sebelum deploy |
 | 2026-09-05 | Tabel Riwayat/Koleksi/Peminjaman/Anggota diganti jadi kartu bertumpuk di HP/tablet | Perbaikan sebelumnya (overflow-x-auto) masih mengharuskan geser horizontal - dilaporkan tetap merepotkan |
 | 2026-09-05 | Perbaikan 500 MIDDLEWARE_INVOCATION_FAILED di production | File `middleware.ts` di root repository (modul dokumentasi biasa) terdeteksi otomatis oleh Vercel sebagai Edge Middleware sungguhan dan gagal saat diinvoke - dipindah ke `common/libs/routeRules.ts` |
