@@ -40,8 +40,19 @@ service cloud.firestore {
       // biasa membuat dokumennya sendiri dengan role "admin" dari devtools.
       allow create: if request.auth.uid == uid
         && request.resource.data.role == (isAllowlistedAdminEmail() ? 'admin' : 'student');
+      // Sebelumnya syaratnya "role harus tetap sama persis" - ini secara
+      // tidak sengaja MEMBLOKIR services/userDoc.ts::ensureUserDoc() yang
+      // menulis ulang role setiap login untuk menyamakannya dengan allowlist
+      // terkini (mis. admin yang dokumennya sempat tersimpan role "student"
+      // sebelum email-nya masuk allowlist tidak akan pernah bisa
+      // memperbaikinya sendiri -> isAdmin() di rules lain selalu gagal,
+      // termasuk live chat). Sekarang: pengguna boleh menulis ULANG role
+      // miliknya sendiri asal nilai barunya memang cocok dengan allowlist
+      // SAAT INI - tetap tidak bisa self-promote ke admin lewat devtools
+      // (sama seperti aturan create di atas), tapi self-heal jadi mungkin.
       allow update: if isAdmin()
-        || (request.auth.uid == uid && request.resource.data.role == resource.data.role);
+        || (request.auth.uid == uid
+          && request.resource.data.role == (isAllowlistedAdminEmail() ? 'admin' : 'student'));
       allow delete: if false;
     }
 

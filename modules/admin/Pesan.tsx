@@ -37,7 +37,7 @@ function toQueue(chats: ChatSummary[]): { chat: ChatSummary; queueNo: number | n
 
 export default function Pesan() {
   const { user } = useAuth();
-  const chats = useAdminChatInbox();
+  const { chats, error: inboxError } = useAdminChatInbox();
   const queue = useMemo(() => toQueue(chats), [chats]);
   const [selected, setSelected] = useState<string | null>(null);
   const [showInfo, setShowInfo] = useState(true);
@@ -60,7 +60,13 @@ export default function Pesan() {
   return (
     <div className={`grid grid-cols-1 gap-6 ${showInfo ? "xl:grid-cols-[300px_1fr_300px]" : "lg:grid-cols-[340px_1fr]"}`}>
       <Card className="divide-y divide-line overflow-hidden">
-        {queue.length === 0 ? (
+        {inboxError ? (
+          <div className="p-8 text-center text-sm text-destructive">
+            Gagal memuat daftar percakapan (masalah izin akses Firestore).
+            Coba keluar lalu masuk ulang sebagai admin - kalau masih gagal,
+            berarti akun ini belum tercatat sebagai admin di database.
+          </div>
+        ) : queue.length === 0 ? (
           <div className="p-8 text-center text-muted-fg">Belum ada percakapan.</div>
         ) : (
           queue.map(({ chat: c, queueNo }) => (

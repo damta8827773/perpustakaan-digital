@@ -120,6 +120,7 @@
   "chat.needFirebaseConfig": "Chat requires Firebase configuration (disabled in demo mode).",
   "chat.launcherAriaLabel": "Live chat admin",
   "chat.empty": "No messages yet. Start the conversation below.",
+  "chat.sendFailed": "Message failed to send. Please try again.",
   "chat.adminLabel": "Library Admin",
   "chat.aiLabel": "Automatic Reply (not a human admin)",
   "chat.read": "Read",

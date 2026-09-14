@@ -311,28 +311,45 @@ export function useWaitingQueueCount(enabled: boolean): number {
   return count;
 }
 
+export interface AdminChatInbox {
+  chats: ChatSummary[];
+  /**
+   * true kalau langganan gagal (paling sering: users/{uid}.role admin belum
+   * tersinkron di Firestore, mis. akun ini baru masuk allowlist admin
+   * setelah dokumennya lebih dulu dibuat - lihat services/userDoc.ts). Kalau
+   * ini true, `chats` yang kosong BUKAN berarti "belum ada percakapan" -
+   * bedanya ditampilkan eksplisit di modules/admin/Pesan.tsx supaya admin
+   * tidak salah kira sistem sedang sepi padahal sebenarnya error izin.
+   */
+  error: boolean;
+}
+
 /**
  * `enabled=false` (mis. dipanggil dari NotificationBell peran "user") tidak
  * membuat query Firestore sama sekali - hook tetap dipanggil tanpa syarat
  * untuk mematuhi Rules of Hooks, hanya langganannya yang dilewati.
  */
-export function useAdminChatInbox(enabled = true): ChatSummary[] {
+export function useAdminChatInbox(enabled = true): AdminChatInbox {
   const [chats, setChats] = useState<ChatSummary[]>([]);
+  const [error, setError] = useState(false);
   useEffect(() => {
     if (DEMO || !enabled) {
       setChats([]);
+      setError(false);
       return;
     }
+    setError(false);
     const q = query(collection(db, "chats"), orderBy("lastMessageAt", "desc"));
     const unsub = onSnapshot(
       q,
-      (snap) => setChats(snap.docs.map((d) => mapChatSummary(d.id, d.data()))),
+      (snap) => { setChats(snap.docs.map((d) => mapChatSummary(d.id, d.data()))); setError(false); },
       (err) => {
         console.error("useAdminChatInbox gagal (cek: users/{uid}.role admin sudah ada di Firestore?):", err);
         setChats([]);
+        setError(true);
       },
     );
     return unsub;
   }, [enabled]);
-  return chats;
+  return { chats, error };
 }

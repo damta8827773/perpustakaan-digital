@@ -120,6 +120,7 @@
   "chat.needFirebaseConfig": "Fitur chat memerlukan konfigurasi Firebase (nonaktif di mode demo).",
   "chat.launcherAriaLabel": "Live chat admin",
   "chat.empty": "Belum ada pesan. Mulai percakapan di bawah.",
+  "chat.sendFailed": "Pesan gagal terkirim. Coba kirim lagi.",
   "chat.adminLabel": "Admin Perpustakaan",
   "chat.aiLabel": "Balasan Otomatis (bukan admin manusia)",
   "chat.read": "Dibaca",
