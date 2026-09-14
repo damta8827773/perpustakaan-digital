@@ -6,7 +6,7 @@ import {
   type NotifRole, type NotifTone, type AppNotification,
 } from "@/services/notificationsStore";
 import { markChatRead, useAdminChatInbox } from "@/services/chatStore";
-import { useFeedback, commentLikeNotificationsFor } from "@/services/feedbackStore";
+import { useMyComments, commentLikeNotificationsFromComments } from "@/services/feedbackStore";
 import { useCurrentStudent } from "@/services/sessionStore";
 import { useTranslate } from "@/services/localeStore";
 
@@ -53,14 +53,15 @@ export function NotificationBell({
     to: "/admin/pesan",
   }));
 
-  // Komentar mahasiswa yang disukai orang lain - dihitung dari feedbackStore
-  // (localStorage), bukan Firestore, jadi perlu berlangganan lewat
-  // useFeedback() supaya bel notifikasi langsung update saat ada suka baru.
-  useFeedback();
+  // Komentar mahasiswa yang disukai orang lain - Firestore real-time (lihat
+  // feedbackStore.ts); email null (bukan role "user") melewatkan langganan
+  // sepenuhnya tapi tetap memanggil hook-nya supaya Rules of Hooks terjaga.
   const student = useCurrentStudent();
+  const myEmail = student.email || `${student.nim}@mahasiswa.uinjkt.ac.id`;
+  const myComments = useMyComments(role === "user" ? myEmail : null);
   const likeItems: AppNotification[] =
     role === "user"
-      ? commentLikeNotificationsFor(student.email || `${student.nim}@mahasiswa.uinjkt.ac.id`)
+      ? commentLikeNotificationsFromComments(myComments, myEmail)
           .filter((n) => !isRead("user", n.id))
           .map((n) => ({
             id: n.id,

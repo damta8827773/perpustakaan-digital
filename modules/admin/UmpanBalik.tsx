@@ -2,7 +2,9 @@ import { useState } from "react";
 import { MessageSquare, ThumbsUp, Star, Send, ShieldCheck, Mail } from "lucide-react";
 import { Badge, Button, Card } from "@/components/ui";
 import { useToast } from "@/components/Toast";
-import { useFeedback, replyToComment, type Comment } from "@/services/feedbackStore";
+import {
+  useAllComments, useAllBookReactions, replyToComment, type Comment,
+} from "@/services/feedbackStore";
 
 function StatCard({
   icon: Icon, value, label, bg, fg,
@@ -73,7 +75,7 @@ function CommentRow({ comment }: { comment: Comment }) {
               className="flex items-center gap-2 py-2.5"
               disabled={reply.trim().length < 2}
               onClick={() => {
-                replyToComment(comment.id, reply);
+                void replyToComment(comment.id, reply);
                 notify(`Balasan terkirim ke ${comment.userEmail}.`);
                 setReply("");
                 setOpen(false);
@@ -96,15 +98,17 @@ function CommentRow({ comment }: { comment: Comment }) {
 }
 
 export default function UmpanBalik() {
-  const fb = useFeedback();
-  const comments = [...fb.comments].sort((a, b) => b.ts - a.ts);
+  const comments = useAllComments();
+  const bookReactions = useAllBookReactions();
+  const totalLikes = bookReactions.reduce((sum, r) => sum + r.likes.length, 0);
+  const totalFavorites = bookReactions.reduce((sum, r) => sum + r.favorites.length, 0);
 
   return (
     <div>
       <div className="grid grid-cols-2 gap-6 xl:grid-cols-4">
         <StatCard icon={MessageSquare} value={comments.length} label="Total Komentar" bg="bg-primary-light" fg="text-primary" />
-        <StatCard icon={ThumbsUp} value={fb.likes.length} label="Total Suka" bg="bg-success-light" fg="text-success" />
-        <StatCard icon={Star} value={fb.favorites.length} label="Total Favorit" bg="bg-[#fdf3d8]" fg="text-warning" />
+        <StatCard icon={ThumbsUp} value={totalLikes} label="Total Suka" bg="bg-success-light" fg="text-success" />
+        <StatCard icon={Star} value={totalFavorites} label="Total Favorit" bg="bg-[#fdf3d8]" fg="text-warning" />
         <StatCard icon={ShieldCheck} value={comments.filter((c) => c.reply).length} label="Sudah Dibalas" bg="bg-accent-light" fg="text-accent" />
       </div>
 

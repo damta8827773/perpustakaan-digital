@@ -127,6 +127,55 @@ service cloud.firestore {
       allow read, update, delete: if isAdmin();
     }
 
+    // Komentar pengguna pada buku (dulu localStorage - per-peramban, artinya
+    // TIDAK PERNAH terlihat pengguna lain; sekarang Firestore supaya semua
+    // orang melihat komentar yang sama). Field selain 'likes' dan
+    // 'reply'/'hasReply' tidak bisa diubah setelah dibuat, supaya pengguna
+    // lain tidak bisa menyunting teks komentar orang lain lewat endpoint
+    // update (satu-satunya operasi tulis yang diizinkan setelah create
+    // adalah toggle suka oleh siapa pun, atau balasan oleh admin).
+    match /comments/{commentId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn()
+        && request.resource.data.userEmail == request.auth.token.email
+        && request.resource.data.bookId is string
+        && request.resource.data.bookId.size() > 0
+        && request.resource.data.userName is string
+        && request.resource.data.bookTitle is string
+        && request.resource.data.text is string
+        && request.resource.data.text.size() > 0
+        && request.resource.data.text.size() <= 2000
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.likes == []
+        && request.resource.data.hasReply == false
+        && !("reply" in request.resource.data);
+      allow update: if isSignedIn() && (
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes'])
+          && request.resource.data.likes is list)
+        || (isAdmin()
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reply', 'hasReply'])
+          && request.resource.data.hasReply == true
+          && request.resource.data.reply.text is string
+          && request.resource.data.reply.text.size() > 0
+          && request.resource.data.reply.text.size() <= 2000
+          && request.resource.data.reply.createdAt == request.time)
+      );
+      allow delete: if false;
+    }
+
+    // Suka & favorit pada buku (agregat per buku; identitas penyuka
+    // disertakan supaya bisa ditampilkan & dicegah dobel suka - lihat
+    // feedbackStore.ts). Validasi longgar (cuma bentuk field) karena ini
+    // data informatif, bukan yang mengontrol akses, sama seperti
+    // chatQueue/summary di atas.
+    match /bookReactions/{bookId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn()
+        && request.resource.data.keys().hasOnly(['likes', 'favorites'])
+        && request.resource.data.likes is list
+        && request.resource.data.favorites is list;
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }

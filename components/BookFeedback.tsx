@@ -5,10 +5,10 @@ import { Button, Card } from "@/components/ui";
 import { useToast } from "@/components/Toast";
 import { useCurrentStudent } from "@/services/sessionStore";
 import { useTranslate } from "@/services/localeStore";
+import { auth } from "@/common/libs/firebase";
 import {
-  useFeedback, addComment, toggleCommentLike, commentsFor,
-  toggleBookLike, isBookLiked, bookLikeCount,
-  toggleFavorite, isFavorite, favoriteCount,
+  isFeedbackAvailable, useBookComments, useBookReactions,
+  addComment, toggleCommentLike, toggleBookLike, toggleFavorite,
   type Author,
 } from "@/services/feedbackStore";
 
@@ -16,7 +16,6 @@ export function BookFeedback({ book }: { book: Book }) {
   const { notify } = useToast();
   const student = useCurrentStudent();
   const t = useTranslate();
-  useFeedback(); // berlangganan perubahan
   const [text, setText] = useState("");
 
   const email = student.email || `${student.nim}@mahasiswa.uinjkt.ac.id`;
@@ -28,36 +27,51 @@ export function BookFeedback({ book }: { book: Book }) {
     angkatan: student.angkatan,
   };
 
-  const liked = isBookLiked(book.id, email);
-  const fav = isFavorite(book.id, email);
-  const comments = commentsFor(book.id);
+  // isFeedbackAvailable() = false hanya di mode demo (VITE_DEMO=1). Di luar
+  // itu, komentar/suka BUTUH sesi Firebase Auth sungguhan (bukan cuma sesi
+  // lokal NIM yang gagal diam-diam kalau provider Email/Password belum
+  // diaktifkan di Firebase Console - lihat services/accounts.ts) supaya
+  // Firestore Security Rules bisa memverifikasi identitas pengirim.
+  const hasFirebaseSession = !!auth.currentUser;
+  const available = isFeedbackAvailable() && hasFirebaseSession;
+  const comments = useBookComments(book.id);
+  const reactions = useBookReactions(book.id);
+  const liked = reactions.likes.some((l) => l.userEmail === email);
+  const fav = reactions.favorites.some((f) => f.userEmail === email);
 
   return (
     <div className="mt-8">
+      {!available && (
+        <p className="mb-4 rounded-xl bg-warning-light/60 px-4 py-3 text-sm text-warning">
+          {isFeedbackAvailable() ? t("feedback.needLogin") : t("feedback.needFirebaseConfig")}
+        </p>
+      )}
       <div className="flex flex-wrap items-center gap-3">
         <button
-          onClick={() => {
-            const now = toggleBookLike(book.id, book.title, author);
+          disabled={!available}
+          onClick={async () => {
+            const now = await toggleBookLike(book.id, book.title, author);
             notify(now ? t("feedback.likedToast") : t("feedback.unlikedToast"));
           }}
-          className={`flex cursor-pointer items-center gap-2 rounded-xl border px-5 py-2.5 font-display text-sm font-semibold ${
+          className={`flex cursor-pointer items-center gap-2 rounded-xl border px-5 py-2.5 font-display text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60 ${
             liked ? "border-primary bg-primary-light text-primary" : "border-line hover:bg-muted"
           }`}
         >
           <ThumbsUp size={17} fill={liked ? "currentColor" : "none"} /> {t("feedback.like")}
-          <span className="rounded-full bg-muted px-2 py-0.5 text-xs">{bookLikeCount(book.id)}</span>
+          <span className="rounded-full bg-muted px-2 py-0.5 text-xs">{reactions.likes.length}</span>
         </button>
         <button
-          onClick={() => {
-            const now = toggleFavorite(book.id, book.title, author);
+          disabled={!available}
+          onClick={async () => {
+            const now = await toggleFavorite(book.id, book.title, author);
             notify(now ? t("feedback.favAddedToast") : t("feedback.favRemovedToast"));
           }}
-          className={`flex cursor-pointer items-center gap-2 rounded-xl border px-5 py-2.5 font-display text-sm font-semibold ${
+          className={`flex cursor-pointer items-center gap-2 rounded-xl border px-5 py-2.5 font-display text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60 ${
             fav ? "border-warning bg-warning-light text-warning" : "border-line hover:bg-muted"
           }`}
         >
           <Star size={17} fill={fav ? "currentColor" : "none"} /> {t("feedback.favorite")}
-          <span className="rounded-full bg-muted px-2 py-0.5 text-xs">{favoriteCount(book.id)}</span>
+          <span className="rounded-full bg-muted px-2 py-0.5 text-xs">{reactions.favorites.length}</span>
         </button>
       </div>
 
@@ -77,9 +91,9 @@ export function BookFeedback({ book }: { book: Book }) {
         <div className="mt-3 flex justify-end">
           <Button
             className="flex items-center gap-2 py-2.5"
-            disabled={text.trim().length < 2}
-            onClick={() => {
-              addComment(book.id, book.title, author, text);
+            disabled={!available || text.trim().length < 2}
+            onClick={async () => {
+              await addComment(book.id, book.title, author, text);
               setText("");
               notify(t("feedback.commentSentToast"));
             }}
@@ -110,8 +124,9 @@ export function BookFeedback({ book }: { book: Book }) {
                 <p className="mt-2 leading-relaxed">{c.text}</p>
 
                 <button
-                  onClick={() => toggleCommentLike(c.id, email, student.name)}
-                  className={`mt-3 flex cursor-pointer items-center gap-1.5 text-sm font-semibold ${
+                  disabled={!available}
+                  onClick={() => void toggleCommentLike(c.id, email, student.name)}
+                  className={`mt-3 flex cursor-pointer items-center gap-1.5 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60 ${
                     c.likes.some((l) => l.email === email) ? "text-primary" : "text-muted-fg hover:text-fg"
                   }`}
                 >

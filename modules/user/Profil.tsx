@@ -13,7 +13,7 @@ import { useLibrary, getActiveLoans } from "@/services/libraryStore";
 import { useCurrentStudent, clearCurrentStudent, updateCurrentStudent } from "@/services/sessionStore";
 import { changePasswordSecure } from "@/services/accounts";
 import { sendHelpToAdmin } from "@/services/notificationsStore";
-import { useFeedback, inboxFor } from "@/services/feedbackStore";
+import { useMyComments, inboxFromComments } from "@/services/feedbackStore";
 import { PasswordField } from "@/components/PasswordField";
 import { uploadAvatar, isAvatarUploadAvailable } from "@/services/avatarStore";
 import { auth } from "@/common/libs/firebase";
@@ -33,7 +33,8 @@ export default function Profil() {
   const { notify } = useToast();
   const lib = useLibrary();
   const student = useCurrentStudent();
-  useFeedback(); // berlangganan agar balasan admin langsung muncul
+  const email = student.email || `${student.nim}@mahasiswa.uinjkt.ac.id`;
+  const inbox = inboxFromComments(useMyComments(email));
   const [sheet, setSheet] = useState<Sheet>(null);
   const locale = useLocale();
   const t = useTranslate();
@@ -60,9 +61,6 @@ export default function Profil() {
       setUploadingPhoto(false);
     }
   }
-
-  const email = student.email || `${student.nim}@mahasiswa.uinjkt.ac.id`;
-  const inbox = inboxFor(email);
 
   const activeLoans = getActiveLoans();
   const stats: [number, string][] = [
