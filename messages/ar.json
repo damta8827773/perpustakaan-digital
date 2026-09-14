@@ -120,6 +120,7 @@
   "chat.needFirebaseConfig": "الدردشة تتطلب إعداد Firebase (معطّلة في وضع العرض التجريبي).",
   "chat.launcherAriaLabel": "الدردشة المباشرة مع الإدارة",
   "chat.empty": "لا توجد رسائل بعد. ابدأ المحادثة أدناه.",
+  "chat.sendFailed": "فشل إرسال الرسالة. حاول مرة أخرى.",
   "chat.adminLabel": "إدارة المكتبة",
   "chat.aiLabel": "رد تلقائي (وليس إداريًا حقيقيًا)",
   "chat.read": "تمت القراءة",

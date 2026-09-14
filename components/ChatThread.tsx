@@ -40,6 +40,7 @@ export function ChatThread({
   const locale = useLocale();
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -50,11 +51,16 @@ export function ChatThread({
     const clean = text.trim();
     if (!clean || busy) return;
     setBusy(true);
+    setError("");
     try {
       await sendChatMessage(studentUid, studentName, viewerUid, viewerRole, viewerName, clean);
       setText("");
-    } catch {
-      // biarkan teks tetap di kotak supaya bisa dicoba kirim ulang
+    } catch (err) {
+      // Teks TETAP di kotak (supaya bisa langsung dicoba kirim ulang tanpa
+      // mengetik ulang) - sebelumnya kegagalan ini didiamkan sepenuhnya,
+      // tidak ada tanda apa pun ke pengirim bahwa pesannya tidak terkirim.
+      console.error("Gagal mengirim pesan chat:", err);
+      setError(t("chat.sendFailed"));
     } finally {
       setBusy(false);
     }
@@ -112,10 +118,15 @@ export function ChatThread({
         })}
         <div ref={bottomRef} />
       </div>
+      {error && (
+        <p className="shrink-0 border-t border-destructive-light bg-destructive-light px-4 py-2 text-xs text-destructive">
+          {error}
+        </p>
+      )}
       <div className="flex shrink-0 items-center gap-2 border-t border-line px-3 py-3">
         <input
           value={text}
-          onChange={(e) => setText(e.target.value)}
+          onChange={(e) => { setText(e.target.value); if (error) setError(""); }}
           onKeyDown={(e) => {
             if (e.key === "Enter") submit();
           }}
